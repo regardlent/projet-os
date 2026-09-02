@@ -97,7 +97,7 @@ test("bridge: /bridge unknown sub-command fails closed", async () => {
 	const r = await bounded("bridge", ["explode"]);
 	assert.equal(r.ok, false);
 	assert.equal(r.status, "UNKNOWN_SUBCOMMAND");
-	assert.match(r.message, /status\|start\|stop\|restart\|health\|tools\|config\|test\|tunnel/);
+	assert.match(r.message, /status\|start\|stop\|restart\|health\|tools\|config\|audit\|test\|tunnel/);
 });
 
 test("bridge: lifecycle sub-commands are recognized (dispatch shape)", { skip: "spawns a real detached server on the shared loopback port 8412, which races with the parallel test suite; verified manually via `node bin/project-os-bridge.mjs /bridge start|stop`" }, async () => {

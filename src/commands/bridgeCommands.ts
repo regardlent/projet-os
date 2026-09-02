@@ -10,6 +10,8 @@ import type { CommandResult } from "../projects/projectTypes.js";
 import type { ParsedSlash, SlashCommandContext } from "../projects/SlashCommands.js";
 import * as runtime from "../integrations/bridge/bridgeRuntime.js";
 import * as tunnel from "../integrations/bridge/tunnelClient.js";
+import { BRIDGE_TOOLS } from "../integrations/bridge/BridgeToolRegistry.js";
+import { toolClassOf } from "../integrations/bridge/ApprovalService.js";
 
 /** Resolve the real (env-driven) config once; used by the lifecycle sub-commands. */
 function bridgeCfg() {
@@ -40,6 +42,7 @@ export async function bridgeHandler(
 				"  /bridge health   -> Sante du bridge MCP\n" +
 				"  /bridge tools    -> Liste des outils MCP (12)\n" +
 				"  /bridge config   -> Configuration effective MCP\n" +
+				"  /bridge audit    -> Audit de securite MCP\n" +
 				"  /bridge test     -> Tests d'integration MCP\n" +
 				"  /bridge tunnel   -> Configuration tunnel ChatGPT Web\n\n" +
 				"Endpoint: http://127.0.0.1:8412/mcp (localhost only)",
@@ -64,6 +67,8 @@ export async function bridgeHandler(
 			return bridgeToolsHandler();
 		case "config":
 			return bridgeConfigHandler(flags);
+		case "audit":
+			return bridgeAuditHandler(flags);
 		case "test":
 			return bridgeTestHandler();
 		case "tunnel":
@@ -74,7 +79,7 @@ export async function bridgeHandler(
 				ok: false,
 				status: "UNKNOWN_SUBCOMMAND",
 				message: `Unknown sub-command: ${subcommand}\n` +
-					"Use: /bridge status|start|stop|restart|health|tools|config|test|tunnel",
+					"Use: /bridge status|start|stop|restart|health|tools|config|audit|test|tunnel",
 				warnings: [],
 				actions: [],
 				artifacts: [],
@@ -265,6 +270,45 @@ function bridgeConfigHandler(flags: Record<string, string>): CommandResult {
 		`Tools (${payload.totalTools}): ${payload.tools.join(", ")}`,
 	];
 	return { command: "bridge", ok: true, status: "CONFIG", message: lines.join("\n"), warnings: [], actions: [], artifacts: [] };
+}
+
+function bridgeAuditHandler(flags: Record<string, string>): CommandResult {
+	const cfgVal = bridgeCfg();
+	const jsonFmt = flags.format === "json" || flags.json === "true";
+	const classes: Record<string, number> = {};
+	const approvals: Record<string, number> = {};
+	for (const t of BRIDGE_TOOLS) {
+		const cls = toolClassOf(t.name);
+		classes[cls] = (classes[cls] ?? 0) + 1;
+		const ap = t.name.startsWith("bridge_") || t.name.startsWith("project_") || t.name.startsWith("file_") || t.name.startsWith("code_") || t.name.startsWith("git_") || t.name.startsWith("artifact_") ? "auto" : "manual";
+		approvals[ap] = (approvals[ap] ?? 0) + 1;
+	}
+	const risks: string[] = [];
+	if (cfgVal.writeEnabled && cfgVal.approvalMode === "auto-approve-read") risks.push("write+auto-approve-read");
+	if (cfgVal.tunnelMode === "secure-mcp-tunnel" && !cfgVal.antigravityCli) risks.push("tunnel-on-broken-antigravity");
+	const ok = risks.length === 0;
+	const payload = {
+		transport: "streamable-http-loopback",
+		enabled: cfgVal.enabled,
+		writeEnabled: cfgVal.writeEnabled,
+		approvalMode: cfgVal.approvalMode,
+		tools: BRIDGE_TOOLS.length,
+		classes,
+		approvals,
+		risks,
+		verdict: ok ? "SECURE" : "RISK",
+	};
+	if (jsonFmt) return { command: "bridge", ok, status: ok ? "AUDIT_SECURE" : "AUDIT_RISK", message: JSON.stringify(payload, null, 2), warnings: risks, actions: [], artifacts: [] };
+	const lines = [
+		"Service: MCP Bridge — security audit",
+		`Transport: ${payload.transport}  Enabled: ${payload.enabled}`,
+		`Write: ${payload.writeEnabled}  Approval: ${payload.approvalMode}`,
+		`Tools: ${payload.tools}  classes=${JSON.stringify(payload.classes)}  approvals=${JSON.stringify(payload.approvals)}`,
+	];
+	if (risks.length) { lines.push("Risks:");
+		for (const r of risks) lines.push(`  - ${r}`); }
+	else lines.push("Verdict: SECURE");
+	return { command: "bridge", ok, status: ok ? "AUDIT_SECURE" : "AUDIT_RISK", message: lines.join("\n"), warnings: risks, actions: [], artifacts: [] };
 }
 
 function bridgeTestHandler(): CommandResult {

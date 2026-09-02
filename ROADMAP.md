@@ -87,7 +87,7 @@
 - [x] 7.5 `artifact search` full-text.
 - [x] 7.6 Provenance + signature.
 - [ ] 7.7 Partage d'artefacts.
-- [ ] 7.8 Audit de sécurité MCP.
+- [x] 7.8 Audit de sécurité MCP.
 - [x] 7.9 Config MCP.
 - [x] 7.10 `artifact verify` enrichi (schéma).
 
