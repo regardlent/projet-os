@@ -190,11 +190,12 @@ try {
 		const ttft = parseInt(flags["--ttft"] ?? "0", 10) || 0;
 		const tps = parseInt(flags["--tokens-per-sec"] ?? flags["--tps"] ?? "0", 10) || 0;
 		const payg = parseFloat(flags["--cost"] ?? "0") || 0;
+		const source = flags["--source"] || flags["--for"] || "cli";
 		const file = path.join(REPO, "artifacts", "usage", "USAGE_REPORT.json");
 		let store = { reports: [] };
 		try { store = JSON.parse(fs.readFileSync(file, "utf8")); } catch {}
 		if (!Array.isArray(store.reports)) store.reports = [];
-		const rec = { job, model, tokens: { input: tokensIn, output: tokensOut, total }, cost: { free: 0, payg, localAI: payg === 0 ? "EXACT_ZERO" : "PAYG" }, throughput: { ttftMs: ttft, tokensPerSec: tps }, at: Date.now() };
+		const rec = { job, model, source, tokens: { input: tokensIn, output: tokensOut, total }, cost: { free: 0, payg, localAI: payg === 0 ? "EXACT_ZERO" : "PAYG" }, throughput: { ttftMs: ttft, tokensPerSec: tps }, at: Date.now() };
 		store.reports.push(rec);
 		const agg = store.reports.reduce((a, r) => { a.input += r.tokens.input; a.output += r.tokens.output; a.total += r.tokens.total; a.free += (r.cost.free ?? 0); a.payg += (r.cost.payg ?? 0); return a; }, { input: 0, output: 0, total: 0, free: 0, payg: 0 });
 		store.tokens = { input: agg.input, output: agg.output, total: agg.total };
@@ -225,20 +226,31 @@ try {
 		let store = { reports: [] };
 		try { store = JSON.parse(fs.readFileSync(file, "utf8")); } catch {}
 		const reps = Array.isArray(store.reports) ? store.reports : [];
-		const byModel = {};
+		const byModel = {}, bySource = {};
 		let totalT = 0, totalPayg = 0;
 		for (const r of reps) {
 			const m = r.model || "unknown";
 			byModel[m] = byModel[m] || { runs: 0, tokens: 0, payg: 0 };
 			byModel[m].runs++; byModel[m].tokens += (r.tokens?.total ?? 0); byModel[m].payg += (r.cost?.payg ?? 0);
+			const s = r.source || "cli";
+			bySource[s] = bySource[s] || { runs: 0, tokens: 0, payg: 0 };
+			bySource[s].runs++; bySource[s].tokens += (r.tokens?.total ?? 0); bySource[s].payg += (r.cost?.payg ?? 0);
 			totalT += (r.tokens?.total ?? 0); totalPayg += (r.cost?.payg ?? 0);
 		}
 		const rows = Object.entries(byModel).map(([m, a]) => ({ k: m, v: `runs=${a.runs} tokens=${a.tokens} payg=$${a.payg}` }));
+		const srcRows = Object.entries(bySource).map(([s, a]) => ({ k: "src " + s, v: `runs=${a.runs} tokens=${a.tokens} payg=$${a.payg}` }));
+		rows.push(...srcRows);
 		const daily = parseFloat(process.env.PROJECT_OS_DAILY_BUDGET || "0") || 0;
 		const blown = daily > 0 && totalPayg > daily;
+		// F62 PAYG policy: paidInferenceMode OFF blocks paid inference (surfaced + non-zero exit when PAYG used).
+		const paidMode = process.env.PROJECT_OS_PAID_MODE || "OFF";
+		const paygAllowed = paidMode !== "OFF";
+		const paygBlocked = totalPayg > 0 && !paygAllowed;
 		rows.push({ k: "TOTAL", v: `tokens=${totalT} payg=$${totalPayg}` });
 		if (daily > 0) rows.push({ k: "budget", v: `$` + daily + (blown ? " BLOWN" : " OK") });
-		emit({ command: "usage", ok: !blown, status: blown ? "BUDGET_BLOWN" : "USAGE_SUMMARY", score: 0, grade: "", signal: blown ? "ALERT" : (totalT ? "HAS_USAGE" : "NO_USAGE"), rows, details: blown ? ["daily budget exceeded"] : [], message: `usage summary: models=${rows.length - (daily > 0 ? 2 : 1)} tokens=${totalT} payg=$${totalPayg}${blown ? " BUDGET_BLOWN" : ""}`, warnings: [], actions: [], artifacts: ["artifacts/usage/USAGE_REPORT.json"] }, blown ? 1 : 0);
+		rows.push({ k: "paidMode", v: paidMode + (paygBlocked ? " (PAYG BLOCKED)" : "") });
+		const alert = blown || paygBlocked;
+		emit({ command: "usage", ok: !alert, status: alert ? (paygBlocked ? "PAYG_BLOCKED" : "BUDGET_BLOWN") : "USAGE_SUMMARY", score: 0, grade: "", signal: alert ? "ALERT" : (totalT ? "HAS_USAGE" : "NO_USAGE"), rows, details: (paygBlocked ? ["payg not allowed (paidInferenceMode=OFF)"] : blown ? ["daily budget exceeded"] : []), message: `usage summary: models=${Object.keys(byModel).length} src=${Object.keys(bySource).length} tokens=${totalT} payg=$${totalPayg}${paygBlocked ? " PAYG_BLOCKED" : blown ? " BUDGET_BLOWN" : ""}`, warnings: paygBlocked ? ["paid inference attempted while OFF"] : [], actions: [], artifacts: ["artifacts/usage/USAGE_REPORT.json"] }, alert ? 1 : 0);
 		process.exit(0);
 	}
 
@@ -963,6 +975,28 @@ try {
 			{ k: "criteria", v: String((goal.acceptanceCriteria ?? []).length) },
 		];
 		emit({ command: "goal", ok: true, status: "TRACTION", score: traction, grade: "", signal: traction >= 70 ? "STRONG" : traction >= 40 ? "MODERATE" : "WEAK", rows, details: goal.acceptanceCriteria ?? [], message: `goal traction: ${traction}/100 (${reasons(goal, g)})`, warnings: [], actions: [], artifacts: [] }, 0); process.exit(0);
+	}
+
+	// 7bis. goal cost: distribute usage cost across the active goal's acceptance criteria.
+	if (line === "goal cost") {
+		const a = resolveActiveProject();
+		if (!a) { emit({ command: "goal", ok: false, status: "NO_ACTIVE_PROJECT", score: 0, grade: "", signal: "NO_PROJECT", rows: [], details: ["no active project"], message: "goal cost: no active project", warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
+		const g = gatherSignals(a.workspaceRoot);
+		const goal = g.goal;
+		const file = path.join(REPO, "artifacts", "usage", "USAGE_REPORT.json");
+		let store = { reports: [] };
+		try { store = JSON.parse(fs.readFileSync(file, "utf8")); } catch {}
+		const reps = Array.isArray(store.reports) ? store.reports : [];
+		const totalTok = reps.reduce((x, r) => x + (r.tokens?.total ?? 0), 0);
+		const totalPayg = reps.reduce((x, r) => x + (r.cost?.payg ?? 0), 0);
+		const crits = goal?.acceptanceCriteria ?? [];
+		const perCrit = crits.length ? Math.round(totalTok / crits.length) : 0;
+		const rows = crits.map((c) => ({ k: "crit " + c, v: `tokens≈${perCrit}` }));
+		rows.push({ k: "goal", v: (goal?.objective || "(none)").slice(0, 60) });
+		rows.push({ k: "totalTokens", v: String(totalTok) });
+		rows.push({ k: "payg", v: "$" + totalPayg.toFixed(2) });
+		emit({ command: "goal", ok: true, status: "GOAL_COST", score: 0, grade: "", signal: totalTok ? "HAS_USAGE" : "NO_USAGE", rows, details: [], message: `goal cost: criteria=${crits.length} tokens=${totalTok} payg=$${totalPayg}`, warnings: [], actions: [], artifacts: [] }, 0);
+		process.exit(0);
 	}
 
 	// 8. autonomy health: plan status + handoff + expiry.

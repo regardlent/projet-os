@@ -214,6 +214,7 @@ static int cmdHelp() {
 	std::cout << "  diagnose               ranked auto-diagnostic battery\n";
 	std::cout << "  drift alert            baseline divergence alert\n";
 	std::cout << "  goal traction          goal evidence / velocity\n";
+	std::cout << "  goal cost              cost distributed across goal criteria\n";
 	std::cout << "  autonomy health        plan + handoff health\n";
 	std::cout << "  risk profile           consolidated risk score\n";
 	std::cout << "  usage record|list|summary|export  usage store (record / history / aggregate / export)\n";
@@ -1434,6 +1435,7 @@ static int cmdDiagnose(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult r =
 static int cmdDriftAlert(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "drift alert", g_timeoutMs, &g_cancel); printAnalysis("drift alert", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
 static int cmdHealthTrend(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "health trend", g_timeoutMs, &g_cancel); printAnalysis("health trend", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
 static int cmdGoalTraction(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "goal traction", g_timeoutMs, &g_cancel); printAnalysis("goal traction", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
+static int cmdGoalCost(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "goal cost", g_timeoutMs, &g_cancel); printAnalysis("goal cost", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
 static int cmdAutonomyHealth(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "autonomy health", g_timeoutMs, &g_cancel); printAnalysis("autonomy health", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
 static int cmdHealthCompare(pos::OutputFormat fmt, const std::vector<std::string>& args, bool colorOn) { std::string line = "health compare"; for (auto& a : args) line += " " + a; pos::CmdResult r = pos::dispatch(pos::bridgePath(), line, g_timeoutMs, &g_cancel); printAnalysis("health compare", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
 static int cmdRiskProfile(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "risk profile", g_timeoutMs, &g_cancel); printAnalysis("risk profile", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
@@ -1537,6 +1539,7 @@ int wmain(int argc, wchar_t** wargv) {
 		if (cmd == "diagnose") { return cmdDiagnose(fmt, colorOn); }
 		if (cmd == "drift" && args.size() >= 1 && args[0] == "alert") { return cmdDriftAlert(fmt, colorOn); }
 		if (cmd == "goal" && args.size() >= 1 && args[0] == "traction") { return cmdGoalTraction(fmt, colorOn); }
+		if (cmd == "goal" && args.size() >= 1 && args[0] == "cost") { return cmdGoalCost(fmt, colorOn); }
 		if (cmd == "autonomy" && args.size() >= 1 && args[0] == "health") { return cmdAutonomyHealth(fmt, colorOn); }
 		if (cmd == "risk" && args.size() >= 1 && args[0] == "profile") { return cmdRiskProfile(fmt, colorOn); }
 		if (cmd == "usage" && args.size() >= 1 && args[0] == "record") { return cmdUsageRecord(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }
