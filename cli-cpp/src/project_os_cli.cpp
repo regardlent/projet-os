@@ -64,6 +64,9 @@ inline std::atomic<bool> g_verbose(false);
 // F58 (plan 50×50, Phase 1.27/1.29): --silent (exit-code only) + --width=<n> override.
 inline std::atomic<bool> g_silent(false);
 inline std::atomic<int> g_width(0);
+// Phase 1.26/1.30: --check (exit-code only, no output) + --time (elapsed ms on stderr).
+inline std::atomic<bool> g_check(false);
+inline std::atomic<bool> g_timing(false);
 
 // --- Helpers -------------------------------------------------------------
 static int readChoice(int max) {
@@ -1814,6 +1817,8 @@ int wmain(int argc, wchar_t** wargv) {
 			if (a == "--ndjson") { fmt = pos::OutputFormat::Ndjson; return true; }
 			if (a == "--tsv") { fmt = pos::OutputFormat::TsV; return true; }
 			if (a == "--silent") { g_silent.store(true); return true; }
+			if (a == "--check") { g_check.store(true); g_silent.store(true); return true; }
+			if (a == "--time") { g_timing.store(true); return true; }
 			if (a.rfind("--width=", 0) == 0) { g_width.store(std::atoi(a.substr(8).c_str())); return true; }
 			if (a.rfind("--color=", 0) == 0) { wrapColor = pos::parseColor(a.substr(8)); return true; }
 			if (a.rfind("--theme=", 0) == 0) { const std::string t = a.substr(8); if (t == "light") g_theme.store(0); else if (t == "dark") g_theme.store(1); return true; }
@@ -1842,6 +1847,8 @@ int wmain(int argc, wchar_t** wargv) {
 		bool colorOn = pos::colorEnabled(color, isTty);
 		// F58 (Phase 1.27): --silent => exit-code only, suppress stdout (diagnostics stay on stderr).
 		if (g_silent.load()) { std::freopen("NUL", "w", stdout); }
+		// Phase 1.30: --time => elapsed ms on stderr when the command returns (RAII destroys at scope exit).
+		struct TimePrinter { long long t0 = 0; TimePrinter() { t0 = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count(); } ~TimePrinter() { if (g_timing.load()) { long long e = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count(); std::cerr << "[time] " << (e - t0) << " ms\n"; } } } _timePrinter;
 		// F67: --cockpit global shortcut launches the dashboard directly.
 		if (cockpitShortcut) { return cmdCockpit(fmt, args, colorOn); }
 		const std::string cmd0 = (start < (size_t)argc) ? argvS[start] : std::string("help");
