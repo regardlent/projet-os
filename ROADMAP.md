@@ -20,12 +20,12 @@
 - [x] 2.2 `usage list` (historique des observations).
 - [x] 2.3 `usage summary` (agrégat par job/modèle).
 - [x] 2.4 Alerte budget (si `tokens`/`cost` dépasse `PROJECT_OS_DAILY_BUDGET`) → exit non nul.
-- [ ] 2.5 `budget forecast` avec tendance (échéance extrapolée).
+- [x] 2.5 `budget forecast` avec tendance (échéance extrapolée).
 - [ ] 2.6 `insights tokens` par commande/source.
 - [ ] 2.7 Coût par critère de goal.
-- [ ] 2.8 Coût par modèle (répartition PAYG vs LocalAI).
+- [x] 2.8 Coût par modèle (répartition PAYG vs LocalAI).
 - [ ] 2.9 Appliquer la politique PAYG (`paidInferenceMode`).
-- [ ] 2.10 Export du reporting (CSV/JSON) via `usage export`.
+- [x] 2.10 Export du reporting (CSV/JSON) via `usage export`.
 
 ## Phase 3 — Cockpit / dashboard
 - [ ] 3.1 `cockpit` restructuré en tuiles (health, gpu, usage, goal, todo).

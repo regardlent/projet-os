@@ -242,6 +242,29 @@ try {
 		process.exit(0);
 	}
 
+	// F60 usage export: write the usage store to CSV/JSON on disk.
+	if (line.startsWith("usage export")) {
+		const rest = line.slice("usage export".length).trim();
+		const flags = {};
+		for (const m of rest.matchAll(/(--[a-z-]+)=("([^"]*)"|[^ ]+)/g)) flags[m[1]] = m[3] ?? m[2];
+		const fmt = flags["--format"] || "csv";
+		const file = path.join(REPO, "artifacts", "usage", "USAGE_REPORT.json");
+		let store = { reports: [] };
+		try { store = JSON.parse(fs.readFileSync(file, "utf8")); } catch {}
+		const reps = Array.isArray(store.reports) ? store.reports : [];
+		const outPath = flags["--out"] || path.join(REPO, "artifacts", "usage", "USAGE_REPORT." + (fmt === "json" ? "json" : "csv"));
+		fs.mkdirSync(path.dirname(outPath), { recursive: true });
+		if (fmt === "json") {
+			fs.writeFileSync(outPath, JSON.stringify({ reports: reps }, null, 2), "utf8");
+		} else {
+			const csv = ["job,model,ttftMs,tokensPerSec,tokensIn,tokensOut,total,payg"] +
+				reps.map((r) => `${r.job},${r.model},${r.throughput?.ttftMs ?? 0},${r.throughput?.tokensPerSec ?? 0},${r.tokens?.input ?? 0},${r.tokens?.output ?? 0},${r.tokens?.total ?? 0},${(r.cost?.payg ?? 0)}`).join("\n");
+			fs.writeFileSync(outPath, csv + "\n", "utf8");
+		}
+		emit({ command: "usage", ok: true, status: "USAGE_EXPORT", score: 0, grade: "", signal: "EXPORTED", rows: [{ k: "format", v: fmt }, { k: "records", v: String(reps.length) }, { k: "written", v: outPath.replace(REPO + path.sep, "") }], details: [], message: `usage export: ${reps.length} record(s) -> ${fmt}`, warnings: [], actions: [], artifacts: [outPath.replace(REPO + path.sep, "")] }, 0);
+		process.exit(0);
+	}
+
 	// F46 report: consolidate real usage reports (tokens/cost/perf) from disk.
 	if (line === "report") {
 		const read = (f) => { try { return JSON.parse(fs.readFileSync(path.join(REPO, f), "utf8")); } catch { return null; } };
@@ -822,16 +845,27 @@ try {
 		const daily = parseFloat(process.env.PROJECT_OS_DAILY_BUDGET || "0") || 0;
 		const costPerTok = 0; // LocalAI
 		const estCost = +(g.tokens.total * costPerTok).toFixed(4);
+		// F61 trend: read the usage store for run count / average / PAYG + projected budget exhaustion.
+		const usageFile = path.join(REPO, "artifacts", "usage", "USAGE_REPORT.json");
+		let store = { reports: [] };
+		try { store = JSON.parse(fs.readFileSync(usageFile, "utf8")); } catch {}
+		const reps = Array.isArray(store.reports) ? store.reports : [];
+		const totalPayg = reps.reduce((a, r) => a + (r.cost?.payg ?? 0), 0);
+		const avgTokensPerRun = reps.length ? Math.round(g.tokens.total / reps.length) : 0;
+		let runsToBudget = null;
+		if (daily > 0 && reps.length) { const avgPayg = totalPayg / reps.length; if (avgPayg > 0) runsToBudget = Math.floor(daily / avgPayg); }
+		const sign = (totalPayg > daily && daily > 0) ? "ALERT" : ((estCost === 0 && totalPayg === 0) ? "EXACT_ZERO" : "SPEND");
 		const rows = [
 			{ k: "tokensTotal", v: String(g.tokens.total) },
-			{ k: "tokensIn", v: String(g.tokens.input) },
-			{ k: "tokensOut", v: String(g.tokens.output) },
+			{ k: "runs", v: String(reps.length) },
+			{ k: "avgTokensRun", v: String(avgTokensPerRun) },
+			{ k: "paygTotal", v: "$" + totalPayg.toFixed(2) },
 			{ k: "estCost", v: "$" + estCost.toFixed(4) },
 			{ k: "dailyBudget", v: daily > 0 ? "$" + daily : "none" },
 			{ k: "burnModel", v: modelId },
-			{ k: "daysLeft", v: daily > 0 ? "n/a" : "n/a (LocalAI / no PAYG)" },
+			{ k: "runsToBudget", v: runsToBudget === null ? "n/a" : String(runsToBudget) },
 		];
-		emit({ command: "budget", ok: true, status: "BUDGET", score: 0, grade: "", signal: estCost === 0 ? "EXACT_ZERO" : "SPEND", rows, details: [], message: `budget forecast: tokens=${g.tokens.total} estCost=${estCost} (LocalAI EXACT_ZERO)`, warnings: [], actions: [], artifacts: [] }, 0); process.exit(0);
+		emit({ command: "budget", ok: !(sign === "ALERT"), status: sign === "ALERT" ? "BUDGET_ALERT" : "BUDGET", score: 0, grade: "", signal: sign, rows, details: [], message: `budget forecast: tokens=${g.tokens.total} runs=${reps.length} avg=${avgTokensPerRun}/run payg=$${totalPayg} (LocalAI EXACT_ZERO)`, warnings: [], actions: [], artifacts: [] }, sign === "ALERT" ? 1 : 0); process.exit(0);
 	}
 
 	// 3. insights tokens: token intelligence across sources + ratios.

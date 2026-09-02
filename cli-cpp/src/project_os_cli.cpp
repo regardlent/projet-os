@@ -216,7 +216,7 @@ static int cmdHelp() {
 	std::cout << "  goal traction          goal evidence / velocity\n";
 	std::cout << "  autonomy health        plan + handoff health\n";
 	std::cout << "  risk profile           consolidated risk score\n";
-	std::cout << "  usage record|list|summary  usage store (record / history / aggregate)\n";
+	std::cout << "  usage record|list|summary|export  usage store (record / history / aggregate / export)\n";
 	sec("Artefact & config");
 	std::cout << "  artifact list|show|search|verify <id>\n";
 	std::cout << "  addon verify           addon lock/state\n";
@@ -1373,7 +1373,8 @@ static const char* signalColor(bool on, const std::string& s) {
 	std::string u = s; for (auto& c : u) if (c >= 'a' && c <= 'z') c = c - 'a' + 'A';
 	if (u.find("GOOD") != std::string::npos || u.find("CLEAR") != std::string::npos || u.find("STRONG") != std::string::npos
 		|| u.find("PASS") != std::string::npos || u.find("IMPROVING") != std::string::npos || u.find("HAS_") != std::string::npos
-		|| u.find("EXACT_ZERO") != std::string::npos || u.find("EQUAL") != std::string::npos) return cG(on);
+		|| u.find("EXACT_ZERO") != std::string::npos || u.find("EQUAL") != std::string::npos || u.find("EXPORTED") != std::string::npos
+		|| u.find("RECORDED") != std::string::npos || u.find("USAGE_SUMMARY") != std::string::npos) return cG(on);
 	if (u.find("AT_RISK") != std::string::npos || u.find("ALERT") != std::string::npos || u.find("HIGH") != std::string::npos
 		|| u.find("DECLINING") != std::string::npos || u.find("EXPIRED") != std::string::npos || u.find("FAIL") != std::string::npos) return cR(on);
 	return cY(on);
@@ -1386,7 +1387,8 @@ static const char* emojiFor(const std::string& s) {
 	std::string u = s; for (auto& c : u) if (c >= 'a' && c <= 'z') c = c - 'a' + 'A';
 	if (u.find("GOOD") != std::string::npos || u.find("CLEAR") != std::string::npos || u.find("STRONG") != std::string::npos
 		|| u.find("PASS") != std::string::npos || u.find("IMPROVING") != std::string::npos || u.find("HAS_") != std::string::npos
-		|| u.find("EXACT_ZERO") != std::string::npos || u.find("EQUAL") != std::string::npos) return "\xE2\x9C\x85"; // ✅
+		|| u.find("EXACT_ZERO") != std::string::npos || u.find("EQUAL") != std::string::npos || u.find("EXPORTED") != std::string::npos
+		|| u.find("RECORDED") != std::string::npos || u.find("USAGE_SUMMARY") != std::string::npos) return "\xE2\x9C\x85"; // ✅
 	if (u.find("AT_RISK") != std::string::npos || u.find("ALERT") != std::string::npos || u.find("HIGH") != std::string::npos
 		|| u.find("DECLINING") != std::string::npos || u.find("EXPIRED") != std::string::npos || u.find("FAIL") != std::string::npos) return "\xE2\x9D\x8C"; // ❌
 	return "\xE2\x9A\xA0"; // ⚠️
@@ -1438,6 +1440,7 @@ static int cmdRiskProfile(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult 
 static int cmdUsageRecord(pos::OutputFormat fmt, const std::vector<std::string>& args, bool colorOn) { std::string line = "usage record"; for (auto& a : args) line += " " + a; pos::CmdResult r = pos::dispatch(pos::bridgePath(), line, g_timeoutMs, &g_cancel); printAnalysis("usage record", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
 static int cmdUsageList(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "usage list", g_timeoutMs, &g_cancel); printAnalysis("usage list", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
 static int cmdUsageSummary(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "usage summary", g_timeoutMs, &g_cancel); printAnalysis("usage summary", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
+static int cmdUsageExport(pos::OutputFormat fmt, const std::vector<std::string>& args, bool colorOn) { std::string line = "usage export"; for (auto& a : args) line += " " + a; pos::CmdResult r = pos::dispatch(pos::bridgePath(), line, g_timeoutMs, &g_cancel); printAnalysis("usage export", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
 int wmain(int argc, wchar_t** wargv) {
 	// F09: cooperative Ctrl+C (never kills an external/user process).
 	std::signal(SIGINT, onSigInt);
@@ -1539,6 +1542,7 @@ int wmain(int argc, wchar_t** wargv) {
 		if (cmd == "usage" && args.size() >= 1 && args[0] == "record") { return cmdUsageRecord(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }
 		if (cmd == "usage" && args.size() >= 1 && args[0] == "list") { return cmdUsageList(fmt, colorOn); }
 		if (cmd == "usage" && args.size() >= 1 && args[0] == "summary") { return cmdUsageSummary(fmt, colorOn); }
+		if (cmd == "usage" && args.size() >= 1 && args[0] == "export") { return cmdUsageExport(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }
 	// --- F66 bridge command --------------------------------------------------------------
 	if (cmd == "bridge" && args.size() >= 1) {
 		if (args[0] == "status") { return cmdBridgeStatus(fmt); }
