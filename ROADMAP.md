@@ -125,4 +125,4 @@
 - [x] 10.7 Mise à jour du threat model / security report.
 - [x] 10.8 Trace de bout en bout (request id).
 - [x] 10.9 Test de régression complet (typecheck + node + cpp).
-- [ ] 10.10 TAG de release v1.0.
+- [x] 10.10 TAG de release v1.0.
