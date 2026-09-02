@@ -208,6 +208,40 @@ try {
 		process.exit(0);
 	}
 
+	// F59 usage list: history of recorded observations from the generic usage store.
+	if (line === "usage list") {
+		const file = path.join(REPO, "artifacts", "usage", "USAGE_REPORT.json");
+		let store = { reports: [] };
+		try { store = JSON.parse(fs.readFileSync(file, "utf8")); } catch {}
+		const reps = Array.isArray(store.reports) ? store.reports : [];
+		const rows = reps.map((r, i) => ({ k: "\u2116 " + (i + 1), v: `${r.job} | ${r.model} | tokens=${r.tokens?.total ?? 0} | cost=${r.cost?.localAI ?? "?"} payg=$${(r.cost?.payg ?? 0)} | ttft=${r.throughput?.ttftMs ?? 0}ms tps=${r.throughput?.tokensPerSec ?? 0}` }));
+		emit({ command: "usage", ok: true, status: "USAGE_LIST", score: 0, grade: "", signal: rows.length ? "HAS_USAGE" : "NO_USAGE", rows, details: [store.updatedAt ? `updatedAt=${store.updatedAt}` : "no store"], message: `usage list: ${rows.length} record(s)`, warnings: [], actions: [], artifacts: ["artifacts/usage/USAGE_REPORT.json"] }, 0);
+		process.exit(0);
+	}
+
+	// F59 usage summary + budget alert: aggregate by model and check PROJECT_OS_DAILY_BUDGET.
+	if (line === "usage summary") {
+		const file = path.join(REPO, "artifacts", "usage", "USAGE_REPORT.json");
+		let store = { reports: [] };
+		try { store = JSON.parse(fs.readFileSync(file, "utf8")); } catch {}
+		const reps = Array.isArray(store.reports) ? store.reports : [];
+		const byModel = {};
+		let totalT = 0, totalPayg = 0;
+		for (const r of reps) {
+			const m = r.model || "unknown";
+			byModel[m] = byModel[m] || { runs: 0, tokens: 0, payg: 0 };
+			byModel[m].runs++; byModel[m].tokens += (r.tokens?.total ?? 0); byModel[m].payg += (r.cost?.payg ?? 0);
+			totalT += (r.tokens?.total ?? 0); totalPayg += (r.cost?.payg ?? 0);
+		}
+		const rows = Object.entries(byModel).map(([m, a]) => ({ k: m, v: `runs=${a.runs} tokens=${a.tokens} payg=$${a.payg}` }));
+		const daily = parseFloat(process.env.PROJECT_OS_DAILY_BUDGET || "0") || 0;
+		const blown = daily > 0 && totalPayg > daily;
+		rows.push({ k: "TOTAL", v: `tokens=${totalT} payg=$${totalPayg}` });
+		if (daily > 0) rows.push({ k: "budget", v: `$` + daily + (blown ? " BLOWN" : " OK") });
+		emit({ command: "usage", ok: !blown, status: blown ? "BUDGET_BLOWN" : "USAGE_SUMMARY", score: 0, grade: "", signal: blown ? "ALERT" : (totalT ? "HAS_USAGE" : "NO_USAGE"), rows, details: blown ? ["daily budget exceeded"] : [], message: `usage summary: models=${rows.length - (daily > 0 ? 2 : 1)} tokens=${totalT} payg=$${totalPayg}${blown ? " BUDGET_BLOWN" : ""}`, warnings: [], actions: [], artifacts: ["artifacts/usage/USAGE_REPORT.json"] }, blown ? 1 : 0);
+		process.exit(0);
+	}
+
 	// F46 report: consolidate real usage reports (tokens/cost/perf) from disk.
 	if (line === "report") {
 		const read = (f) => { try { return JSON.parse(fs.readFileSync(path.join(REPO, f), "utf8")); } catch { return null; } };

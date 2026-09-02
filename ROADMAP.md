@@ -17,9 +17,9 @@
 
 ## Phase 2 — Usage & budget intelligence
 - [x] 2.1 `usage record` → store générique `artifacts/usage/USAGE_REPORT.json` (agrégé + historique).
-- [ ] 2.2 `usage list` (historique des observations).
-- [ ] 2.3 `usage summary` (agrégat par job/modèle).
-- [ ] 2.4 Alerte budget (si `tokens`/`cost` dépasse `PROJECT_OS_DAILY_BUDGET`) → exit non nul.
+- [x] 2.2 `usage list` (historique des observations).
+- [x] 2.3 `usage summary` (agrégat par job/modèle).
+- [x] 2.4 Alerte budget (si `tokens`/`cost` dépasse `PROJECT_OS_DAILY_BUDGET`) → exit non nul.
 - [ ] 2.5 `budget forecast` avec tendance (échéance extrapolée).
 - [ ] 2.6 `insights tokens` par commande/source.
 - [ ] 2.7 Coût par critère de goal.

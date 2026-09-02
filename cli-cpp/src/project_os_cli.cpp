@@ -216,7 +216,7 @@ static int cmdHelp() {
 	std::cout << "  goal traction          goal evidence / velocity\n";
 	std::cout << "  autonomy health        plan + handoff health\n";
 	std::cout << "  risk profile           consolidated risk score\n";
-	std::cout << "  usage record           record token/cost/perf -> usage store\n";
+	std::cout << "  usage record|list|summary  usage store (record / history / aggregate)\n";
 	sec("Artefact & config");
 	std::cout << "  artifact list|show|search|verify <id>\n";
 	std::cout << "  addon verify           addon lock/state\n";
@@ -1436,6 +1436,8 @@ static int cmdAutonomyHealth(pos::OutputFormat fmt, bool colorOn) { pos::CmdResu
 static int cmdHealthCompare(pos::OutputFormat fmt, const std::vector<std::string>& args, bool colorOn) { std::string line = "health compare"; for (auto& a : args) line += " " + a; pos::CmdResult r = pos::dispatch(pos::bridgePath(), line, g_timeoutMs, &g_cancel); printAnalysis("health compare", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
 static int cmdRiskProfile(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "risk profile", g_timeoutMs, &g_cancel); printAnalysis("risk profile", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
 static int cmdUsageRecord(pos::OutputFormat fmt, const std::vector<std::string>& args, bool colorOn) { std::string line = "usage record"; for (auto& a : args) line += " " + a; pos::CmdResult r = pos::dispatch(pos::bridgePath(), line, g_timeoutMs, &g_cancel); printAnalysis("usage record", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
+static int cmdUsageList(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "usage list", g_timeoutMs, &g_cancel); printAnalysis("usage list", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
+static int cmdUsageSummary(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "usage summary", g_timeoutMs, &g_cancel); printAnalysis("usage summary", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
 int wmain(int argc, wchar_t** wargv) {
 	// F09: cooperative Ctrl+C (never kills an external/user process).
 	std::signal(SIGINT, onSigInt);
@@ -1535,6 +1537,8 @@ int wmain(int argc, wchar_t** wargv) {
 		if (cmd == "autonomy" && args.size() >= 1 && args[0] == "health") { return cmdAutonomyHealth(fmt, colorOn); }
 		if (cmd == "risk" && args.size() >= 1 && args[0] == "profile") { return cmdRiskProfile(fmt, colorOn); }
 		if (cmd == "usage" && args.size() >= 1 && args[0] == "record") { return cmdUsageRecord(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }
+		if (cmd == "usage" && args.size() >= 1 && args[0] == "list") { return cmdUsageList(fmt, colorOn); }
+		if (cmd == "usage" && args.size() >= 1 && args[0] == "summary") { return cmdUsageSummary(fmt, colorOn); }
 	// --- F66 bridge command --------------------------------------------------------------
 	if (cmd == "bridge" && args.size() >= 1) {
 		if (args[0] == "status") { return cmdBridgeStatus(fmt); }
