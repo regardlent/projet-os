@@ -28,7 +28,7 @@
 - [x] 2.10 Export du reporting (CSV/JSON) via `usage export`.
 
 ## Phase 3 — Cockpit / dashboard
-- [ ] 3.1 `cockpit` restructuré en tuiles (health, gpu, usage, goal, todo).
+- [x] 3.1 `cockpit` restructuré en tuiles (health, gpu, usage, goal, todo).
 - [ ] 3.2 Refresh live multi-sources.
 - [ ] 3.3 Historisation (snapshot des tuiles).
 - [ ] 3.4 Export du cockpit (JSON/PNG).

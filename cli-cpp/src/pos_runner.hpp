@@ -373,8 +373,8 @@ inline CmdResult parseCmdResult(const std::string& raw) {
 
 // Dispatch a slash line to the bridge. bridgePath = path to project-os-bridge.mjs.
 inline CmdResult dispatch(const std::string& bridgePath, const std::string& slashLine, int timeoutMs = 60000, std::atomic<bool>* cancelOverride = nullptr) {
-	// F07: explicit process runner (CreateProcessW, no shell) — resolves node.exe, passes argv exactly.
-	const std::wstring nodeExe = [&]() {
+	// F07: explicit process runner (CreateProcessW, no shell) — resolves node.exe once, passes argv exactly.
+	static const std::wstring nodeExe = []() {
 		// Resolve explicit override first.
 		wchar_t buf[4096];
 		GetEnvironmentVariableW(L"PROJECT_OS_NODE", buf, 4096);
