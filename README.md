@@ -17,6 +17,11 @@
 
 Une extension VS Code qui branche un **Control Center / Artifact System** autour du **vrai SDK Cline** (`@cline/sdk`). Construite comme chantier greenfield **autonome** (sans dépendance à un autre projet).
 
+<p align="center">
+  <img alt="demo" src="docs/screenshot.png" width="820">
+</p>
+
+
 **✨ Fonctionnalités clés**
 - **Extension VS Code** : Control Center sécurisé (webview CSP + nonce), Artifact System (state machine + versions + review), ProjectDNA, vues Projects/Artifacts.
 - **CLI C++** (`cli-cpp/`) : pilotage par menus ou scriptable via `bin/project-os-bridge.mjs` ; `--format=json|ndjson|tsv`, `--color=auto|always|never`, `--timeout=<ms>`, `--explain/--dry-run`.
