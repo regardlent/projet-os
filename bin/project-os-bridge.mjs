@@ -362,6 +362,49 @@ try {
 		process.exit(0);
 	}
 
+	// F84 git ignore list|apply: recommended .gitignore for the active project (6.4).
+	if (line === "git ignore" || line === "git ignore list" || line === "git ignore apply") {
+		const a = resolveActiveProject();
+		if (!a) { emit({ command: "git", ok: false, status: "NO_ACTIVE_PROJECT", score: 0, grade: "", signal: "NO_PROJECT", rows: [], details: ["no active project"], message: "git ignore: no active project", warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
+		const apply = line === "git ignore apply";
+		const rules = ["node_modules/", "build/", "cmake-build/", "dist/", "*.exe", ".env", ".env.*", "artifacts/usage/", ".project-os-cli/"];
+		const giPath = path.join(a.workspaceRoot, ".gitignore");
+		let existing = "";
+		try { existing = fs.readFileSync(giPath, "utf8"); } catch {}
+		const missing = rules.filter((r) => !existing.split("\n").includes(r));
+		let written = "";
+		if (apply) {
+			try { fs.appendFileSync(giPath, (existing && !existing.endsWith("\n") ? "\n" : "") + missing.join("\n") + (missing.length ? "\n" : "")); written = `added ${missing.length} rule(s)`; } catch { written = "apply failed"; }
+		}
+		emit({ command: "git", ok: true, status: "GIT_IGNORE", signal: apply ? "APPLIED" : "LISTED", score: 0, grade: "", rows: [{ k: "missing", v: missing.join(", ") || "(none)" }, { k: "result", v: written || "dry-run"} ], details: [], message: `git ignore: ${missing.length} missing rule(s) ${apply ? "applied" : ""}`, warnings: [], actions: apply ? ["git status"] : ["git ignore apply"], artifacts: [] }, 0);
+		process.exit(0);
+	}
+
+	// F85 git checkpoint <msg>: commit-all light checkpoint (6.3).
+	if (line.startsWith("git checkpoint ")) {
+		const a = resolveActiveProject();
+		if (!a) { emit({ command: "git", ok: false, status: "NO_ACTIVE_PROJECT", score: 0, grade: "", signal: "NO_PROJECT", rows: [], details: ["no active project"], message: "git checkpoint: no active project", warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
+		let msg = line.slice("git checkpoint ".length).trim();
+		if (!msg) { emit({ command: "git", ok: false, status: "INVALID_USAGE", score: 0, grade: "", signal: "FAIL", rows: [], details: ["usage: git checkpoint <message>"], message: "git checkpoint: message required", warnings: [], actions: [], artifacts: [] }, 2); process.exit(0); }
+		msg = "checkpoint: " + msg;
+		let out = "", st = -1;
+		try { const add = spawnSync("git", ["-C", a.workspaceRoot, "add", "-A"], { encoding: "utf8", timeout: 8000 }); const c = spawnSync("git", ["-C", a.workspaceRoot, "commit", "-m", msg], { encoding: "utf8", timeout: 12000 }); out = ((c.stdout || "") + (c.stderr || "")).trim(); st = c.status; } catch {}
+		const ok = st === 0;
+		emit({ command: "git", ok, status: ok ? "GIT_CHECKPOINT" : "GIT_CHECKPOINT_FAIL", signal: ok ? "PASS" : "FAIL", score: 0, grade: "", rows: [{ k: "message", v: msg }], details: out ? [out.slice(0, 120)] : [], message: `git checkpoint: ${msg} ${ok ? "OK" : "FAIL"}`, warnings: ok ? [] : ["checkpoint failed"], actions: [], artifacts: [] }, ok ? 0 : 1);
+		process.exit(0);
+	}
+
+	// F86 git hook install: install a pre-commit hook on the active project (6.8).
+	if (line === "git hook install") {
+		const a = resolveActiveProject();
+		if (!a) { emit({ command: "git", ok: false, status: "NO_ACTIVE_PROJECT", score: 0, grade: "", signal: "NO_PROJECT", rows: [], details: ["no active project"], message: "git hook: no active project", warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
+		const hook = "#!/bin/sh\n# Project OS pre-commit — whitespace check\nif ! git diff --cached --check >/dev/null 2>&1; then\n  echo \"Project OS: pre-commit whitespace errors — fix before commit\"\n  exit 1\nfi\nexit 0\n";
+		let written = "", ok = false;
+		try { const hdir = path.join(a.workspaceRoot, ".git", "hooks"); fs.mkdirSync(hdir, { recursive: true }); const hp = path.join(hdir, "pre-commit"); fs.writeFileSync(hp, hook); ok = true; written = "installed .git/hooks/pre-commit"; } catch { written = "install failed"; }
+		emit({ command: "git", ok, status: ok ? "GIT_HOOK" : "GIT_HOOK_FAIL", signal: ok ? "PASS" : "FAIL", score: 0, grade: "", rows: [{ k: "hook", v: "pre-commit" }, { k: "result", v: written }], details: [], message: `git hook: ${written}`, warnings: ok ? [] : ["hook install failed"], actions: [], artifacts: [] }, ok ? 0 : 1);
+		process.exit(0);
+	}
+
 	// F46 report: consolidate real usage reports (tokens/cost/perf) from disk.
 	if (line === "report") {
 		const read = (f) => { try { return JSON.parse(fs.readFileSync(path.join(REPO, f), "utf8")); } catch { return null; } };
