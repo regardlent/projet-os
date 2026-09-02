@@ -33,3 +33,11 @@ oversized**, **absence de timeout**, **exit code toujours 0**.
 - Never kill LocalAI / Docker / Windows / user GPU app.
 - No shell when an explicit process API suffices.
 - No cloud. No fake PASS. No invented GPU proof. No exit 0 on error.
+
+## 2026-09 — durcissement ajoutés (CLI C++)
+- `pos::redactSecret` : masque Bearer / `sk-` dans les diagnostics/diff (testé golden).
+- `--trace` emet le `requestId` sur **stderr** (jamais dans stdout machine), pas de secret.
+- `toolClassOf` + `/bridge audit` : classification read/run et verrou `approval-required` par défaut.
+- Sanitizers ASan/UBSan via `-DPOS_SANITIZE=ON` (CI `cpp-sanitize`) ; fuzz/property harness sur `parseJson`.
+- Invariant conservé : **never exit 0 on error** (taxonomie F03), `--dry-run` n'effectue jamais de mutation.
+

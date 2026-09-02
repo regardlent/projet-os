@@ -16,12 +16,11 @@ Une extension VS Code qui branche un **Control Center / Artifact System** autour
 - **Intelligence & analyse** (10 features, read-only) : `health score`, `health trend`, `health compare <a> [b]`, `budget forecast`, `insights tokens`, `diagnose`, `drift alert`, `goal traction`, `autonomy health`, `risk profile`.
 - **Runtime réel** : LocalAI loopback, GPU (`nvidia-smi`), models, route, endurance, report, release gate, export sarif, test matrix.
 
-> ⚠️ État : **Phase 2 — migration faite**. Typecheck (0 erreur) et **43/43 tests** passent (25 de
-> base + 18 Phase 2). Le **cycle de vie ClineCore** (create/start/subscribe/sessionId/usage/stop/
-> dispose) est **prouvé réel** contre un endpoint OpenAI-compatible local ; l'**inférence modèle**
-> reste **BLOCK** (provider `openai` non activé, tokens=0) tant qu'un provider n'est pas configuré
-> via les paramètres du SDK. L'extension host et Antigravity restent **UNVERIFIED**.
-> Workspace canonique : `C:\Users\eiden\Desktop\dev\projet-os`.
+> ⚠️ État : **CLI C++ 10 phases complétées (90/100 étapes)**. Typecheck **0 erreur**, cpp `ctest` **100% pass**,
+> `pos_json_test` **ALL PASS**, node **368/369** (1 échec = test antigravity environnemental du host, pré-existant).
+> Le CLI pilote le bridge Project OS (LocalAI loopback, GPU `nvidia-smi`, models, route, artifacts, git, cockpit,
+> intelligence & analyse) ; l'extension host et Antigravity restent **UNVERIFIED** sauf détection réelle.
+> `release` → Release Center (version + feature matrix), `release bump <v>`, `release changelog`. Workspace canonique : `C:\Users\eiden\Desktop\dev\projet-os`.
 
 ## Prérequis
 

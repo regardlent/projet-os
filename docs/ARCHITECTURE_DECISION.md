@@ -102,3 +102,14 @@ L'adapter n'expose jamais les événements bruts hors normalisation. Les événe
 - Cycle ClineCore (create/start/subscribe/sessionId/usage/stop/dispose) : prouvé réel.
 - Inférence modèle : **BLOCK** (provider non activé) — prochaine étape avant LOCAL_RUNTIME_READY.
 
+## 2026-09 — CLI C++ 10 phases (1-3, 5-9 complètes ; 4 à 6/10 ; 10 à 4/10)
+- **Architecture** : CLI C++ (`wmain`) → `pos::runProcess` (CreateProcessW, argv exact, no shell) → `bin/project-os-bridge.mjs` (protocol v2) → SlashCommandRegistry → domain TS.
+- **UX** : aide catégorisée, cartes `── … ──`, score bar, grade coloré, `--theme`, `--mono`, `--no-emoji`, `--quiet|--verbose`, `cockpit --watch`.
+- **Intelligence & analyse** : `health score|trend|compare`, `budget forecast`, `insights tokens`, `diagnose`, `drift alert|compare`, `goal traction|cost`, `autonomy health`, `risk profile` (read-only, dégradation propre).
+- **Modèles** : routeur adaptatif, `model qualify|compare|flash|policy|quota|profiles|offload|cache`.
+- **Git** : `git status|log|commit|diff|branch|worktree|stash|ignore|checkpoint|hook|drift|pr`.
+- **Artefacts** : `artifact publish|versions|review|provenance|share|verify` (schema), MCP tools `artifact_verify|artifact_search`, `/bridge config|audit`.
+- **Robustesse** : helpers `prefer` (précédence), `redactSecret` (redaction), `budgetVerdict` (golden budget), fuzz/property, soak, `--trace` requestId, sanitizers CI (`POS_SANITIZE`).
+- **Décision verrouillée** : le CLI **délègue** toute logique métier au bridge ; il ne réimplémente jamais Project OS.
+
+
