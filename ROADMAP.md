@@ -33,11 +33,11 @@
 - [x] 3.3 Historisation (snapshot des tuiles).
 - [x] 3.4 Export du cockpit (JSON/PNG).
 - [ ] 3.5 Navigation clavier (flèches/onglets).
-- [ ] 3.6 Minimum-width + repli si terminal étroit.
+- [x] 3.6 Minimum-width + repli si terminal étroit.
 - [ ] 3.7 Accessibilité (monochrome, gros contraste).
 - [ ] 3.8 Log en bas d'écran.
 - [ ] 3.9 Raccourci global `--cockpit`.
-- [ ] 3.10 Meilleures pratiques de rendu VT (pas de débordement).
+- [x] 3.10 Meilleures pratiques de rendu VT (pas de débordement).
 
 ## Phase 4 — CI & packaging
 - [ ] 4.1 `.github/workflows/ci.yml` (typecheck + ctest).

@@ -279,6 +279,8 @@ static int cmdCompletion(const std::string& shell) {
 
 // --- F50 cockpit: inline VT dashboard (no external dep). Read-only, live refresh. ----
 static std::string readGpuLine(); // F38 helper (defined below)
+// F66 forward decl (defined later): terminal-width line fitting.
+static std::string fitLine(const std::string& s);
 static int cmdCockpit(pos::OutputFormat fmt, const std::vector<std::string>& args, bool colorOn) {
 	int watchSec = 0;
 	for (auto& a : args) if (a.rfind("--watch=", 0) == 0) watchSec = std::max(0, std::atoi(a.substr(8).c_str()));
@@ -300,11 +302,11 @@ static int cmdCockpit(pos::OutputFormat fmt, const std::vector<std::string>& arg
 			return 0;
 		}
 		if (live) std::cout << "\x1b[2J\x1b[H"; // clear screen
-		std::cout << "\xE2\x94\x80\xE2\x94\x80 PROJECT OS COCKPIT \xE2\x94\x80\xE2\x94\x80  " << (live ? "live (Ctrl+C to stop)" : "") << "\n";
-		std::cout << "  [Status]  active=" << (st.activeSlug.empty() ? "(none)" : st.activeSlug) << "  goal=" << st.goalStatus << " (" << st.goalProgress << "%)  todo=" << st.todoDone << "/" << st.todoCount << "\n";
-		std::cout << "  [Health]  " << hs.score << "/100 " << (hs.grade.empty() ? "" : "[" + hs.grade + "] ") << "(" << hs.signal << ")  " << hs.message << "\n";
-		std::cout << "  [Usage]   " << (usTotal.empty() ? "(no usage)" : usTotal) << "\n";
-		std::cout << "  [GPU]     " << (gpuLine.empty() ? "(nvidia-smi unavailable)" : gpuLine) << "\n";
+		std::cout << fitLine("\xE2\x94\x80\xE2\x94\x80 PROJECT OS COCKPIT \xE2\x94\x80\xE2\x94\x80  " + std::string(live ? "live (Ctrl+C to stop)" : "")) << "\n";
+		std::cout << fitLine("  [Status]  active=" + (st.activeSlug.empty() ? "(none)" : st.activeSlug) + "  goal=" + st.goalStatus + " (" + std::to_string(st.goalProgress) + "%)  todo=" + std::to_string(st.todoDone) + "/" + std::to_string(st.todoCount)) << "\n";
+		std::cout << fitLine("  [Health]  " + std::to_string(hs.score) + "/100 " + (hs.grade.empty() ? "" : "[" + hs.grade + "] ") + "(" + hs.signal + ")  " + hs.message) << "\n";
+		std::cout << fitLine("  [Usage]   " + (usTotal.empty() ? "(no usage)" : usTotal)) << "\n";
+		std::cout << fitLine("  [GPU]     " + (gpuLine.empty() ? "(nvidia-smi unavailable)" : gpuLine)) << "\n";
 		if (live) {
 			// F64 historisation: append a frame (JSONL) to artifacts/usage/cockpit-history.jsonl.
 			const auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
@@ -805,6 +807,17 @@ static int cmdAddonVerify(pos::OutputFormat fmt) {
 // --- F28 config explain / list ----------------------------------------------
 // Compact card header: ── <title> ── (UTF-8; renders correctly on a console with CP65001).
 static void card(const std::string& t) { if (g_quiet.load()) return; std::cout << "\xE2\x94\x80\xE2\x94\x80 " << t << " \xE2\x94\x80\xE2\x94\x80 \n"; }
+
+// F66 terminal-width helpers: adapt/truncate lines to avoid wrapping/overflow (small terminal, console only).
+static int termCols() { CONSOLE_SCREEN_BUFFER_INFO cbi; if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cbi)) return cbi.dwSize.X; return 80; }
+static std::string fitLine(const std::string& s) {
+	HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+	CONSOLE_SCREEN_BUFFER_INFO cbi;
+	if (!h || h == INVALID_HANDLE_VALUE || !GetConsoleScreenBufferInfo(h, &cbi)) return s; // not a console: no truncation
+	const int w = cbi.dwSize.X - 1;
+	if (w <= 0 || (int)s.size() <= w) return s;
+	return s.substr(0, (size_t)w) + "\xE2\x80\xA6";
+}
 
 static int cmdConfig(pos::OutputFormat fmt) {
 	pos::CmdResult r = pos::dispatch(pos::bridgePath(), "config list", g_timeoutMs, &g_cancel);
@@ -1482,9 +1495,9 @@ static int printAnalysis(const std::string& title, pos::OutputFormat fmt, pos::C
 				<< (r.grade.empty() ? "" : "  " + std::string(gradeColor(colorOn, r.grade)) + "[" + r.grade + "]" + std::string(cX(colorOn))) << "\n";
 		}
 		size_t w = 0; for (auto& kv : r.analysisKv) w = std::max(w, kv.first.size());
-		for (auto& kv : r.analysisKv) std::cout << "  " << std::string(w - kv.first.size(), ' ') << kv.first << " : " << kv.second << "\n";
-		for (auto& d : r.details) std::cout << "    \xC2\xB7 " << d << "\n";
-		if (g_verbose.load()) std::cout << "  [meta] ok=" << (r.ok ? "true" : "false") << " status=" << r.status << " signal=" << sig << "\n";
+		for (auto& kv : r.analysisKv) std::cout << fitLine("  " + std::string(w - kv.first.size(), ' ') + kv.first + " : " + kv.second) << "\n";
+		for (auto& d : r.details) std::cout << fitLine("    \xC2\xB7 " + d) << "\n";
+		if (g_verbose.load()) std::cout << fitLine("  [meta] ok=" + std::string(r.ok ? "true" : "false") + " status=" + r.status + " signal=" + sig) << "\n";
 		if (!g_quiet.load()) std::cout << "\n";
 	}
 	return 0;
