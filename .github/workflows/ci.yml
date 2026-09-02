@@ -50,3 +50,16 @@ jobs:
           cmake -S cli-cpp -B cli-cpp/cmake-build -G "MinGW Makefiles"
           cmake --build cli-cpp/cmake-build
           ctest --test-dir cli-cpp/cmake-build --output-on-failure
+
+  # C++ sanitizers (ASan/UBSan) — Linux g++ for reliable sanitizer support.
+  cpp-sanitize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install g++ + CMake
+        run: sudo apt-get update && sudo apt-get install -y g++ cmake
+      - name: Configure (sanitize) + build + test
+        run: |
+          cmake -S cli-cpp -B cli-cpp/cmake-build-san -DPOS_SANITIZE=ON
+          cmake --build cli-cpp/cmake-build-san
+          ctest --test-dir cli-cpp/cmake-build-san --output-on-failure

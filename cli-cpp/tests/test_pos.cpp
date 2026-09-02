@@ -179,6 +179,32 @@ static void testProcess() {
 	pos::ProcessResult fr = pos::runProcess(fast);
 	CHECK(fr.timedOut == false);
 	CHECK(fr.exitCode == 0);
+	// Non-zero exit is reported as the actual code.
+	pos::ProcessSpec fail;
+	fail.executable = L"node";
+	fail.args = { L"-e", L"process.exit(7)" };
+	fail.timeoutMs = 5000;
+	fail.captureStdout = true;
+	fail.captureStderr = true;
+	pos::ProcessResult f = pos::runProcess(fail);
+	CHECK(f.timedOut == false && f.exitCode == 7);
+	// Missing/unresolvable executable => started=false (no crash, honest signal).
+	pos::ProcessSpec missing;
+	missing.executable = L"no_such_exe_xyz";
+	missing.timeoutMs = 2000;
+	missing.captureStdout = true;
+	pos::ProcessResult m = pos::runProcess(missing);
+	CHECK(m.started == false);
+	// Bounded output: a large stream completes without hanging.
+	pos::ProcessSpec big;
+	big.executable = L"node";
+	big.args = { L"-e", L"let s=''; for(let i=0;i<200000;i++){s+='x';} console.log(s);" };
+	big.timeoutMs = 8000;
+	big.captureStdout = true;
+	big.captureStderr = true;
+	pos::ProcessResult bg = pos::runProcess(big);
+	CHECK(bg.timedOut == false);
+	CHECK(bg.out.size() == 200000 + 1); // 200k chars + newline
 }
 
 // F10: bridge protocol v2 schema validation.

@@ -4,6 +4,13 @@ project(project_os_cli LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# --- Phase 8: optional sanitizers (ASan/UBSan) for CI hardening ---------------
+option(POS_SANITIZE "Build with AddressSanitizer + UndefinedBehaviorSanitizer" OFF)
+if(POS_SANITIZE)
+  add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
+  add_link_options(-fsanitize=address,undefined)
+endif()
+
 add_executable(project-os-cli src/project_os_cli.cpp)
 # F06: wmain requires the MinGW unicode entry-point. -municode links the wmain CRT.
 target_compile_options(project-os-cli PRIVATE -municode)
