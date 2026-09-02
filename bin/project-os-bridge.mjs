@@ -405,6 +405,41 @@ try {
 		process.exit(0);
 	}
 
+	// F87 git drift: divergence vs upstream + uncommitted count (6.9).
+	if (line === "git drift") {
+		const a = resolveActiveProject();
+		if (!a) { emit({ command: "git", ok: false, status: "NO_ACTIVE_PROJECT", score: 0, grade: "", signal: "NO_PROJECT", rows: [], details: ["no active project"], message: "git drift: no active project", warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
+		let ahead = 0, behind = 0, dirty = -1, branch = "?", track = "";
+		try {
+			const st = spawnSync("git", ["-C", a.workspaceRoot, "status", "--porcelain", "-b"], { encoding: "utf8", timeout: 8000 });
+			const lines = (st.stdout || "").split("\n").filter(Boolean);
+			const bm = lines[0]?.match(/^## ([^.\s][^\s]*)(?:\.\.\.([^\s]+))?(?: \[ahead (\d+)(?:, behind (\d+))?\])?/); branch = bm ? bm[1] : "?";
+			if (bm && bm[3]) ahead = parseInt(bm[3], 10) || 0;
+			if (bm && bm[4]) behind = parseInt(bm[4], 10) || 0;
+			dirty = lines.filter((l) => /^\s*[MADRCU?]/.test(l)).length;
+			const up = spawnSync("git", ["-C", a.workspaceRoot, "rev-parse", "--abbrev-ref", "HEAD"], { encoding: "utf8", timeout: 8000 });
+			up.stdout && (branch = up.stdout.trim());
+		} catch {}
+		emit({ command: "git", ok: true, status: "GIT_DRIFT", signal: (ahead || behind || dirty > 0) ? "DRIFT" : "IN_SYNC", score: 0, grade: "", rows: [{ k: "branch", v: branch }, { k: "ahead", v: String(ahead) }, { k: "behind", v: String(behind) }, { k: "dirty", v: dirty < 0 ? "n/a" : String(dirty) }], details: [], message: `git drift: ahead=${ahead} behind=${behind} dirty=${dirty}`, warnings: [], actions: [], artifacts: [] }, 0);
+		process.exit(0);
+	}
+
+	// F88 git pr [base]: produce a PR title/body template from recent commits (6.10).
+	if (line === "git pr" || line.startsWith("git pr ")) {
+		const a = resolveActiveProject();
+		if (!a) { emit({ command: "git", ok: false, status: "NO_ACTIVE_PROJECT", score: 0, grade: "", signal: "NO_PROJECT", rows: [], details: ["no active project"], message: "git pr: no active project", warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
+		const base = line.slice("git pr".length).trim() || "origin/main";
+		let commits = [], branch = "?", st = -1;
+		try {
+			const b = spawnSync("git", ["-C", a.workspaceRoot, "rev-parse", "--abbrev-ref", "HEAD"], { encoding: "utf8", timeout: 8000 }); branch = (b.stdout || "").trim() || "?";
+			const c = spawnSync("git", ["-C", a.workspaceRoot, "log", "--oneline", base + "..HEAD"], { encoding: "utf8", timeout: 8000 }); commits = (c.stdout || "").split("\n").filter(Boolean); st = c.status;
+		} catch {}
+		const title = commits.length ? commits[commits.length - 1].replace(/^[0-9a-f]{7,}\s*/, "") : "Untitled change";
+		const body = commits.map((x) => "- " + x.replace(/^[0-9a-f]{7,}\s*/, "")).join("\n") || "(no commits)";
+		emit({ command: "git", ok: true, status: "GIT_PR", signal: commits.length ? "PR_READY" : "NO_COMMITS", score: 0, grade: "", rows: [{ k: "branch", v: branch }, { k: "base", v: base }, { k: "title", v: title }, { k: "body", v: body }], details: [], message: `git pr: ${commits.length} commit(s) onto ${base}`, warnings: [], actions: [], artifacts: [] }, 0);
+		process.exit(0);
+	}
+
 	// F46 report: consolidate real usage reports (tokens/cost/perf) from disk.
 	if (line === "report") {
 		const read = (f) => { try { return JSON.parse(fs.readFileSync(path.join(REPO, f), "utf8")); } catch { return null; } };

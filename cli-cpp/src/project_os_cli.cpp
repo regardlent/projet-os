@@ -194,7 +194,7 @@ static int cmdHelp() {
 	std::cout << "  capabilities           negotiation with the bridge\n";
 	std::cout << "  completion <shell>     shell completions (powershell|bash|zsh)\n";
 	std::cout << "  exitcodes              exit-code taxonomy\n";
-	std::cout << "  git status|log [N]|commit <msg>|diff|branch|worktree|stash|ignore|checkpoint|hook  git helpers for the active project\n";
+	std::cout << "  git status|log|commit|diff|branch|worktree|stash|ignore|checkpoint|hook|drift|pr  git helpers for the active project\n";
 	std::cout << "  health [--watch]       periodic read-only health\n";
 	std::cout << "  cockpit [--watch=<s>]|history|export  live dashboard / frames / export\n";
 	sec("Projet");
@@ -1364,6 +1364,8 @@ static int cmdGitStash(pos::OutputFormat fmt, const std::vector<std::string>& ar
 static int cmdGitIgnore(pos::OutputFormat fmt, const std::vector<std::string>& args, bool colorOn) { std::string line = "git ignore"; for (auto& a : args) line += " " + a; pos::CmdResult r = pos::dispatch(pos::bridgePath(), line, g_timeoutMs, &g_cancel); printAnalysis("git ignore", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
 static int cmdGitCheckpoint(pos::OutputFormat fmt, const std::vector<std::string>& args, bool colorOn) { std::string line = "git checkpoint"; for (auto& a : args) line += " " + a; pos::CmdResult r = pos::dispatch(pos::bridgePath(), line, g_timeoutMs, &g_cancel); printAnalysis("git checkpoint", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
 static int cmdGitHook(pos::OutputFormat fmt, const std::vector<std::string>& args, bool colorOn) { std::string line = "git hook"; for (auto& a : args) line += " " + a; pos::CmdResult r = pos::dispatch(pos::bridgePath(), line, g_timeoutMs, &g_cancel); printAnalysis("git hook", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
+static int cmdGitDrift(pos::OutputFormat fmt, const std::vector<std::string>& args, bool colorOn) { std::string line = "git drift"; for (auto& a : args) line += " " + a; pos::CmdResult r = pos::dispatch(pos::bridgePath(), line, g_timeoutMs, &g_cancel); printAnalysis("git drift", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
+static int cmdGitPr(pos::OutputFormat fmt, const std::vector<std::string>& args, bool colorOn) { std::string line = "git pr"; for (auto& a : args) line += " " + a; pos::CmdResult r = pos::dispatch(pos::bridgePath(), line, g_timeoutMs, &g_cancel); printAnalysis("git pr", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
 
 // --- F36 model smoke <id> -----------------------------------------------------
 static int cmdModelSmoke(const std::string& id, const std::string& reasoningMode, pos::OutputFormat fmt) {
@@ -1727,6 +1729,8 @@ int wmain(int argc, wchar_t** wargv) {
 		if (cmd == "git" && args.size() >= 1 && args[0] == "ignore") { return cmdGitIgnore(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }
 		if (cmd == "git" && args.size() >= 1 && args[0] == "checkpoint") { return cmdGitCheckpoint(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }
 		if (cmd == "git" && args.size() >= 1 && args[0] == "hook") { return cmdGitHook(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }
+		if (cmd == "git" && args.size() >= 1 && args[0] == "drift") { return cmdGitDrift(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }
+		if (cmd == "git" && args.size() >= 1 && args[0] == "pr") { return cmdGitPr(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }
 		if (cmd == "model" && args.size() >= 2 && args[0] == "show") { return cmdModelShow(args[1], fmt); }
 		if (cmd == "model" && args.size() >= 2 && args[0] == "stream") { return cmdModelStream(args[1], fmt); }
 		if (cmd == "model" && args.size() >= 2 && args[0] == "smoke") { std::string rmode = "hide"; for (auto& a : args) if (a.rfind("--reasoning=", 0) == 0) rmode = a.substr(12); return cmdModelSmoke(args[1], rmode, fmt); }

@@ -72,6 +72,8 @@
 - [x] 6.6 Commit helper (message conventionnel).
 - [x] 6.7 `git diff` / `stash` helpers.
 - [x] 6.8 hook pre-commit.
+- [x] 6.9 drift vs git.
+- [x] 6.10 PR helper.
 - [ ] 6.7 Drift vs git (baseline de branches).
 - [ ] 6.8 Stash/restore.
 - [ ] 6.9 PR helper (titre/description auto).
