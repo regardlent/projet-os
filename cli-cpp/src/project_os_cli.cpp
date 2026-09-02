@@ -55,6 +55,9 @@ inline std::atomic<long long> g_timeoutMs(60000);
 inline std::atomic<bool> g_emoji(true);
 // F56: color theme. 1 = dark (bright ANSI), 0 = light (standard ANSI). --theme=light|dark.
 inline std::atomic<int> g_theme(1);
+// F57: output verbosity. --quiet suppresses card headers; --verbose adds detail.
+inline std::atomic<bool> g_quiet(false);
+inline std::atomic<bool> g_verbose(false);
 
 // --- Helpers -------------------------------------------------------------
 static int readChoice(int max) {
@@ -237,7 +240,7 @@ static int cmdHelp() {
 	std::cout << "  schema machine         machine-consumer contract\n";
 	sec("Bridge MCP");
 	std::cout << "  bridge status|start|stop|restart|health|tools|test|tunnel\n";
-	std::cout << "\n  Global flags: --format=json|ndjson|tsv  --color=auto|always|never  --theme=light|dark  --timeout=<ms>  --no-emoji  --explain/--dry-run\n";
+	std::cout << "\n  Global flags: --format=json|ndjson|tsv  --color=auto|always|never  --theme=light|dark  --timeout=<ms>  --no-emoji  --quiet|--verbose  --explain/--dry-run\n";
 	return 0;
 }
 
@@ -711,7 +714,7 @@ static int cmdAddonVerify(pos::OutputFormat fmt) {
 
 // --- F28 config explain / list ----------------------------------------------
 // Compact card header: ── <title> ── (UTF-8; renders correctly on a console with CP65001).
-static void card(const std::string& t) { std::cout << "\xE2\x94\x80\xE2\x94\x80 " << t << " \xE2\x94\x80\xE2\x94\x80 \n"; }
+static void card(const std::string& t) { if (g_quiet.load()) return; std::cout << "\xE2\x94\x80\xE2\x94\x80 " << t << " \xE2\x94\x80\xE2\x94\x80 \n"; }
 
 static int cmdConfig(pos::OutputFormat fmt) {
 	pos::CmdResult r = pos::dispatch(pos::bridgePath(), "config list", g_timeoutMs, &g_cancel);
@@ -1377,9 +1380,11 @@ static int printAnalysis(const std::string& title, pos::OutputFormat fmt, pos::C
 	} else if (fmt == pos::OutputFormat::TsV) {
 		for (auto& kv : r.analysisKv) pos::emitScalar(pos::OutputFormat::TsV, kv.first, kv.second);
 	} else {
-		const char* e = emojiFor(sig);
-		std::cout << cB(colorOn) << "\xE2\x94\x80\xE2\x94\x80 " << title << " " << signalColor(colorOn, sig) << e << (e[0] ? " " : "") << sig << cX(colorOn)
-			<< cB(colorOn) << " \xE2\x94\x80\xE2\x94\x80" << cX(colorOn) << "\n";
+		if (!g_quiet.load()) {
+			const char* e = emojiFor(sig);
+			std::cout << cB(colorOn) << "\xE2\x94\x80\xE2\x94\x80 " << title << " " << signalColor(colorOn, sig) << e << (e[0] ? " " : "") << sig << cX(colorOn)
+				<< cB(colorOn) << " \xE2\x94\x80\xE2\x94\x80" << cX(colorOn) << "\n";
+		}
 		if (r.score > 0) {
 			std::cout << "  score    : " << scoreBar(r.score) << " " << r.score << "/100"
 				<< (r.grade.empty() ? "" : "  " + std::string(gradeColor(colorOn, r.grade)) + "[" + r.grade + "]" + std::string(cX(colorOn))) << "\n";
@@ -1387,7 +1392,8 @@ static int printAnalysis(const std::string& title, pos::OutputFormat fmt, pos::C
 		size_t w = 0; for (auto& kv : r.analysisKv) w = std::max(w, kv.first.size());
 		for (auto& kv : r.analysisKv) std::cout << "  " << std::string(w - kv.first.size(), ' ') << kv.first << " : " << kv.second << "\n";
 		for (auto& d : r.details) std::cout << "    \xC2\xB7 " << d << "\n";
-		std::cout << "\n";
+		if (g_verbose.load()) std::cout << "  [meta] ok=" << (r.ok ? "true" : "false") << " status=" << r.status << " signal=" << sig << "\n";
+		if (!g_quiet.load()) std::cout << "\n";
 	}
 	return 0;
 }
@@ -1444,6 +1450,8 @@ int wmain(int argc, wchar_t** wargv) {
 			if (a == "--explain" || a == "--dry-run") { explain = true; continue; }
 			if (a == "--no-emoji") { g_emoji.store(false); continue; }
 			if (a == "--emoji") { g_emoji.store(true); continue; }
+			if (a == "--quiet") { g_quiet.store(true); continue; }
+			if (a == "--verbose") { g_verbose.store(true); continue; }
 			break; // first non-global-flag token = command
 		}
 		for (size_t i = start + 1; i < (size_t)argc; ++i) {
@@ -1455,6 +1463,8 @@ int wmain(int argc, wchar_t** wargv) {
 			if (a == "--explain" || a == "--dry-run") { explain = true; continue; }
 			if (a == "--no-emoji") { g_emoji.store(false); continue; }
 			if (a == "--emoji") { g_emoji.store(true); continue; }
+			if (a == "--quiet") { g_quiet.store(true); continue; }
+			if (a == "--verbose") { g_verbose.store(true); continue; }
 			args.push_back(pos::sanitizeTerminalText(a));
 		}
 		color = pos::applyNoColor(wrapColor, noColorEnv);
