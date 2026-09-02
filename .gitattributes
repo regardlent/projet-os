@@ -1,0 +1,27 @@
+# .gitattributes — contrôle le comportement de Git / exports.
+* text=auto
+
+# Le binaire CLI n'est pas un diff texte ; les zip/packages sont "binary".
+*.exe binary
+*.zip binary
+*.png binary
+*.jpg binary
+*.gif binary
+*.pdf binary
+
+# Normalisation de fin de ligne Windows.
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+*.mjs text eol=lf
+*.cpp text eol=lf
+*.hpp text eol=lf
+*.md text eol=lf
+
+# export-ignore : ne pas inclure ces chemins dans les archives de release (zip).
+/artifacts/export-ignore
+cli-cpp/cmake-build/ export-ignore
+cli-cpp/build/ export-ignore
+node_modules/ export-ignore
+dist/ export-ignore
+/scratch/ export-ignore
+/.vscode/ export-ignore

@@ -141,11 +141,19 @@ mode scriptable via la passerelle Node (`bin/project-os-bridge.mjs`). Voir `cli-
 
 ## Documentation
 
+- [Guide « rendre le dépôt populaire »](docs/GITHUB_POPULARITY.md) — SEO, topics, community health files, workflow d'abonnements.
 - [Feuille de route 50×50 (2500 étapes)](docs/CLI_ROADMAP_50X50.md) — plan de la prochaine génération du CLI.
 - **`cli-cpp/README.md`** — CLI C++ : build (CMake), menu interactif, mode scriptable, codes de sortie, Intelligence & analyse.
 - **`docs/PROJECT_OS_CLI_V3_REFERENCE.md`** — référence CLI v3 (architecture, 50 features + IA01-IA10, limitations honnêtes).
 - **`docs/SLASH_COMMANDS.md`** — commandes slash `/goal`, `/create`, `/addon`, `/autonomy`, `/docs`.
 - **`artifacts/cli-v3/`** — pack d'évidence CLI (feature matrix, release gate/report, security, soak, research).
+
+## Contribuer
+
+Merci de lire [CONTRIBUTING.md](.github/CONTRIBUTING.md), [CODE_OF_CONDUCT.md](.github/CODE_OF_CONDUCT.md)
+et [SECURITY.md](.github/SECURITY.md) avant d'ouvrir une issue ou une PR (templates prêts dans `.github/`).
+Commits conventionnels (`feat:` / `fix:` / `docs:`…), validation par `npm run typecheck`, `npm test`,
+`ctest` et `soak`.
 
 ## Exemples d'utilisation (CLI)
 ```bash
