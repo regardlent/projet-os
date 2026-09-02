@@ -65,11 +65,12 @@
 
 ## Phase 6 — Git & workflows
 - [x] 6.1 `git status` intégré (branche + dirty + commit).
-- [ ] 6.2 `git worktree` helper.
+- [x] 6.2 `git worktree` helper.
 - [ ] 6.3 Checkpoints.
 - [ ] 6.4 `.gitignore`/`.gitattributes` de projet.
-- [ ] 6.5 `git branch` / `git switch` helpers.
+- [x] 6.5 `git branch` / `git switch` helpers.
 - [x] 6.6 Commit helper (message conventionnel).
+- [x] 6.7 `git diff` / `stash` helpers.
 - [ ] 6.7 Drift vs git (baseline de branches).
 - [ ] 6.8 Stash/restore.
 - [ ] 6.9 PR helper (titre/description auto).

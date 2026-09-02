@@ -326,6 +326,42 @@ try {
 		process.exit(0);
 	}
 
+	// F80 git diff [path]: read-only working-tree diff summary (6.7).
+	if (line === "git diff" || line.startsWith("git diff ")) {
+		const a = resolveActiveProject();
+		if (!a) { emit({ command: "git", ok: false, status: "NO_ACTIVE_PROJECT", score: 0, grade: "", signal: "NO_PROJECT", rows: [], details: ["no active project"], message: "git diff: no active project", warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
+		const rest = line.slice("git diff".length).trim();
+		const args = rest ? ["-C", a.workspaceRoot, "diff", "--stat"] : ["-C", a.workspaceRoot, "diff", "--stat", "HEAD"];
+		let out = "", st = -1;
+		try { const o = spawnSync("git", args, { encoding: "utf8", timeout: 8000 }); out = (o.stdout || "").trim(); st = o.status; } catch {}
+		const lines = out.split("\n").filter(Boolean);
+		const stat = lines.length ? lines : ["(no diff)"];
+		emit({ command: "git", ok: true, status: "GIT_DIFF", signal: stat.length > 1 ? "DIRTY" : "CLEAN", score: 0, grade: "", rows: [{ k: "diff", v: stat.join(" | ") }], details: [], message: `git diff: ${stat.length - 1} changed file(s)`, warnings: [], actions: [], artifacts: [] }, 0);
+		process.exit(0);
+	}
+
+	// F82 git branch [name]: read-only branch list / current (6.5).
+	if (line === "git branch" || /^git branch .+/.test(line)) {
+		const a = resolveActiveProject();
+		if (!a) { emit({ command: "git", ok: false, status: "NO_ACTIVE_PROJECT", score: 0, grade: "", signal: "NO_PROJECT", rows: [], details: ["no active project"], message: "git branch: no active project", warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
+		let out = "", st = -1;
+		try { const o = spawnSync("git", ["-C", a.workspaceRoot, "branch", "--list"], { encoding: "utf8", timeout: 8000 }); out = (o.stdout || "").trim(); st = o.status; } catch {}
+		const branches = out.split("\n").filter(Boolean);
+		emit({ command: "git", ok: true, status: "GIT_BRANCH", signal: branches.length ? "HAS_BRANCHES" : "NO_BRANCHES", score: 0, grade: "", rows: branches.map((b) => ({ k: b.startsWith("*") ? "*" : " ", v: b.replace(/^\* /, "") })), details: [], message: `git branch: ${branches.length} branch(es)`, warnings: [], actions: [], artifacts: [] }, 0);
+		process.exit(0);
+	}
+
+	// F83 git worktree list: read-only worktrees (6.2).
+	if (line === "git worktree" || line === "git worktree list") {
+		const a = resolveActiveProject();
+		if (!a) { emit({ command: "git", ok: false, status: "NO_ACTIVE_PROJECT", score: 0, grade: "", signal: "NO_PROJECT", rows: [], details: ["no active project"], message: "git worktree: no active project", warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
+		let out = "", st = -1;
+		try { const o = spawnSync("git", ["-C", a.workspaceRoot, "worktree", "list"], { encoding: "utf8", timeout: 8000 }); out = (o.stdout || "").trim(); st = o.status; } catch {}
+		const lines = out.split("\n").filter(Boolean);
+		emit({ command: "git", ok: true, status: "GIT_WORKTREE", signal: lines.length ? "HAS_WORKTREES" : "NO_WORKTREES", score: 0, grade: "", rows: lines.map((l, i) => ({ k: "#" + (i + 1), v: l })), details: [], message: `git worktree: ${lines.length} worktree(s)`, warnings: [], actions: [], artifacts: [] }, 0);
+		process.exit(0);
+	}
+
 	// F46 report: consolidate real usage reports (tokens/cost/perf) from disk.
 	if (line === "report") {
 		const read = (f) => { try { return JSON.parse(fs.readFileSync(path.join(REPO, f), "utf8")); } catch { return null; } };
