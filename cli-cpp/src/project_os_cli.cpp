@@ -230,7 +230,7 @@ static int cmdHelp() {
 	sec("Modèle & GPU");
 	std::cout << "  preflight              aggregate bridge/LocalAI/GPU check\n";
 	std::cout << "  models                 LocalAI model inventory\n";
-	std::cout << "  model show|smoke|benchmark|qualify|compare|flash|policy|quota|profiles|offload <id>\n";
+	std::cout << "  model show|smoke|benchmark|qualify|compare|flash|policy|quota|profiles|offload|cache <id>\n";
 	std::cout << "  route <task-class> [--alt]  adaptive model selection (ranked alternatives)\n";
 	std::cout << "  gpu|gpu watch|gpu proof  real nvidia-smi\n";
 	std::cout << "  benchmark              model performance testing\n";
@@ -1350,6 +1350,8 @@ static int cmdModelPolicy(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult 
 static int cmdModelQuota(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "model quota", g_timeoutMs, &g_cancel); printAnalysis("model quota", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
 static int cmdModelProfiles(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "model profiles", g_timeoutMs, &g_cancel); printAnalysis("model profiles", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
 static int cmdModelOffload(pos::OutputFormat fmt, const std::vector<std::string>& args, bool colorOn) { std::string line = "model offload"; for (auto& a : args) line += " " + a; pos::CmdResult r = pos::dispatch(pos::bridgePath(), line, g_timeoutMs, &g_cancel); printAnalysis("model offload", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
+// F76 model cache <id>|flush: semantic cache (5.2).
+static int cmdModelCache(pos::OutputFormat fmt, const std::vector<std::string>& args, bool colorOn) { std::string line = "model cache"; for (auto& a : args) line += " " + a; pos::CmdResult r = pos::dispatch(pos::bridgePath(), line, g_timeoutMs, &g_cancel); printAnalysis("model cache", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
 
 // --- F36 model smoke <id> -----------------------------------------------------
 static int cmdModelSmoke(const std::string& id, const std::string& reasoningMode, pos::OutputFormat fmt) {
@@ -1702,6 +1704,7 @@ int wmain(int argc, wchar_t** wargv) {
 		if (cmd == "model" && args.size() >= 1 && args[0] == "quota") { return cmdModelQuota(fmt, colorOn); }
 		if (cmd == "model" && args.size() >= 1 && args[0] == "profiles") { return cmdModelProfiles(fmt, colorOn); }
 		if (cmd == "model" && args.size() >= 2 && args[0] == "offload") { return cmdModelOffload(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }
+		if (cmd == "model" && args.size() >= 2 && args[0] == "cache") { return cmdModelCache(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }
 		if (cmd == "model" && args.size() >= 2 && args[0] == "show") { return cmdModelShow(args[1], fmt); }
 		if (cmd == "model" && args.size() >= 2 && args[0] == "stream") { return cmdModelStream(args[1], fmt); }
 		if (cmd == "model" && args.size() >= 2 && args[0] == "smoke") { std::string rmode = "hide"; for (auto& a : args) if (a.rfind("--reasoning=", 0) == 0) rmode = a.substr(12); return cmdModelSmoke(args[1], rmode, fmt); }

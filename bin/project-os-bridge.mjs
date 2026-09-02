@@ -879,6 +879,48 @@ try {
 		process.exit(0);
 	}
 
+	// F76 model cache <id> [flush]: semantic cache for a known prompt (5.2).
+	if (line.startsWith("model cache ")) {
+		const rest = line.slice("model cache ".length).trim();
+		const parts = rest.split(/\s+/);
+		const id = parts[0];
+		const cacheFile = path.join(REPO, "artifacts", "usage", "model-cache.json");
+		const prompt = "Reply with the number 7 only. Do not add text.";
+		if (id === "flush") {
+			fs.mkdirSync(path.dirname(cacheFile), { recursive: true });
+			fs.writeFileSync(cacheFile, "{\"entries\":{}}\n", "utf8");
+			emit({ command: "models", ok: true, status: "CACHE_FLUSH", score: 0, grade: "", signal: "PASS", rows: [{ k: "cache", v: "cleared" }], details: [], message: "model cache: flushed", warnings: [], actions: [], artifacts: [] }, 0);
+			process.exit(0);
+		}
+		let cache = { entries: {} };
+		try { cache = JSON.parse(fs.readFileSync(cacheFile, "utf8")); } catch {}
+		const key = id + "::" + prompt.trim();
+		let hit = false, content = "", tokens = 0, ttftMs = 0;
+		if (cache.entries[key]) { hit = true; content = cache.entries[key].content; tokens = cache.entries[key].tokens; }
+		if (!hit) {
+			try {
+				const t0 = Date.now();
+				const r = await fetch(baseUrl + "/chat/completions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: id, messages: [{ role: "user", content: prompt }], max_tokens: 200, temperature: 0, stream: false }) });
+				ttftMs = Date.now() - t0;
+				const body = await r.json();
+				content = (body.choices?.[0]?.message?.content ?? "").trim();
+				tokens = body.usage?.total_tokens ?? 0;
+				cache.entries[key] = { content, tokens, at: Date.now() };
+				fs.mkdirSync(path.dirname(cacheFile), { recursive: true });
+				fs.writeFileSync(cacheFile, JSON.stringify(cache, null, 2), "utf8");
+			} catch (e) { emit({ command: "models", ok: false, status: "CACHE_ERROR", model: id, score: 0, grade: "", signal: "FAIL", rows: [], details: [e.message], message: `cache error: ${e.message}`, warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
+		}
+		const rows = [
+			{ k: "model", v: id },
+			{ k: "hit", v: hit ? "yes" : "no" },
+			{ k: "tokens", v: String(tokens) },
+			{ k: "ttftMs", v: String(ttftMs) },
+			{ k: "cachedEntries", v: String(Object.keys(cache.entries).length) },
+		];
+		emit({ command: "models", ok: true, status: hit ? "CACHE_HIT" : "CACHE_MISS", model: id, score: 0, grade: "", signal: hit ? "PASS" : "MISS", rows, details: [content.slice(0, 80)], message: `model cache: ${id} ${hit ? "HIT" : "MISS"} tokens=${tokens}`, warnings: [], actions: [], artifacts: ["artifacts/usage/model-cache.json"] }, 0);
+		process.exit(0);
+	}
+
 	// F37 model benchmark <id>: 1 warmup + 3 measured real inferences -> TTFT/tokens-per-sec.
 	if (line.startsWith("model benchmark ")) {
 		const id = line.slice("model benchmark ".length).trim();

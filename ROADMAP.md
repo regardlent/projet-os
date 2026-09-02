@@ -53,7 +53,7 @@
 
 ## Phase 5 — Modèles & routing
 - [x] 5.1 Routeur adaptatif au contexte (task-class + longueur).
-- [ ] 5.2 Cache sémantique (prompt/réponse).
+- [x] 5.2 Cache sémantique (prompt/réponse).
 - [x] 5.3 A/B benchmark (comparateur multi-mesures).
 - [x] 5.4 Gating de qualité (sortie validée).
 - [x] 5.5 Quota multi-modèles.
