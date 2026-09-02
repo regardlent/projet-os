@@ -15,18 +15,56 @@
   <img alt="top-lang" src="https://img.shields.io/github/languages/top/regardlent/projet-os?style=flat">
 </p>
 
-Une extension VS Code qui branche un **Control Center / Artifact System** autour du **vrai SDK Cline** (`@cline/sdk`). Construite comme chantier greenfield **autonome** (sans dépendance à un autre projet).
+## 🚀 Project OS — pilotez vos agents & projets en local
+
+**Project OS** branche un **Control Center + Artifact System** autour du **vrai SDK Cline** (`@cline/sdk`),
+et fournit un **CLI C++ puissant** (`cli-cpp/`) qui pilote tout **sans l'IDE** — via le bridge Node (protocole v2).
+Greenfield, **autonome**, **open-source** (Apache-2.0).
+
+> **Le CLI délègue toute logique métier au bridge** — jamais de ré-implémentation. `CreateProcessW`, **no shell**.
 
 <p align="center">
   <img alt="demo" src="docs/screenshot.png" width="820">
 </p>
 
+### ⚡ Quick start
+```powershell
+# Clone + build le CLI (MinGW + CMake requis)
+git clone https://github.com/regardlent/projet-os.git && cd projet-os
+cmake -S cli-cpp -B cli-cpp/cmake-build && cmake --build cli-cpp/cmake-build
 
-**✨ Fonctionnalités clés**
+# Ou installation 1-liner
+powershell -ExecutionPolicy Bypass -File scripts\install.ps1
+
+project-os-cli welcome
+project-os-cli health score
+project-os-cli cockpit --watch=2
+project-os-cli --format=json status
+```
+
+### ✨ Fonctionnalités clés
 - **Extension VS Code** : Control Center sécurisé (webview CSP + nonce), Artifact System (state machine + versions + review), ProjectDNA, vues Projects/Artifacts.
-- **CLI C++** (`cli-cpp/`) : pilotage par menus ou scriptable via `bin/project-os-bridge.mjs` ; `--format=json|ndjson|tsv`, `--color=auto|always|never`, `--timeout=<ms>`, `--explain/--dry-run`.
-- **Intelligence & analyse** (10 features, read-only) : `health score`, `health trend`, `health compare <a> [b]`, `budget forecast`, `insights tokens`, `diagnose`, `drift alert`, `goal traction`, `autonomy health`, `risk profile`.
+- **CLI C++** : menus ou scriptable ; `--format=json|ndjson|tsv`, `--color`, `--theme`, `--timeout`, `--explain/--dry-run`, `--trace`, `--silent/--check`, `--json`, `--time`, `--width`.
+- **Intelligence & analyse (10 features)** : `health score|trend|compare`, `budget forecast`, `insights tokens`, `diagnose`, `drift alert|compare`, `goal traction|cost`, `autonomy health`, `risk profile`.
 - **Runtime réel** : LocalAI loopback, GPU (`nvidia-smi`), models, route, endurance, report, release gate, export sarif, test matrix.
+
+### 🧩 Pourquoi Project OS ?
+| | |
+|---|---|
+| 🖥️ **Sans l'IDE** | CLI complet : cockpit, git, artefacts, MCP, santé, modèles, GPU. |
+| 🔒 **Sécurisé** | No shell, secrets redigés, `--trace` sur stderr, `/bridge audit`, sanitizers ASan/UBSan. |
+| ⚙️ **Testé** | typecheck 0 erreur · `ctest` 100% · soak 100/100 · fuzz/property · golden. |
+| 🧩 **Extensible** | alias & commandes custom (`custom add`), config file, complétion dynamique. |
+| 📦 **Scriptable** | `--format=json\|ndjson\|tsv` + exit codes (F03), conjugable en CI. |
+
+### 🛠 Stack
+C++17 (CLI, MinGW/CMake) · TypeScript (extension + bridge Node) · `@cline/sdk` · MCP SDK ·
+LocalAI · VS Code ≥1.90.
+
+### ⭐ Soutenez le projet
+Une étoile aide énormément à la visibilité. Vos **issues**, **PR** et **contributions** sont bienvenus :
+[CONTRIBUTING](.github/CONTRIBUTING.md) · [Code de conduite](.github/CODE_OF_CONDUCT.md) ·
+[Sécurité](.github/SECURITY.md) · [Feuille de route](docs/CLI_ROADMAP_50X50.md).
 
 > ⚠️ État : **CLI C++ 10 phases complétées (90/100 étapes)**. Typecheck **0 erreur**, cpp `ctest` **100% pass**,
 > `pos_json_test` **ALL PASS**, node **368/369** (1 échec = test antigravity environnemental du host, pré-existant).
