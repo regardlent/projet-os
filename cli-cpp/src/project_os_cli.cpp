@@ -53,6 +53,8 @@ inline void onSigInt(int) { g_cancel.store(true); }
 inline std::atomic<long long> g_timeoutMs(60000);
 // F55: status emojis (✅/⚠️/❌) enabled by default; --no-emoji disables.
 inline std::atomic<bool> g_emoji(true);
+// F56: color theme. 1 = dark (bright ANSI), 0 = light (standard ANSI). --theme=light|dark.
+inline std::atomic<int> g_theme(1);
 
 // --- Helpers -------------------------------------------------------------
 static int readChoice(int max) {
@@ -235,7 +237,7 @@ static int cmdHelp() {
 	std::cout << "  schema machine         machine-consumer contract\n";
 	sec("Bridge MCP");
 	std::cout << "  bridge status|start|stop|restart|health|tools|test|tunnel\n";
-	std::cout << "\n  Global flags: --format=json|ndjson|tsv  --color=auto|always|never  --timeout=<ms>  --no-emoji  --explain/--dry-run\n";
+	std::cout << "\n  Global flags: --format=json|ndjson|tsv  --color=auto|always|never  --theme=light|dark  --timeout=<ms>  --no-emoji  --explain/--dry-run\n";
 	return 0;
 }
 
@@ -1320,13 +1322,13 @@ static int cmdModelBenchmark(const std::string& id, pos::OutputFormat fmt) {
 
 
 // --- INTELLIGENCE & ANALYSIS (10 features) --------------------------------
-// ANSI color helpers (respect --color / NO_COLOR via colorOn).
+// ANSI color helpers (respect --color / NO_COLOR via colorOn, and --theme=light|dark via g_theme).
 static const char* cB(bool on) { return on ? "\x1b[1m" : ""; }  // bold
 static const char* cX(bool on) { return on ? "\x1b[0m" : ""; }  // reset
-static const char* cG(bool on) { return on ? "\x1b[92m" : ""; } // bright green
-static const char* cY(bool on) { return on ? "\x1b[93m" : ""; } // bright yellow
-static const char* cR(bool on) { return on ? "\x1b[91m" : ""; } // bright red
-static const char* cC(bool on) { return on ? "\x1b[96m" : ""; } // bright cyan
+static const char* cG(bool on) { return on ? (g_theme.load() == 0 ? "\x1b[32m" : "\x1b[92m") : ""; }  // green (standard/bright)
+static const char* cY(bool on) { return on ? (g_theme.load() == 0 ? "\x1b[33m" : "\x1b[93m") : ""; }  // yellow
+static const char* cR(bool on) { return on ? (g_theme.load() == 0 ? "\x1b[31m" : "\x1b[91m") : ""; }  // red
+static const char* cC(bool on) { return on ? (g_theme.load() == 0 ? "\x1b[36m" : "\x1b[96m") : ""; }  // cyan
 
 // Signal color: green=good, yellow=caution, red=alert.
 static const char* signalColor(bool on, const std::string& s) {
@@ -1430,6 +1432,7 @@ int wmain(int argc, wchar_t** wargv) {
 			const std::string a = argvS[start];
 			if (a.rfind("--format=", 0) == 0) { fmt = pos::parseFormat(a.substr(9)); continue; }
 			if (a.rfind("--color=", 0) == 0) { wrapColor = pos::parseColor(a.substr(8)); continue; }
+			if (a.rfind("--theme=", 0) == 0) { const std::string t = a.substr(8); if (t == "light") g_theme.store(0); else if (t == "dark") g_theme.store(1); continue; }
 			if (a.rfind("--timeout=", 0) == 0) { g_timeoutMs.store(std::atoll(a.substr(10).c_str())); if (g_timeoutMs.load() <= 0) g_timeoutMs.store(60000); continue; }
 			if (a == "--explain" || a == "--dry-run") { explain = true; continue; }
 			if (a == "--no-emoji") { g_emoji.store(false); continue; }
@@ -1440,6 +1443,7 @@ int wmain(int argc, wchar_t** wargv) {
 			const std::string a = argvS[i];
 			if (a.rfind("--format=", 0) == 0) { fmt = pos::parseFormat(a.substr(9)); continue; }
 			if (a.rfind("--color=", 0) == 0) { wrapColor = pos::parseColor(a.substr(8)); continue; }
+			if (a.rfind("--theme=", 0) == 0) { const std::string t = a.substr(8); if (t == "light") g_theme.store(0); else if (t == "dark") g_theme.store(1); continue; }
 			if (a.rfind("--timeout=", 0) == 0) { g_timeoutMs.store(std::atoll(a.substr(10).c_str())); if (g_timeoutMs.load() <= 0) g_timeoutMs.store(60000); continue; }
 			if (a == "--explain" || a == "--dry-run") { explain = true; continue; }
 			if (a == "--no-emoji") { g_emoji.store(false); continue; }
