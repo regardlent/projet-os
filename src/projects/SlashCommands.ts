@@ -186,6 +186,7 @@ export async function createHandler(parsed: ParsedSlash, ctx: SlashCommandContex
 	}
 	const type = (parsed.flags["type"] ?? "auto") as ProjectType;
 	const goalf = parsed.flags["goal"] || parsed.flags["objective"] || "";
+	const t0 = Date.now(); // timer de création
 	const result = await ctx.factory.createProject({
 		name,
 		type,
@@ -193,6 +194,7 @@ export async function createHandler(parsed: ParsedSlash, ctx: SlashCommandContex
 		objective: goalf,
 		git: parsed.flags["git"] !== "false",
 	});
+	const durMs = Date.now() - t0; // fin du timer
 	// Seed a persistent TODO (barré) for the freshly created project.
 	if (result.ok && result.workspaceRoot) {
 		const tracker = new TodoTracker(new FsTodoIO(result.workspaceRoot));
@@ -202,7 +204,8 @@ export async function createHandler(parsed: ParsedSlash, ctx: SlashCommandContex
 			ok: result.ok,
 			projectId: result.projectId,
 			status: result.status,
-			message: result.message + " | Todo seeded (TODO.md + .project-os/todo.json)",
+			elapsedMs: durMs,
+			message: result.message + ` | Todo seeded (TODO.md + .project-os/todo.json) | ${(durMs / 1000).toFixed(1)}s`,
 			warnings: result.warnings,
 			actions: result.ok ? ["goal", "addon", "open", "todo"] : [],
 			artifacts: result.ok ? [".project-os/project.json", ".project-os/goal.json", ".project-os/todo.json", "TODO.md"] : [],
@@ -214,7 +217,8 @@ export async function createHandler(parsed: ParsedSlash, ctx: SlashCommandContex
 		ok: result.ok,
 		projectId: result.projectId,
 		status: result.status,
-		message: result.message,
+		elapsedMs: durMs,
+		message: result.message + ` | ${(durMs / 1000).toFixed(1)}s`,
 		warnings: result.warnings,
 		actions: result.ok ? ["goal", "addon", "open"] : [],
 		artifacts: result.ok ? [".project-os/project.json", ".project-os/goal.json"] : [],

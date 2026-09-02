@@ -28,6 +28,7 @@ struct CmdResult {
 	std::vector<std::string> artifacts;
 	std::string raw;
 	std::string requestId; // 10.8 end-to-end trace (bridge envelope requestId)
+	int timingMs = 0; // bridge envelope timingMs (ex. temps de création)
 	// F01/F02: capability negotiation fields (bridge "capabilities").
 	int protocol = 0;
 	std::vector<int> protocols;
@@ -176,6 +177,7 @@ inline CmdResult parseCmdResult(const std::string& raw) {
 		if (auto* s = src->get("status")) r.status = s->asString();
 		if (auto* s = src->get("message")) r.message = s->asString();
 		if (auto* s = root.get("requestId")) r.requestId = s->asString(); // 10.8 end-to-end trace
+		if (auto* t = root.get("timingMs")) r.timingMs = static_cast<int>(t->number); // F99 create timer
 		if (auto* s = src->get("next")) r.next = s->asString();
 		if (auto* a = src->get("warnings"); a && a->kind == JKind::Array) for (auto& e : a->arr) r.warnings.push_back(e.asString());
 		if (auto* a = src->get("actions"); a && a->kind == JKind::Array) for (auto& e : a->arr) r.actions.push_back(e.asString());

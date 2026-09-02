@@ -368,6 +368,8 @@ static int cmdRelease(const std::vector<std::string>& args) {
 static std::string readGpuLine(); // F38 helper (defined below)
 // F66 forward decl (defined later): terminal-width line fitting.
 static std::string fitLine(const std::string& s);
+// Forward decl (defined later): card header.
+static void card(const std::string& t);
 // Forward decl (defined later): intelligence/analysis result printer.
 static int printAnalysis(const std::string& title, pos::OutputFormat fmt, pos::CmdResult& r, bool colorOn);
 // --- F50 cockpit: inline VT dashboard (no external dep). Read-only, live refresh. ----
@@ -784,6 +786,25 @@ static int cmdExplain(const std::string& cmd, const std::vector<std::string>& ar
 	std::cout << "  approval      : required (explicit) before mutation\n";
 	std::cout << "  NO MUTATION   : this invocation intentionally did nothing\n";
 	return 0;
+}
+
+// --- F99 create: dispatch /create + show timer (elapsedMs) ----------------------
+static int cmdCreate(pos::OutputFormat fmt, const std::vector<std::string>& args, bool colorOn) {
+	std::string line = "/create";
+	for (const auto& a : args) line += " " + a;
+	pos::CmdResult r = pos::dispatch(pos::bridgePath(), line, g_timeoutMs, &g_cancel);
+	if (fmt == pos::OutputFormat::Json) {
+		std::cout << "{\"ok\":" << (r.ok ? "true" : "false") << ",\"status\":" << pos::json_quote(r.status)
+			<< ",\"message\":" << pos::json_quote(r.message) << ",\"elapsedMs\":" << r.timingMs << "}\n";
+		return pos::exitFor(r.ok, r.status);
+	}
+	card("create");
+	std::cout << fitLine("  status    : " + r.status) << "\n";
+	if (!r.activeSlug.empty()) std::cout << fitLine("  project   : " + r.activeSlug) << "\n";
+	std::cout << fitLine("  timer     : " + pos::fmtDuration(r.timingMs)) << "\n";
+	for (const auto& a : r.artifacts) std::cout << fitLine("  artifact : " + a) << "\n";
+	std::cout << fitLine("  " + r.message) << "\n";
+	return pos::exitFor(r.ok, r.status);
 }
 
 // --- F95 welcome / onboarding guide (9.10) -------------------------------------
@@ -1911,6 +1932,7 @@ int wmain(int argc, wchar_t** wargv) {
 		if (cmd == "cockpit" && args.size() >= 1 && args[0] == "export") { return cmdCockpitExport(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }
 		if (cmd == "cockpit") { return cmdCockpit(fmt, args, colorOn); }
 		if (cmd == "version") { cmdVersion(fmt); return 0; }
+		if (cmd == "create") { return cmdCreate(fmt, args, colorOn); }
 		if (cmd == "capabilities") { cmdCapabilities(fmt); return 0; }
 		if (cmd == "status") { return cmdStatus(fmt); }
 		if (cmd == "diff" && args.size() >= 2) { return cmdDiff(args[0], args[1], fmt); }
@@ -2068,7 +2090,7 @@ int wmain(int argc, wchar_t** wargv) {
 			std::cout << "  Project name> "; std::string name; std::getline(std::cin, name); name = pos::trim(name);
 			if (!name.empty()) {
 				std::cout << "  Type [cpp|ts|web|node|rust|go|python|desktop|docker|localai|auto]> "; std::string ty; std::getline(std::cin, ty); ty = pos::trim(ty);
-				std::string line = "/create " + name + (ty.empty() ? "" : " type=" + ty);
+				std::string line = "/create " + name + (ty.empty() ? "" : " --type=" + ty);
 				pos::dispatch(pos::bridgePath(), line, g_timeoutMs, &g_cancel);
 				projects = pos::parseRegistry(pos::readFile(pos::registryFile()));
 			}

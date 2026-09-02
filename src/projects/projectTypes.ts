@@ -72,6 +72,7 @@ export interface CommandResult {
 	actions: string[];
 	artifacts: string[];
 	next?: string;
+	elapsedMs?: number; // temps d'exécution mesuré (ex. création de projet)
 }
 
 export interface ProjectCreateInput {
