@@ -104,7 +104,7 @@
 - [x] 8.10 100 scénarios de soak.
 
 ## Phase 9 — Extensibilité & DX
-- [ ] 9.1 Commande slash personnalisée.
+- [x] 9.1 Commande slash personnalisée.
 - [x] 9.2 Templates de projet.
 - [x] 9.3 Schémas de sortie (JSON Schema).
 - [x] 9.4 Completion dynamique (slugs + sous-commandes).

@@ -1719,6 +1719,40 @@ static void loadProjectOsConfig() {
 	} catch (...) {}
 }
 
+// 9.1 user-defined command aliases (safe: expand to known commands only, no shell).
+static std::map<std::string, std::string> loadCustomCommands() {
+	std::map<std::string, std::string> out;
+	const char* home = std::getenv("USERPROFILE"); if (!home) home = std::getenv("HOME");
+	if (!home) return out;
+	std::string p = std::string(home) + "\\.project-os\\custom.json";
+	FILE* f = std::fopen(p.c_str(), "rb"); if (!f) return out;
+	std::string data; { char buf[4096]; size_t n; while ((n = std::fread(buf, 1, sizeof(buf), f)) > 0) data.append(buf, n); } std::fclose(f);
+	try { auto v = pos::parseJson(data); if (v.kind == pos::JKind::Object) for (auto& kv : v.obj) if (kv.second.kind == pos::JKind::String) out[kv.first] = kv.second.str; } catch (...) {}
+	return out;
+}
+static int cmdCustomList() {
+	auto c = loadCustomCommands();
+	std::cout << "── custom commands ──\n";
+	if (c.empty()) { std::cout << "  (none) — add via: custom add <name> <command line>\n"; return 0; }
+	for (auto& kv : c) std::cout << "  " << kv.first << " : " << kv.second << "\n";
+	return 0;
+}
+static int cmdCustomAdd(const std::string& name, const std::vector<std::string>& rest) {
+	std::string line; for (const auto& a : rest) { if (!line.empty()) line += " "; line += a; }
+	if (name.empty() || line.empty()) { std::cout << "  usage: custom add <name> <command line>\n"; return 2; }
+	const char* home = std::getenv("USERPROFILE"); if (!home) home = std::getenv("HOME");
+	std::string p = home ? std::string(home) + "\\.project-os\\custom.json" : ".project-os/custom.json";
+	try {
+		std::map<std::string, std::string> all = loadCustomCommands(); all[name] = line;
+		std::ofstream of(p, std::ios::trunc); if (!of) { std::cout << "  custom add: cannot write " << p << "\n"; return 1; }
+		of << "{\n"; bool first = true;
+		for (auto& kv : all) { if (!first) of << ",\n"; of << "  " << pos::json_quote(kv.first) << ": " << pos::json_quote(kv.second); first = false; }
+		of << "\n}\n"; of.close();
+		std::cout << "  added custom command: " << name << " -> " << line << "\n";
+		return 0;
+	} catch (const std::exception& e) { std::cout << "  custom add failed: " << e.what() << "\n"; return 1; }
+}
+
 // 9.8 documented PROJECT_OS_* env vars.
 static int cmdConfigEnv() {
 	std::cout << "── config env ──\n";
@@ -1808,12 +1842,14 @@ int wmain(int argc, wchar_t** wargv) {
 		std::string cmd = cmd0;
 		// 9.6 command aliases (shortcuts) — expand to a canonical command line before dispatch.
 		{
-			static const std::map<std::string, std::string> aliases = {
+			std::map<std::string, std::string> all = {
 				{ "st", "status" }, { "ls", "project list" }, { "inspect", "project inspect" },
 				{ "hs", "health score" }, { "qx", "usage summary" }, { "cfg", "config list" },
 			};
-			auto it = aliases.find(cmd);
-			if (it != aliases.end()) {
+			// 9.1: merge user-defined custom commands (safe: expand to known commands, no shell).
+			{ auto c = loadCustomCommands(); for (auto& kv : c) all[kv.first] = kv.second; }
+			auto it = all.find(cmd);
+			if (it != all.end()) {
 				std::istringstream ss(it->second);
 				std::vector<std::string> expanded; std::string tok;
 				while (ss >> tok) expanded.push_back(tok);
@@ -1833,6 +1869,9 @@ int wmain(int argc, wchar_t** wargv) {
 		if (cmd == "schema" && args.empty()) { return cmdSchema("list"); }
 		if (cmd == "template" && args.size() >= 1 && args[0] == "list") { return cmdTemplateList(); }
 		if (cmd == "template") { return cmdTemplateList(); }
+		if (cmd == "custom" && args.size() >= 1 && args[0] == "list") { return cmdCustomList(); }
+		if (cmd == "custom" && args.size() >= 3 && args[0] == "add") { return cmdCustomAdd(args[1], std::vector<std::string>(args.begin() + 2, args.end())); }
+		if (cmd == "custom" && args.size() >= 2 && args[0] == "add") { return cmdCustomAdd(args[1], std::vector<std::string>(args.begin() + 2, args.end())); }
 		if (cmd == "completion" && args.size() >= 1) { bool slugs = false; for (const auto& a : args) if (a == "--slugs") slugs = true; return cmdCompletion(args[0], slugs); }
 		if (cmd == "cockpit" && args.size() >= 1 && args[0] == "history") { return cmdCockpitHistory(fmt); }
 		if (cmd == "cockpit" && args.size() >= 1 && args[0] == "export") { return cmdCockpitExport(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }
