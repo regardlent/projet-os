@@ -194,6 +194,7 @@ static int cmdHelp() {
 	std::cout << "  capabilities           negotiation with the bridge\n";
 	std::cout << "  completion <shell>     shell completions (powershell|bash|zsh)\n";
 	std::cout << "  exitcodes              exit-code taxonomy\n";
+	std::cout << "  git status|log [N]|commit <msg>  git helpers for the active project\n";
 	std::cout << "  health [--watch]       periodic read-only health\n";
 	std::cout << "  cockpit [--watch=<s>]|history|export  live dashboard / frames / export\n";
 	sec("Projet");
@@ -1352,6 +1353,10 @@ static int cmdModelProfiles(pos::OutputFormat fmt, bool colorOn) { pos::CmdResul
 static int cmdModelOffload(pos::OutputFormat fmt, const std::vector<std::string>& args, bool colorOn) { std::string line = "model offload"; for (auto& a : args) line += " " + a; pos::CmdResult r = pos::dispatch(pos::bridgePath(), line, g_timeoutMs, &g_cancel); printAnalysis("model offload", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
 // F76 model cache <id>|flush: semantic cache (5.2).
 static int cmdModelCache(pos::OutputFormat fmt, const std::vector<std::string>& args, bool colorOn) { std::string line = "model cache"; for (auto& a : args) line += " " + a; pos::CmdResult r = pos::dispatch(pos::bridgePath(), line, g_timeoutMs, &g_cancel); printAnalysis("model cache", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
+// F77-79 git status/log/commit (Phase 6).
+static int cmdGitStatus(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "git status", g_timeoutMs, &g_cancel); printAnalysis("git status", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
+static int cmdGitLog(pos::OutputFormat fmt, const std::vector<std::string>& args, bool colorOn) { std::string line = "git log"; for (auto& a : args) line += " " + a; pos::CmdResult r = pos::dispatch(pos::bridgePath(), line, g_timeoutMs, &g_cancel); printAnalysis("git log", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
+static int cmdGitCommit(pos::OutputFormat fmt, const std::vector<std::string>& args, bool colorOn) { std::string line = "git commit"; for (auto& a : args) line += " " + a; pos::CmdResult r = pos::dispatch(pos::bridgePath(), line, g_timeoutMs, &g_cancel); printAnalysis("git commit", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
 
 // --- F36 model smoke <id> -----------------------------------------------------
 static int cmdModelSmoke(const std::string& id, const std::string& reasoningMode, pos::OutputFormat fmt) {
@@ -1705,6 +1710,9 @@ int wmain(int argc, wchar_t** wargv) {
 		if (cmd == "model" && args.size() >= 1 && args[0] == "profiles") { return cmdModelProfiles(fmt, colorOn); }
 		if (cmd == "model" && args.size() >= 2 && args[0] == "offload") { return cmdModelOffload(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }
 		if (cmd == "model" && args.size() >= 2 && args[0] == "cache") { return cmdModelCache(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }
+		if (cmd == "git" && args.size() >= 1 && args[0] == "status") { return cmdGitStatus(fmt, colorOn); }
+		if (cmd == "git" && args.size() >= 1 && args[0] == "log") { return cmdGitLog(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }
+		if (cmd == "git" && args.size() >= 2 && args[0] == "commit") { return cmdGitCommit(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }
 		if (cmd == "model" && args.size() >= 2 && args[0] == "show") { return cmdModelShow(args[1], fmt); }
 		if (cmd == "model" && args.size() >= 2 && args[0] == "stream") { return cmdModelStream(args[1], fmt); }
 		if (cmd == "model" && args.size() >= 2 && args[0] == "smoke") { std::string rmode = "hide"; for (auto& a : args) if (a.rfind("--reasoning=", 0) == 0) rmode = a.substr(12); return cmdModelSmoke(args[1], rmode, fmt); }

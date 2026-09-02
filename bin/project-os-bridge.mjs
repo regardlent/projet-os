@@ -277,6 +277,55 @@ try {
 		process.exit(0);
 	}
 
+	// F77 git status: branch + dirty count + last commit of the active project (6.1).
+	if (line === "git status") {
+		const a = resolveActiveProject();
+		if (!a) { emit({ command: "git", ok: false, status: "NO_ACTIVE_PROJECT", score: 0, grade: "", signal: "NO_PROJECT", rows: [], details: ["no active project"], message: "git status: no active project", warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
+		let branch = "?", dirty = -1, last = "", changed = "";
+		try {
+			const o = spawnSync("git", ["-C", a.workspaceRoot, "status", "--porcelain", "-b"], { encoding: "utf8", timeout: 8000 });
+			const lines = (o.stdout || "").split("\n").filter(Boolean);
+			const bm = lines[0]?.match(/^## (.*)/); branch = bm ? bm[1].split(" ")[0] : "?";
+			dirty = lines.filter((l) => /^\s*[MADRCU?]/.test(l)).length;
+			const logSync = spawnSync("git", ["-C", a.workspaceRoot, "log", "--oneline", "-1"], { encoding: "utf8", timeout: 8000 });
+			last = (logSync.stdout || "").trim();
+			changed = lines.slice(1).slice(0, 8).join(", ");
+		} catch {}
+		const rows = [
+			{ k: "branch", v: branch },
+			{ k: "dirty", v: dirty < 0 ? "n/a" : String(dirty) },
+			{ k: "lastCommit", v: last || "(none)" },
+			{ k: "changed", v: changed || "(clean)" },
+		];
+		emit({ command: "git", ok: true, status: "GIT_STATUS", signal: dirty === 0 ? "CLEAN" : "DIRTY", score: 0, grade: "", rows, details: [], message: `git status: ${branch} dirty=${dirty}`, warnings: [], actions: [], artifacts: [] }, 0);
+		process.exit(0);
+	}
+
+	// F78 git log [n]: recent commits (read-only).
+	if (line.startsWith("git log")) {
+		const a = resolveActiveProject();
+		if (!a) { emit({ command: "git", ok: false, status: "NO_ACTIVE_PROJECT", score: 0, grade: "", signal: "NO_PROJECT", rows: [], details: ["no active project"], message: "git log: no active project", warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
+		const n = parseInt(line.slice("git log".length).trim() || "5", 10) || 5;
+		let commits = [];
+		try { const o = spawnSync("git", ["-C", a.workspaceRoot, "log", "--oneline", "-" + Math.min(30, n)], { encoding: "utf8", timeout: 8000 }); commits = (o.stdout || "").split("\n").filter(Boolean); } catch {}
+		emit({ command: "git", ok: true, status: "GIT_LOG", signal: commits.length ? "HAS_LOG" : "NO_LOG", score: 0, grade: "", rows: commits.map((c, i) => ({ k: "#" + (i + 1), v: c })), details: [], message: `git log: ${commits.length} commit(s)`, warnings: [], actions: [], artifacts: [] }, 0);
+		process.exit(0);
+	}
+
+	// F79 git commit <msg>: conventional commit helper (6.6).
+	if (line.startsWith("git commit ")) {
+		const a = resolveActiveProject();
+		if (!a) { emit({ command: "git", ok: false, status: "NO_ACTIVE_PROJECT", score: 0, grade: "", signal: "NO_PROJECT", rows: [], details: ["no active project"], message: "git commit: no active project", warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
+		let msg = line.slice("git commit ".length).trim();
+		if (!msg) { emit({ command: "git", ok: false, status: "INVALID_USAGE", score: 0, grade: "", signal: "FAIL", rows: [], details: ["usage: git commit <message>"], message: "git commit: message required", warnings: [], actions: [], artifacts: [] }, 2); process.exit(0); }
+		if (!/^(feat|fix|docs|chore|refactor|style|test|ci|perf):/.test(msg)) { msg = "chore: " + msg; }
+		let out = "", st = -1;
+		try { const add = spawnSync("git", ["-C", a.workspaceRoot, "add", "-A"], { encoding: "utf8", timeout: 8000 }); const c = spawnSync("git", ["-C", a.workspaceRoot, "commit", "-m", msg], { encoding: "utf8", timeout: 12000 }); out = ((c.stdout || "") + (c.stderr || "")).trim(); st = c.status; } catch {}
+		const ok = st === 0;
+		emit({ command: "git", ok, status: ok ? "GIT_COMMITTED" : "GIT_COMMIT_FAIL", signal: ok ? "PASS" : "FAIL", score: 0, grade: "", rows: [{ k: "message", v: msg }], details: out ? [out.slice(0, 160)] : [], message: `git commit: ${msg} ${ok ? "OK" : "FAIL"}`, warnings: ok ? [] : ["commit failed — check status"], actions: ok ? ["git log"] : [], artifacts: [] }, ok ? 0 : 1);
+		process.exit(0);
+	}
+
 	// F46 report: consolidate real usage reports (tokens/cost/perf) from disk.
 	if (line === "report") {
 		const read = (f) => { try { return JSON.parse(fs.readFileSync(path.join(REPO, f), "utf8")); } catch { return null; } };
