@@ -385,6 +385,20 @@ async function bridgeTunnelHandler(flags: Record<string, string>): Promise<Comma
 		return { command: "bridge", ok: r.ok, status: r.ok ? "TUNNEL_RUNNING" : "TUNNEL_RUN_FAIL", message: `Tunnel run (profile=${tunnel.TUNNEL_PROFILE}) ${r.ok ? "started" : "failed"}.\n${out}`, warnings: [], actions: r.ok ? [] : ["bridge.start", "tunnel.doctor"], artifacts: [] };
 	}
 
+	// /bridge tunnel --tools : list MCP tools exposed on the local endpoint.
+	if (has("tools")) {
+		const names = BRIDGE_TOOLS.map((t) => t.name);
+		return {
+			command: "bridge",
+			ok: true,
+			status: "TUNNEL_TOOLS",
+			message: `MCP tools exposed (${names.length}):\n` + names.map((n) => `  - ${n}`).join("\n"),
+			warnings: [],
+			actions: [],
+			artifacts: [],
+		};
+	}
+
 	// Default / `/bridge tunnel --status` : honest status + guide.
 	const st = await tunnel.tunnelStatus();
 	const lines = [
@@ -395,6 +409,7 @@ async function bridgeTunnelHandler(flags: Record<string, string>): Promise<Comma
 		`Local up   : ${st.localServerReady ? "YES" : "NO (run /bridge start first)"}`,
 		`tunnel-cli : ${st.detected ? `detected (${st.cliPath})${st.version ? " " + st.version : ""}` : "NOT_DETECTED"}`,
 		`mcp_url    : ${st.mcpUrl ?? "n/a (server down)"}`,
+		`tools      : ${BRIDGE_TOOLS.length} MCP tools exposed`,
 		"",
 		"=== INSTALL (if not detected) ===",
 		"Obtain tunnel-client.exe from OpenAI Platform -> Organization -> Tunnel Settings",
@@ -404,6 +419,7 @@ async function bridgeTunnelHandler(flags: Record<string, string>): Promise<Comma
 		"  /bridge tunnel --init   -> tunnel-client init --profile project-os --url <local>",
 		"  /bridge tunnel --doctor -> tunnel-client doctor --profile project-os --explain",
 		"  /bridge tunnel --run    -> tunnel-client run --profile project-os",
+		"  /bridge tunnel --tools  -> list MCP tools exposed",
 		"  /bridge tunnel --status -> this honest status",
 		"",
 		"=== CHATGPT CUSTOM MCP ===",
