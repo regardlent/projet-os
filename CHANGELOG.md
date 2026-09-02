@@ -36,6 +36,8 @@ Le format s'appuie sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) 
 ## [Unreleased]
 
 ### Ajouté
+- **Feuille de route CLI 50×50 (2500 étapes)** : `docs/CLI_ROADMAP_50X50.md` (+ générateur `scripts/gen-roadmap50.mjs`).
+
 - **`--help` catégorisé** : regroupement par thème (Général / Projet / Intelligence & analyse /
   Artefact & config / Modèle & GPU / Qualité & release / Bridge MCP) avec en-têtes `── … ──` et
   colonnes alignées.

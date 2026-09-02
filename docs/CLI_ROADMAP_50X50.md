@@ -1,0 +1,2708 @@
+# Feuille de route CLI C++ — 50 phases × 50 étapes (2500)
+
+Plan de développement de la prochaine génération du **CLI C++** Project OS. Une étape = une tâche
+concrète, testable, livrable. Invariant : le CLI délègue toute logique métier au bridge ; jamais de
+ré-implémentation. Légende : `[x]` fini · `[ ]` à faire.
+
+---
+
+## Phase 1 — Fondations UX (50 étapes)
+- [ ] 1.1 Ajouter fondations ux en mode human.
+- [ ] 1.2 Améliorer fondations ux --format=json.
+- [ ] 1.3 Refactorer fondations ux --format=ndjson.
+- [ ] 1.4 Tester fondations ux --format=tsv.
+- [ ] 1.5 Documenter fondations ux --quiet.
+- [ ] 1.6 Centraliser fondations ux --verbose.
+- [ ] 1.7 Brancher fondations ux --trace.
+- [ ] 1.8 Sécuriser fondations ux --explain.
+- [ ] 1.9 Borner fondations ux --dry-run.
+- [ ] 1.10 Colorer fondations ux en test unitaire.
+- [ ] 1.11 Ajouter fondations ux en test golden.
+- [ ] 1.12 Améliorer fondations ux en test d'erreur.
+- [ ] 1.13 Refactorer fondations ux en doc utilisateur.
+- [ ] 1.14 Tester fondations ux en aide --help.
+- [ ] 1.15 Documenter fondations ux en complétion.
+- [ ] 1.16 Centraliser fondations ux en soak.
+- [ ] 1.17 Brancher fondations ux en matrice JSON.
+- [ ] 1.18 Sécuriser fondations ux via applyGlobalFlag.
+- [ ] 1.19 Borner fondations ux via module dédié.
+- [ ] 1.20 Colorer fondations ux via handler bridge.
+- [ ] 1.21 Ajouter fondations ux (cas vide).
+- [ ] 1.22 Améliorer fondations ux (NOT_FOUND).
+- [ ] 1.23 Refactorer fondations ux (BLOCKED).
+- [ ] 1.24 Tester fondations ux (timeout).
+- [ ] 1.25 Documenter fondations ux (LocalAI down).
+- [ ] 1.26 Centraliser fondations ux (GPU down).
+- [ ] 1.27 Brancher fondations ux (git down).
+- [ ] 1.28 Sécuriser fondations ux (redaction secrets).
+- [ ] 1.29 Borner fondations ux (taille bornée).
+- [ ] 1.30 Colorer fondations ux (path-traversal).
+- [ ] 1.31 Ajouter fondations ux (exit-code F03).
+- [ ] 1.32 Améliorer fondations ux (signal coloré).
+- [ ] 1.33 Refactorer fondations ux (thème clair/sombre).
+- [ ] 1.34 Tester fondations ux (mode mono).
+- [ ] 1.35 Documenter fondations ux (emoji on/off).
+- [ ] 1.36 Centraliser fondations ux (colonnes alignées).
+- [ ] 1.37 Brancher fondations ux (fitLine repli).
+- [ ] 1.38 Sécuriser fondations ux (format table).
+- [ ] 1.39 Borner fondations ux (format csv/markdown).
+- [ ] 1.40 Colorer fondations ux (export config).
+- [ ] 1.41 Ajouter fondations ux (historisation).
+- [ ] 1.42 Améliorer fondations ux (compare).
+- [ ] 1.43 Refactorer fondations ux (alerte seuil).
+- [ ] 1.44 Tester fondations ux (perf durée/size).
+- [ ] 1.45 Documenter fondations ux (régression).
+- [ ] 1.46 Centraliser fondations ux (fuzz propriété).
+- [ ] 1.47 Brancher fondations ux (doc ARCHITECTURE).
+- [ ] 1.48 Sécuriser fondations ux (note threat-model).
+- [ ] 1.49 Borner fondations ux (entrée CHANGELOG).
+- [ ] 1.50 Colorer fondations ux en mode human.
+
+---
+
+## Phase 2 — Affichage avancé (50 étapes)
+- [ ] 2.1 Ajouter affichage avancé en mode human.
+- [ ] 2.2 Améliorer affichage avancé --format=json.
+- [ ] 2.3 Refactorer affichage avancé --format=ndjson.
+- [ ] 2.4 Tester affichage avancé --format=tsv.
+- [ ] 2.5 Documenter affichage avancé --quiet.
+- [ ] 2.6 Centraliser affichage avancé --verbose.
+- [ ] 2.7 Brancher affichage avancé --trace.
+- [ ] 2.8 Sécuriser affichage avancé --explain.
+- [ ] 2.9 Borner affichage avancé --dry-run.
+- [ ] 2.10 Colorer affichage avancé en test unitaire.
+- [ ] 2.11 Ajouter affichage avancé en test golden.
+- [ ] 2.12 Améliorer affichage avancé en test d'erreur.
+- [ ] 2.13 Refactorer affichage avancé en doc utilisateur.
+- [ ] 2.14 Tester affichage avancé en aide --help.
+- [ ] 2.15 Documenter affichage avancé en complétion.
+- [ ] 2.16 Centraliser affichage avancé en soak.
+- [ ] 2.17 Brancher affichage avancé en matrice JSON.
+- [ ] 2.18 Sécuriser affichage avancé via applyGlobalFlag.
+- [ ] 2.19 Borner affichage avancé via module dédié.
+- [ ] 2.20 Colorer affichage avancé via handler bridge.
+- [ ] 2.21 Ajouter affichage avancé (cas vide).
+- [ ] 2.22 Améliorer affichage avancé (NOT_FOUND).
+- [ ] 2.23 Refactorer affichage avancé (BLOCKED).
+- [ ] 2.24 Tester affichage avancé (timeout).
+- [ ] 2.25 Documenter affichage avancé (LocalAI down).
+- [ ] 2.26 Centraliser affichage avancé (GPU down).
+- [ ] 2.27 Brancher affichage avancé (git down).
+- [ ] 2.28 Sécuriser affichage avancé (redaction secrets).
+- [ ] 2.29 Borner affichage avancé (taille bornée).
+- [ ] 2.30 Colorer affichage avancé (path-traversal).
+- [ ] 2.31 Ajouter affichage avancé (exit-code F03).
+- [ ] 2.32 Améliorer affichage avancé (signal coloré).
+- [ ] 2.33 Refactorer affichage avancé (thème clair/sombre).
+- [ ] 2.34 Tester affichage avancé (mode mono).
+- [ ] 2.35 Documenter affichage avancé (emoji on/off).
+- [ ] 2.36 Centraliser affichage avancé (colonnes alignées).
+- [ ] 2.37 Brancher affichage avancé (fitLine repli).
+- [ ] 2.38 Sécuriser affichage avancé (format table).
+- [ ] 2.39 Borner affichage avancé (format csv/markdown).
+- [ ] 2.40 Colorer affichage avancé (export config).
+- [ ] 2.41 Ajouter affichage avancé (historisation).
+- [ ] 2.42 Améliorer affichage avancé (compare).
+- [ ] 2.43 Refactorer affichage avancé (alerte seuil).
+- [ ] 2.44 Tester affichage avancé (perf durée/size).
+- [ ] 2.45 Documenter affichage avancé (régression).
+- [ ] 2.46 Centraliser affichage avancé (fuzz propriété).
+- [ ] 2.47 Brancher affichage avancé (doc ARCHITECTURE).
+- [ ] 2.48 Sécuriser affichage avancé (note threat-model).
+- [ ] 2.49 Borner affichage avancé (entrée CHANGELOG).
+- [ ] 2.50 Colorer affichage avancé en mode human.
+
+---
+
+## Phase 3 — Terminal & conditions (50 étapes)
+- [ ] 3.1 Ajouter terminal & conditions en mode human.
+- [ ] 3.2 Améliorer terminal & conditions --format=json.
+- [ ] 3.3 Refactorer terminal & conditions --format=ndjson.
+- [ ] 3.4 Tester terminal & conditions --format=tsv.
+- [ ] 3.5 Documenter terminal & conditions --quiet.
+- [ ] 3.6 Centraliser terminal & conditions --verbose.
+- [ ] 3.7 Brancher terminal & conditions --trace.
+- [ ] 3.8 Sécuriser terminal & conditions --explain.
+- [ ] 3.9 Borner terminal & conditions --dry-run.
+- [ ] 3.10 Colorer terminal & conditions en test unitaire.
+- [ ] 3.11 Ajouter terminal & conditions en test golden.
+- [ ] 3.12 Améliorer terminal & conditions en test d'erreur.
+- [ ] 3.13 Refactorer terminal & conditions en doc utilisateur.
+- [ ] 3.14 Tester terminal & conditions en aide --help.
+- [ ] 3.15 Documenter terminal & conditions en complétion.
+- [ ] 3.16 Centraliser terminal & conditions en soak.
+- [ ] 3.17 Brancher terminal & conditions en matrice JSON.
+- [ ] 3.18 Sécuriser terminal & conditions via applyGlobalFlag.
+- [ ] 3.19 Borner terminal & conditions via module dédié.
+- [ ] 3.20 Colorer terminal & conditions via handler bridge.
+- [ ] 3.21 Ajouter terminal & conditions (cas vide).
+- [ ] 3.22 Améliorer terminal & conditions (NOT_FOUND).
+- [ ] 3.23 Refactorer terminal & conditions (BLOCKED).
+- [ ] 3.24 Tester terminal & conditions (timeout).
+- [ ] 3.25 Documenter terminal & conditions (LocalAI down).
+- [ ] 3.26 Centraliser terminal & conditions (GPU down).
+- [ ] 3.27 Brancher terminal & conditions (git down).
+- [ ] 3.28 Sécuriser terminal & conditions (redaction secrets).
+- [ ] 3.29 Borner terminal & conditions (taille bornée).
+- [ ] 3.30 Colorer terminal & conditions (path-traversal).
+- [ ] 3.31 Ajouter terminal & conditions (exit-code F03).
+- [ ] 3.32 Améliorer terminal & conditions (signal coloré).
+- [ ] 3.33 Refactorer terminal & conditions (thème clair/sombre).
+- [ ] 3.34 Tester terminal & conditions (mode mono).
+- [ ] 3.35 Documenter terminal & conditions (emoji on/off).
+- [ ] 3.36 Centraliser terminal & conditions (colonnes alignées).
+- [ ] 3.37 Brancher terminal & conditions (fitLine repli).
+- [ ] 3.38 Sécuriser terminal & conditions (format table).
+- [ ] 3.39 Borner terminal & conditions (format csv/markdown).
+- [ ] 3.40 Colorer terminal & conditions (export config).
+- [ ] 3.41 Ajouter terminal & conditions (historisation).
+- [ ] 3.42 Améliorer terminal & conditions (compare).
+- [ ] 3.43 Refactorer terminal & conditions (alerte seuil).
+- [ ] 3.44 Tester terminal & conditions (perf durée/size).
+- [ ] 3.45 Documenter terminal & conditions (régression).
+- [ ] 3.46 Centraliser terminal & conditions (fuzz propriété).
+- [ ] 3.47 Brancher terminal & conditions (doc ARCHITECTURE).
+- [ ] 3.48 Sécuriser terminal & conditions (note threat-model).
+- [ ] 3.49 Borner terminal & conditions (entrée CHANGELOG).
+- [ ] 3.50 Colorer terminal & conditions en mode human.
+
+---
+
+## Phase 4 — Configuration & contexte (50 étapes)
+- [ ] 4.1 Ajouter configuration & contexte en mode human.
+- [ ] 4.2 Améliorer configuration & contexte --format=json.
+- [ ] 4.3 Refactorer configuration & contexte --format=ndjson.
+- [ ] 4.4 Tester configuration & contexte --format=tsv.
+- [ ] 4.5 Documenter configuration & contexte --quiet.
+- [ ] 4.6 Centraliser configuration & contexte --verbose.
+- [ ] 4.7 Brancher configuration & contexte --trace.
+- [ ] 4.8 Sécuriser configuration & contexte --explain.
+- [ ] 4.9 Borner configuration & contexte --dry-run.
+- [ ] 4.10 Colorer configuration & contexte en test unitaire.
+- [ ] 4.11 Ajouter configuration & contexte en test golden.
+- [ ] 4.12 Améliorer configuration & contexte en test d'erreur.
+- [ ] 4.13 Refactorer configuration & contexte en doc utilisateur.
+- [ ] 4.14 Tester configuration & contexte en aide --help.
+- [ ] 4.15 Documenter configuration & contexte en complétion.
+- [ ] 4.16 Centraliser configuration & contexte en soak.
+- [ ] 4.17 Brancher configuration & contexte en matrice JSON.
+- [ ] 4.18 Sécuriser configuration & contexte via applyGlobalFlag.
+- [ ] 4.19 Borner configuration & contexte via module dédié.
+- [ ] 4.20 Colorer configuration & contexte via handler bridge.
+- [ ] 4.21 Ajouter configuration & contexte (cas vide).
+- [ ] 4.22 Améliorer configuration & contexte (NOT_FOUND).
+- [ ] 4.23 Refactorer configuration & contexte (BLOCKED).
+- [ ] 4.24 Tester configuration & contexte (timeout).
+- [ ] 4.25 Documenter configuration & contexte (LocalAI down).
+- [ ] 4.26 Centraliser configuration & contexte (GPU down).
+- [ ] 4.27 Brancher configuration & contexte (git down).
+- [ ] 4.28 Sécuriser configuration & contexte (redaction secrets).
+- [ ] 4.29 Borner configuration & contexte (taille bornée).
+- [ ] 4.30 Colorer configuration & contexte (path-traversal).
+- [ ] 4.31 Ajouter configuration & contexte (exit-code F03).
+- [ ] 4.32 Améliorer configuration & contexte (signal coloré).
+- [ ] 4.33 Refactorer configuration & contexte (thème clair/sombre).
+- [ ] 4.34 Tester configuration & contexte (mode mono).
+- [ ] 4.35 Documenter configuration & contexte (emoji on/off).
+- [ ] 4.36 Centraliser configuration & contexte (colonnes alignées).
+- [ ] 4.37 Brancher configuration & contexte (fitLine repli).
+- [ ] 4.38 Sécuriser configuration & contexte (format table).
+- [ ] 4.39 Borner configuration & contexte (format csv/markdown).
+- [ ] 4.40 Colorer configuration & contexte (export config).
+- [ ] 4.41 Ajouter configuration & contexte (historisation).
+- [ ] 4.42 Améliorer configuration & contexte (compare).
+- [ ] 4.43 Refactorer configuration & contexte (alerte seuil).
+- [ ] 4.44 Tester configuration & contexte (perf durée/size).
+- [ ] 4.45 Documenter configuration & contexte (régression).
+- [ ] 4.46 Centraliser configuration & contexte (fuzz propriété).
+- [ ] 4.47 Brancher configuration & contexte (doc ARCHITECTURE).
+- [ ] 4.48 Sécuriser configuration & contexte (note threat-model).
+- [ ] 4.49 Borner configuration & contexte (entrée CHANGELOG).
+- [ ] 4.50 Colorer configuration & contexte en mode human.
+
+---
+
+## Phase 5 — Interface interactive (50 étapes)
+- [ ] 5.1 Ajouter interface interactive en mode human.
+- [ ] 5.2 Améliorer interface interactive --format=json.
+- [ ] 5.3 Refactorer interface interactive --format=ndjson.
+- [ ] 5.4 Tester interface interactive --format=tsv.
+- [ ] 5.5 Documenter interface interactive --quiet.
+- [ ] 5.6 Centraliser interface interactive --verbose.
+- [ ] 5.7 Brancher interface interactive --trace.
+- [ ] 5.8 Sécuriser interface interactive --explain.
+- [ ] 5.9 Borner interface interactive --dry-run.
+- [ ] 5.10 Colorer interface interactive en test unitaire.
+- [ ] 5.11 Ajouter interface interactive en test golden.
+- [ ] 5.12 Améliorer interface interactive en test d'erreur.
+- [ ] 5.13 Refactorer interface interactive en doc utilisateur.
+- [ ] 5.14 Tester interface interactive en aide --help.
+- [ ] 5.15 Documenter interface interactive en complétion.
+- [ ] 5.16 Centraliser interface interactive en soak.
+- [ ] 5.17 Brancher interface interactive en matrice JSON.
+- [ ] 5.18 Sécuriser interface interactive via applyGlobalFlag.
+- [ ] 5.19 Borner interface interactive via module dédié.
+- [ ] 5.20 Colorer interface interactive via handler bridge.
+- [ ] 5.21 Ajouter interface interactive (cas vide).
+- [ ] 5.22 Améliorer interface interactive (NOT_FOUND).
+- [ ] 5.23 Refactorer interface interactive (BLOCKED).
+- [ ] 5.24 Tester interface interactive (timeout).
+- [ ] 5.25 Documenter interface interactive (LocalAI down).
+- [ ] 5.26 Centraliser interface interactive (GPU down).
+- [ ] 5.27 Brancher interface interactive (git down).
+- [ ] 5.28 Sécuriser interface interactive (redaction secrets).
+- [ ] 5.29 Borner interface interactive (taille bornée).
+- [ ] 5.30 Colorer interface interactive (path-traversal).
+- [ ] 5.31 Ajouter interface interactive (exit-code F03).
+- [ ] 5.32 Améliorer interface interactive (signal coloré).
+- [ ] 5.33 Refactorer interface interactive (thème clair/sombre).
+- [ ] 5.34 Tester interface interactive (mode mono).
+- [ ] 5.35 Documenter interface interactive (emoji on/off).
+- [ ] 5.36 Centraliser interface interactive (colonnes alignées).
+- [ ] 5.37 Brancher interface interactive (fitLine repli).
+- [ ] 5.38 Sécuriser interface interactive (format table).
+- [ ] 5.39 Borner interface interactive (format csv/markdown).
+- [ ] 5.40 Colorer interface interactive (export config).
+- [ ] 5.41 Ajouter interface interactive (historisation).
+- [ ] 5.42 Améliorer interface interactive (compare).
+- [ ] 5.43 Refactorer interface interactive (alerte seuil).
+- [ ] 5.44 Tester interface interactive (perf durée/size).
+- [ ] 5.45 Documenter interface interactive (régression).
+- [ ] 5.46 Centraliser interface interactive (fuzz propriété).
+- [ ] 5.47 Brancher interface interactive (doc ARCHITECTURE).
+- [ ] 5.48 Sécuriser interface interactive (note threat-model).
+- [ ] 5.49 Borner interface interactive (entrée CHANGELOG).
+- [ ] 5.50 Colorer interface interactive en mode human.
+
+---
+
+## Phase 6 — Sortie machine (50 étapes)
+- [ ] 6.1 Ajouter sortie machine en mode human.
+- [ ] 6.2 Améliorer sortie machine --format=json.
+- [ ] 6.3 Refactorer sortie machine --format=ndjson.
+- [ ] 6.4 Tester sortie machine --format=tsv.
+- [ ] 6.5 Documenter sortie machine --quiet.
+- [ ] 6.6 Centraliser sortie machine --verbose.
+- [ ] 6.7 Brancher sortie machine --trace.
+- [ ] 6.8 Sécuriser sortie machine --explain.
+- [ ] 6.9 Borner sortie machine --dry-run.
+- [ ] 6.10 Colorer sortie machine en test unitaire.
+- [ ] 6.11 Ajouter sortie machine en test golden.
+- [ ] 6.12 Améliorer sortie machine en test d'erreur.
+- [ ] 6.13 Refactorer sortie machine en doc utilisateur.
+- [ ] 6.14 Tester sortie machine en aide --help.
+- [ ] 6.15 Documenter sortie machine en complétion.
+- [ ] 6.16 Centraliser sortie machine en soak.
+- [ ] 6.17 Brancher sortie machine en matrice JSON.
+- [ ] 6.18 Sécuriser sortie machine via applyGlobalFlag.
+- [ ] 6.19 Borner sortie machine via module dédié.
+- [ ] 6.20 Colorer sortie machine via handler bridge.
+- [ ] 6.21 Ajouter sortie machine (cas vide).
+- [ ] 6.22 Améliorer sortie machine (NOT_FOUND).
+- [ ] 6.23 Refactorer sortie machine (BLOCKED).
+- [ ] 6.24 Tester sortie machine (timeout).
+- [ ] 6.25 Documenter sortie machine (LocalAI down).
+- [ ] 6.26 Centraliser sortie machine (GPU down).
+- [ ] 6.27 Brancher sortie machine (git down).
+- [ ] 6.28 Sécuriser sortie machine (redaction secrets).
+- [ ] 6.29 Borner sortie machine (taille bornée).
+- [ ] 6.30 Colorer sortie machine (path-traversal).
+- [ ] 6.31 Ajouter sortie machine (exit-code F03).
+- [ ] 6.32 Améliorer sortie machine (signal coloré).
+- [ ] 6.33 Refactorer sortie machine (thème clair/sombre).
+- [ ] 6.34 Tester sortie machine (mode mono).
+- [ ] 6.35 Documenter sortie machine (emoji on/off).
+- [ ] 6.36 Centraliser sortie machine (colonnes alignées).
+- [ ] 6.37 Brancher sortie machine (fitLine repli).
+- [ ] 6.38 Sécuriser sortie machine (format table).
+- [ ] 6.39 Borner sortie machine (format csv/markdown).
+- [ ] 6.40 Colorer sortie machine (export config).
+- [ ] 6.41 Ajouter sortie machine (historisation).
+- [ ] 6.42 Améliorer sortie machine (compare).
+- [ ] 6.43 Refactorer sortie machine (alerte seuil).
+- [ ] 6.44 Tester sortie machine (perf durée/size).
+- [ ] 6.45 Documenter sortie machine (régression).
+- [ ] 6.46 Centraliser sortie machine (fuzz propriété).
+- [ ] 6.47 Brancher sortie machine (doc ARCHITECTURE).
+- [ ] 6.48 Sécuriser sortie machine (note threat-model).
+- [ ] 6.49 Borner sortie machine (entrée CHANGELOG).
+- [ ] 6.50 Colorer sortie machine en mode human.
+
+---
+
+## Phase 7 — Protocole v2 (50 étapes)
+- [ ] 7.1 Ajouter protocole v2 en mode human.
+- [ ] 7.2 Améliorer protocole v2 --format=json.
+- [ ] 7.3 Refactorer protocole v2 --format=ndjson.
+- [ ] 7.4 Tester protocole v2 --format=tsv.
+- [ ] 7.5 Documenter protocole v2 --quiet.
+- [ ] 7.6 Centraliser protocole v2 --verbose.
+- [ ] 7.7 Brancher protocole v2 --trace.
+- [ ] 7.8 Sécuriser protocole v2 --explain.
+- [ ] 7.9 Borner protocole v2 --dry-run.
+- [ ] 7.10 Colorer protocole v2 en test unitaire.
+- [ ] 7.11 Ajouter protocole v2 en test golden.
+- [ ] 7.12 Améliorer protocole v2 en test d'erreur.
+- [ ] 7.13 Refactorer protocole v2 en doc utilisateur.
+- [ ] 7.14 Tester protocole v2 en aide --help.
+- [ ] 7.15 Documenter protocole v2 en complétion.
+- [ ] 7.16 Centraliser protocole v2 en soak.
+- [ ] 7.17 Brancher protocole v2 en matrice JSON.
+- [ ] 7.18 Sécuriser protocole v2 via applyGlobalFlag.
+- [ ] 7.19 Borner protocole v2 via module dédié.
+- [ ] 7.20 Colorer protocole v2 via handler bridge.
+- [ ] 7.21 Ajouter protocole v2 (cas vide).
+- [ ] 7.22 Améliorer protocole v2 (NOT_FOUND).
+- [ ] 7.23 Refactorer protocole v2 (BLOCKED).
+- [ ] 7.24 Tester protocole v2 (timeout).
+- [ ] 7.25 Documenter protocole v2 (LocalAI down).
+- [ ] 7.26 Centraliser protocole v2 (GPU down).
+- [ ] 7.27 Brancher protocole v2 (git down).
+- [ ] 7.28 Sécuriser protocole v2 (redaction secrets).
+- [ ] 7.29 Borner protocole v2 (taille bornée).
+- [ ] 7.30 Colorer protocole v2 (path-traversal).
+- [ ] 7.31 Ajouter protocole v2 (exit-code F03).
+- [ ] 7.32 Améliorer protocole v2 (signal coloré).
+- [ ] 7.33 Refactorer protocole v2 (thème clair/sombre).
+- [ ] 7.34 Tester protocole v2 (mode mono).
+- [ ] 7.35 Documenter protocole v2 (emoji on/off).
+- [ ] 7.36 Centraliser protocole v2 (colonnes alignées).
+- [ ] 7.37 Brancher protocole v2 (fitLine repli).
+- [ ] 7.38 Sécuriser protocole v2 (format table).
+- [ ] 7.39 Borner protocole v2 (format csv/markdown).
+- [ ] 7.40 Colorer protocole v2 (export config).
+- [ ] 7.41 Ajouter protocole v2 (historisation).
+- [ ] 7.42 Améliorer protocole v2 (compare).
+- [ ] 7.43 Refactorer protocole v2 (alerte seuil).
+- [ ] 7.44 Tester protocole v2 (perf durée/size).
+- [ ] 7.45 Documenter protocole v2 (régression).
+- [ ] 7.46 Centraliser protocole v2 (fuzz propriété).
+- [ ] 7.47 Brancher protocole v2 (doc ARCHITECTURE).
+- [ ] 7.48 Sécuriser protocole v2 (note threat-model).
+- [ ] 7.49 Borner protocole v2 (entrée CHANGELOG).
+- [ ] 7.50 Colorer protocole v2 en mode human.
+
+---
+
+## Phase 8 — Robustesse parsing (50 étapes)
+- [ ] 8.1 Ajouter robustesse parsing en mode human.
+- [ ] 8.2 Améliorer robustesse parsing --format=json.
+- [ ] 8.3 Refactorer robustesse parsing --format=ndjson.
+- [ ] 8.4 Tester robustesse parsing --format=tsv.
+- [ ] 8.5 Documenter robustesse parsing --quiet.
+- [ ] 8.6 Centraliser robustesse parsing --verbose.
+- [ ] 8.7 Brancher robustesse parsing --trace.
+- [ ] 8.8 Sécuriser robustesse parsing --explain.
+- [ ] 8.9 Borner robustesse parsing --dry-run.
+- [ ] 8.10 Colorer robustesse parsing en test unitaire.
+- [ ] 8.11 Ajouter robustesse parsing en test golden.
+- [ ] 8.12 Améliorer robustesse parsing en test d'erreur.
+- [ ] 8.13 Refactorer robustesse parsing en doc utilisateur.
+- [ ] 8.14 Tester robustesse parsing en aide --help.
+- [ ] 8.15 Documenter robustesse parsing en complétion.
+- [ ] 8.16 Centraliser robustesse parsing en soak.
+- [ ] 8.17 Brancher robustesse parsing en matrice JSON.
+- [ ] 8.18 Sécuriser robustesse parsing via applyGlobalFlag.
+- [ ] 8.19 Borner robustesse parsing via module dédié.
+- [ ] 8.20 Colorer robustesse parsing via handler bridge.
+- [ ] 8.21 Ajouter robustesse parsing (cas vide).
+- [ ] 8.22 Améliorer robustesse parsing (NOT_FOUND).
+- [ ] 8.23 Refactorer robustesse parsing (BLOCKED).
+- [ ] 8.24 Tester robustesse parsing (timeout).
+- [ ] 8.25 Documenter robustesse parsing (LocalAI down).
+- [ ] 8.26 Centraliser robustesse parsing (GPU down).
+- [ ] 8.27 Brancher robustesse parsing (git down).
+- [ ] 8.28 Sécuriser robustesse parsing (redaction secrets).
+- [ ] 8.29 Borner robustesse parsing (taille bornée).
+- [ ] 8.30 Colorer robustesse parsing (path-traversal).
+- [ ] 8.31 Ajouter robustesse parsing (exit-code F03).
+- [ ] 8.32 Améliorer robustesse parsing (signal coloré).
+- [ ] 8.33 Refactorer robustesse parsing (thème clair/sombre).
+- [ ] 8.34 Tester robustesse parsing (mode mono).
+- [ ] 8.35 Documenter robustesse parsing (emoji on/off).
+- [ ] 8.36 Centraliser robustesse parsing (colonnes alignées).
+- [ ] 8.37 Brancher robustesse parsing (fitLine repli).
+- [ ] 8.38 Sécuriser robustesse parsing (format table).
+- [ ] 8.39 Borner robustesse parsing (format csv/markdown).
+- [ ] 8.40 Colorer robustesse parsing (export config).
+- [ ] 8.41 Ajouter robustesse parsing (historisation).
+- [ ] 8.42 Améliorer robustesse parsing (compare).
+- [ ] 8.43 Refactorer robustesse parsing (alerte seuil).
+- [ ] 8.44 Tester robustesse parsing (perf durée/size).
+- [ ] 8.45 Documenter robustesse parsing (régression).
+- [ ] 8.46 Centraliser robustesse parsing (fuzz propriété).
+- [ ] 8.47 Brancher robustesse parsing (doc ARCHITECTURE).
+- [ ] 8.48 Sécuriser robustesse parsing (note threat-model).
+- [ ] 8.49 Borner robustesse parsing (entrée CHANGELOG).
+- [ ] 8.50 Colorer robustesse parsing en mode human.
+
+---
+
+## Phase 9 — Process runner (50 étapes)
+- [ ] 9.1 Ajouter process runner en mode human.
+- [ ] 9.2 Améliorer process runner --format=json.
+- [ ] 9.3 Refactorer process runner --format=ndjson.
+- [ ] 9.4 Tester process runner --format=tsv.
+- [ ] 9.5 Documenter process runner --quiet.
+- [ ] 9.6 Centraliser process runner --verbose.
+- [ ] 9.7 Brancher process runner --trace.
+- [ ] 9.8 Sécuriser process runner --explain.
+- [ ] 9.9 Borner process runner --dry-run.
+- [ ] 9.10 Colorer process runner en test unitaire.
+- [ ] 9.11 Ajouter process runner en test golden.
+- [ ] 9.12 Améliorer process runner en test d'erreur.
+- [ ] 9.13 Refactorer process runner en doc utilisateur.
+- [ ] 9.14 Tester process runner en aide --help.
+- [ ] 9.15 Documenter process runner en complétion.
+- [ ] 9.16 Centraliser process runner en soak.
+- [ ] 9.17 Brancher process runner en matrice JSON.
+- [ ] 9.18 Sécuriser process runner via applyGlobalFlag.
+- [ ] 9.19 Borner process runner via module dédié.
+- [ ] 9.20 Colorer process runner via handler bridge.
+- [ ] 9.21 Ajouter process runner (cas vide).
+- [ ] 9.22 Améliorer process runner (NOT_FOUND).
+- [ ] 9.23 Refactorer process runner (BLOCKED).
+- [ ] 9.24 Tester process runner (timeout).
+- [ ] 9.25 Documenter process runner (LocalAI down).
+- [ ] 9.26 Centraliser process runner (GPU down).
+- [ ] 9.27 Brancher process runner (git down).
+- [ ] 9.28 Sécuriser process runner (redaction secrets).
+- [ ] 9.29 Borner process runner (taille bornée).
+- [ ] 9.30 Colorer process runner (path-traversal).
+- [ ] 9.31 Ajouter process runner (exit-code F03).
+- [ ] 9.32 Améliorer process runner (signal coloré).
+- [ ] 9.33 Refactorer process runner (thème clair/sombre).
+- [ ] 9.34 Tester process runner (mode mono).
+- [ ] 9.35 Documenter process runner (emoji on/off).
+- [ ] 9.36 Centraliser process runner (colonnes alignées).
+- [ ] 9.37 Brancher process runner (fitLine repli).
+- [ ] 9.38 Sécuriser process runner (format table).
+- [ ] 9.39 Borner process runner (format csv/markdown).
+- [ ] 9.40 Colorer process runner (export config).
+- [ ] 9.41 Ajouter process runner (historisation).
+- [ ] 9.42 Améliorer process runner (compare).
+- [ ] 9.43 Refactorer process runner (alerte seuil).
+- [ ] 9.44 Tester process runner (perf durée/size).
+- [ ] 9.45 Documenter process runner (régression).
+- [ ] 9.46 Centraliser process runner (fuzz propriété).
+- [ ] 9.47 Brancher process runner (doc ARCHITECTURE).
+- [ ] 9.48 Sécuriser process runner (note threat-model).
+- [ ] 9.49 Borner process runner (entrée CHANGELOG).
+- [ ] 9.50 Colorer process runner en mode human.
+
+---
+
+## Phase 10 — Concurrence & temps réel (50 étapes)
+- [ ] 10.1 Ajouter concurrence & temps réel en mode human.
+- [ ] 10.2 Améliorer concurrence & temps réel --format=json.
+- [ ] 10.3 Refactorer concurrence & temps réel --format=ndjson.
+- [ ] 10.4 Tester concurrence & temps réel --format=tsv.
+- [ ] 10.5 Documenter concurrence & temps réel --quiet.
+- [ ] 10.6 Centraliser concurrence & temps réel --verbose.
+- [ ] 10.7 Brancher concurrence & temps réel --trace.
+- [ ] 10.8 Sécuriser concurrence & temps réel --explain.
+- [ ] 10.9 Borner concurrence & temps réel --dry-run.
+- [ ] 10.10 Colorer concurrence & temps réel en test unitaire.
+- [ ] 10.11 Ajouter concurrence & temps réel en test golden.
+- [ ] 10.12 Améliorer concurrence & temps réel en test d'erreur.
+- [ ] 10.13 Refactorer concurrence & temps réel en doc utilisateur.
+- [ ] 10.14 Tester concurrence & temps réel en aide --help.
+- [ ] 10.15 Documenter concurrence & temps réel en complétion.
+- [ ] 10.16 Centraliser concurrence & temps réel en soak.
+- [ ] 10.17 Brancher concurrence & temps réel en matrice JSON.
+- [ ] 10.18 Sécuriser concurrence & temps réel via applyGlobalFlag.
+- [ ] 10.19 Borner concurrence & temps réel via module dédié.
+- [ ] 10.20 Colorer concurrence & temps réel via handler bridge.
+- [ ] 10.21 Ajouter concurrence & temps réel (cas vide).
+- [ ] 10.22 Améliorer concurrence & temps réel (NOT_FOUND).
+- [ ] 10.23 Refactorer concurrence & temps réel (BLOCKED).
+- [ ] 10.24 Tester concurrence & temps réel (timeout).
+- [ ] 10.25 Documenter concurrence & temps réel (LocalAI down).
+- [ ] 10.26 Centraliser concurrence & temps réel (GPU down).
+- [ ] 10.27 Brancher concurrence & temps réel (git down).
+- [ ] 10.28 Sécuriser concurrence & temps réel (redaction secrets).
+- [ ] 10.29 Borner concurrence & temps réel (taille bornée).
+- [ ] 10.30 Colorer concurrence & temps réel (path-traversal).
+- [ ] 10.31 Ajouter concurrence & temps réel (exit-code F03).
+- [ ] 10.32 Améliorer concurrence & temps réel (signal coloré).
+- [ ] 10.33 Refactorer concurrence & temps réel (thème clair/sombre).
+- [ ] 10.34 Tester concurrence & temps réel (mode mono).
+- [ ] 10.35 Documenter concurrence & temps réel (emoji on/off).
+- [ ] 10.36 Centraliser concurrence & temps réel (colonnes alignées).
+- [ ] 10.37 Brancher concurrence & temps réel (fitLine repli).
+- [ ] 10.38 Sécuriser concurrence & temps réel (format table).
+- [ ] 10.39 Borner concurrence & temps réel (format csv/markdown).
+- [ ] 10.40 Colorer concurrence & temps réel (export config).
+- [ ] 10.41 Ajouter concurrence & temps réel (historisation).
+- [ ] 10.42 Améliorer concurrence & temps réel (compare).
+- [ ] 10.43 Refactorer concurrence & temps réel (alerte seuil).
+- [ ] 10.44 Tester concurrence & temps réel (perf durée/size).
+- [ ] 10.45 Documenter concurrence & temps réel (régression).
+- [ ] 10.46 Centraliser concurrence & temps réel (fuzz propriété).
+- [ ] 10.47 Brancher concurrence & temps réel (doc ARCHITECTURE).
+- [ ] 10.48 Sécuriser concurrence & temps réel (note threat-model).
+- [ ] 10.49 Borner concurrence & temps réel (entrée CHANGELOG).
+- [ ] 10.50 Colorer concurrence & temps réel en mode human.
+
+---
+
+## Phase 11 — Sécurité & sandbox (50 étapes)
+- [ ] 11.1 Ajouter sécurité & sandbox en mode human.
+- [ ] 11.2 Améliorer sécurité & sandbox --format=json.
+- [ ] 11.3 Refactorer sécurité & sandbox --format=ndjson.
+- [ ] 11.4 Tester sécurité & sandbox --format=tsv.
+- [ ] 11.5 Documenter sécurité & sandbox --quiet.
+- [ ] 11.6 Centraliser sécurité & sandbox --verbose.
+- [ ] 11.7 Brancher sécurité & sandbox --trace.
+- [ ] 11.8 Sécuriser sécurité & sandbox --explain.
+- [ ] 11.9 Borner sécurité & sandbox --dry-run.
+- [ ] 11.10 Colorer sécurité & sandbox en test unitaire.
+- [ ] 11.11 Ajouter sécurité & sandbox en test golden.
+- [ ] 11.12 Améliorer sécurité & sandbox en test d'erreur.
+- [ ] 11.13 Refactorer sécurité & sandbox en doc utilisateur.
+- [ ] 11.14 Tester sécurité & sandbox en aide --help.
+- [ ] 11.15 Documenter sécurité & sandbox en complétion.
+- [ ] 11.16 Centraliser sécurité & sandbox en soak.
+- [ ] 11.17 Brancher sécurité & sandbox en matrice JSON.
+- [ ] 11.18 Sécuriser sécurité & sandbox via applyGlobalFlag.
+- [ ] 11.19 Borner sécurité & sandbox via module dédié.
+- [ ] 11.20 Colorer sécurité & sandbox via handler bridge.
+- [ ] 11.21 Ajouter sécurité & sandbox (cas vide).
+- [ ] 11.22 Améliorer sécurité & sandbox (NOT_FOUND).
+- [ ] 11.23 Refactorer sécurité & sandbox (BLOCKED).
+- [ ] 11.24 Tester sécurité & sandbox (timeout).
+- [ ] 11.25 Documenter sécurité & sandbox (LocalAI down).
+- [ ] 11.26 Centraliser sécurité & sandbox (GPU down).
+- [ ] 11.27 Brancher sécurité & sandbox (git down).
+- [ ] 11.28 Sécuriser sécurité & sandbox (redaction secrets).
+- [ ] 11.29 Borner sécurité & sandbox (taille bornée).
+- [ ] 11.30 Colorer sécurité & sandbox (path-traversal).
+- [ ] 11.31 Ajouter sécurité & sandbox (exit-code F03).
+- [ ] 11.32 Améliorer sécurité & sandbox (signal coloré).
+- [ ] 11.33 Refactorer sécurité & sandbox (thème clair/sombre).
+- [ ] 11.34 Tester sécurité & sandbox (mode mono).
+- [ ] 11.35 Documenter sécurité & sandbox (emoji on/off).
+- [ ] 11.36 Centraliser sécurité & sandbox (colonnes alignées).
+- [ ] 11.37 Brancher sécurité & sandbox (fitLine repli).
+- [ ] 11.38 Sécuriser sécurité & sandbox (format table).
+- [ ] 11.39 Borner sécurité & sandbox (format csv/markdown).
+- [ ] 11.40 Colorer sécurité & sandbox (export config).
+- [ ] 11.41 Ajouter sécurité & sandbox (historisation).
+- [ ] 11.42 Améliorer sécurité & sandbox (compare).
+- [ ] 11.43 Refactorer sécurité & sandbox (alerte seuil).
+- [ ] 11.44 Tester sécurité & sandbox (perf durée/size).
+- [ ] 11.45 Documenter sécurité & sandbox (régression).
+- [ ] 11.46 Centraliser sécurité & sandbox (fuzz propriété).
+- [ ] 11.47 Brancher sécurité & sandbox (doc ARCHITECTURE).
+- [ ] 11.48 Sécuriser sécurité & sandbox (note threat-model).
+- [ ] 11.49 Borner sécurité & sandbox (entrée CHANGELOG).
+- [ ] 11.50 Colorer sécurité & sandbox en mode human.
+
+---
+
+## Phase 12 — Redaction & secrets (50 étapes)
+- [ ] 12.1 Ajouter redaction & secrets en mode human.
+- [ ] 12.2 Améliorer redaction & secrets --format=json.
+- [ ] 12.3 Refactorer redaction & secrets --format=ndjson.
+- [ ] 12.4 Tester redaction & secrets --format=tsv.
+- [ ] 12.5 Documenter redaction & secrets --quiet.
+- [ ] 12.6 Centraliser redaction & secrets --verbose.
+- [ ] 12.7 Brancher redaction & secrets --trace.
+- [ ] 12.8 Sécuriser redaction & secrets --explain.
+- [ ] 12.9 Borner redaction & secrets --dry-run.
+- [ ] 12.10 Colorer redaction & secrets en test unitaire.
+- [ ] 12.11 Ajouter redaction & secrets en test golden.
+- [ ] 12.12 Améliorer redaction & secrets en test d'erreur.
+- [ ] 12.13 Refactorer redaction & secrets en doc utilisateur.
+- [ ] 12.14 Tester redaction & secrets en aide --help.
+- [ ] 12.15 Documenter redaction & secrets en complétion.
+- [ ] 12.16 Centraliser redaction & secrets en soak.
+- [ ] 12.17 Brancher redaction & secrets en matrice JSON.
+- [ ] 12.18 Sécuriser redaction & secrets via applyGlobalFlag.
+- [ ] 12.19 Borner redaction & secrets via module dédié.
+- [ ] 12.20 Colorer redaction & secrets via handler bridge.
+- [ ] 12.21 Ajouter redaction & secrets (cas vide).
+- [ ] 12.22 Améliorer redaction & secrets (NOT_FOUND).
+- [ ] 12.23 Refactorer redaction & secrets (BLOCKED).
+- [ ] 12.24 Tester redaction & secrets (timeout).
+- [ ] 12.25 Documenter redaction & secrets (LocalAI down).
+- [ ] 12.26 Centraliser redaction & secrets (GPU down).
+- [ ] 12.27 Brancher redaction & secrets (git down).
+- [ ] 12.28 Sécuriser redaction & secrets (redaction secrets).
+- [ ] 12.29 Borner redaction & secrets (taille bornée).
+- [ ] 12.30 Colorer redaction & secrets (path-traversal).
+- [ ] 12.31 Ajouter redaction & secrets (exit-code F03).
+- [ ] 12.32 Améliorer redaction & secrets (signal coloré).
+- [ ] 12.33 Refactorer redaction & secrets (thème clair/sombre).
+- [ ] 12.34 Tester redaction & secrets (mode mono).
+- [ ] 12.35 Documenter redaction & secrets (emoji on/off).
+- [ ] 12.36 Centraliser redaction & secrets (colonnes alignées).
+- [ ] 12.37 Brancher redaction & secrets (fitLine repli).
+- [ ] 12.38 Sécuriser redaction & secrets (format table).
+- [ ] 12.39 Borner redaction & secrets (format csv/markdown).
+- [ ] 12.40 Colorer redaction & secrets (export config).
+- [ ] 12.41 Ajouter redaction & secrets (historisation).
+- [ ] 12.42 Améliorer redaction & secrets (compare).
+- [ ] 12.43 Refactorer redaction & secrets (alerte seuil).
+- [ ] 12.44 Tester redaction & secrets (perf durée/size).
+- [ ] 12.45 Documenter redaction & secrets (régression).
+- [ ] 12.46 Centraliser redaction & secrets (fuzz propriété).
+- [ ] 12.47 Brancher redaction & secrets (doc ARCHITECTURE).
+- [ ] 12.48 Sécuriser redaction & secrets (note threat-model).
+- [ ] 12.49 Borner redaction & secrets (entrée CHANGELOG).
+- [ ] 12.50 Colorer redaction & secrets en mode human.
+
+---
+
+## Phase 13 — Logging & diagnostic (50 étapes)
+- [ ] 13.1 Ajouter logging & diagnostic en mode human.
+- [ ] 13.2 Améliorer logging & diagnostic --format=json.
+- [ ] 13.3 Refactorer logging & diagnostic --format=ndjson.
+- [ ] 13.4 Tester logging & diagnostic --format=tsv.
+- [ ] 13.5 Documenter logging & diagnostic --quiet.
+- [ ] 13.6 Centraliser logging & diagnostic --verbose.
+- [ ] 13.7 Brancher logging & diagnostic --trace.
+- [ ] 13.8 Sécuriser logging & diagnostic --explain.
+- [ ] 13.9 Borner logging & diagnostic --dry-run.
+- [ ] 13.10 Colorer logging & diagnostic en test unitaire.
+- [ ] 13.11 Ajouter logging & diagnostic en test golden.
+- [ ] 13.12 Améliorer logging & diagnostic en test d'erreur.
+- [ ] 13.13 Refactorer logging & diagnostic en doc utilisateur.
+- [ ] 13.14 Tester logging & diagnostic en aide --help.
+- [ ] 13.15 Documenter logging & diagnostic en complétion.
+- [ ] 13.16 Centraliser logging & diagnostic en soak.
+- [ ] 13.17 Brancher logging & diagnostic en matrice JSON.
+- [ ] 13.18 Sécuriser logging & diagnostic via applyGlobalFlag.
+- [ ] 13.19 Borner logging & diagnostic via module dédié.
+- [ ] 13.20 Colorer logging & diagnostic via handler bridge.
+- [ ] 13.21 Ajouter logging & diagnostic (cas vide).
+- [ ] 13.22 Améliorer logging & diagnostic (NOT_FOUND).
+- [ ] 13.23 Refactorer logging & diagnostic (BLOCKED).
+- [ ] 13.24 Tester logging & diagnostic (timeout).
+- [ ] 13.25 Documenter logging & diagnostic (LocalAI down).
+- [ ] 13.26 Centraliser logging & diagnostic (GPU down).
+- [ ] 13.27 Brancher logging & diagnostic (git down).
+- [ ] 13.28 Sécuriser logging & diagnostic (redaction secrets).
+- [ ] 13.29 Borner logging & diagnostic (taille bornée).
+- [ ] 13.30 Colorer logging & diagnostic (path-traversal).
+- [ ] 13.31 Ajouter logging & diagnostic (exit-code F03).
+- [ ] 13.32 Améliorer logging & diagnostic (signal coloré).
+- [ ] 13.33 Refactorer logging & diagnostic (thème clair/sombre).
+- [ ] 13.34 Tester logging & diagnostic (mode mono).
+- [ ] 13.35 Documenter logging & diagnostic (emoji on/off).
+- [ ] 13.36 Centraliser logging & diagnostic (colonnes alignées).
+- [ ] 13.37 Brancher logging & diagnostic (fitLine repli).
+- [ ] 13.38 Sécuriser logging & diagnostic (format table).
+- [ ] 13.39 Borner logging & diagnostic (format csv/markdown).
+- [ ] 13.40 Colorer logging & diagnostic (export config).
+- [ ] 13.41 Ajouter logging & diagnostic (historisation).
+- [ ] 13.42 Améliorer logging & diagnostic (compare).
+- [ ] 13.43 Refactorer logging & diagnostic (alerte seuil).
+- [ ] 13.44 Tester logging & diagnostic (perf durée/size).
+- [ ] 13.45 Documenter logging & diagnostic (régression).
+- [ ] 13.46 Centraliser logging & diagnostic (fuzz propriété).
+- [ ] 13.47 Brancher logging & diagnostic (doc ARCHITECTURE).
+- [ ] 13.48 Sécuriser logging & diagnostic (note threat-model).
+- [ ] 13.49 Borner logging & diagnostic (entrée CHANGELOG).
+- [ ] 13.50 Colorer logging & diagnostic en mode human.
+
+---
+
+## Phase 14 — Health & preflight (50 étapes)
+- [ ] 14.1 Ajouter health & preflight en mode human.
+- [ ] 14.2 Améliorer health & preflight --format=json.
+- [ ] 14.3 Refactorer health & preflight --format=ndjson.
+- [ ] 14.4 Tester health & preflight --format=tsv.
+- [ ] 14.5 Documenter health & preflight --quiet.
+- [ ] 14.6 Centraliser health & preflight --verbose.
+- [ ] 14.7 Brancher health & preflight --trace.
+- [ ] 14.8 Sécuriser health & preflight --explain.
+- [ ] 14.9 Borner health & preflight --dry-run.
+- [ ] 14.10 Colorer health & preflight en test unitaire.
+- [ ] 14.11 Ajouter health & preflight en test golden.
+- [ ] 14.12 Améliorer health & preflight en test d'erreur.
+- [ ] 14.13 Refactorer health & preflight en doc utilisateur.
+- [ ] 14.14 Tester health & preflight en aide --help.
+- [ ] 14.15 Documenter health & preflight en complétion.
+- [ ] 14.16 Centraliser health & preflight en soak.
+- [ ] 14.17 Brancher health & preflight en matrice JSON.
+- [ ] 14.18 Sécuriser health & preflight via applyGlobalFlag.
+- [ ] 14.19 Borner health & preflight via module dédié.
+- [ ] 14.20 Colorer health & preflight via handler bridge.
+- [ ] 14.21 Ajouter health & preflight (cas vide).
+- [ ] 14.22 Améliorer health & preflight (NOT_FOUND).
+- [ ] 14.23 Refactorer health & preflight (BLOCKED).
+- [ ] 14.24 Tester health & preflight (timeout).
+- [ ] 14.25 Documenter health & preflight (LocalAI down).
+- [ ] 14.26 Centraliser health & preflight (GPU down).
+- [ ] 14.27 Brancher health & preflight (git down).
+- [ ] 14.28 Sécuriser health & preflight (redaction secrets).
+- [ ] 14.29 Borner health & preflight (taille bornée).
+- [ ] 14.30 Colorer health & preflight (path-traversal).
+- [ ] 14.31 Ajouter health & preflight (exit-code F03).
+- [ ] 14.32 Améliorer health & preflight (signal coloré).
+- [ ] 14.33 Refactorer health & preflight (thème clair/sombre).
+- [ ] 14.34 Tester health & preflight (mode mono).
+- [ ] 14.35 Documenter health & preflight (emoji on/off).
+- [ ] 14.36 Centraliser health & preflight (colonnes alignées).
+- [ ] 14.37 Brancher health & preflight (fitLine repli).
+- [ ] 14.38 Sécuriser health & preflight (format table).
+- [ ] 14.39 Borner health & preflight (format csv/markdown).
+- [ ] 14.40 Colorer health & preflight (export config).
+- [ ] 14.41 Ajouter health & preflight (historisation).
+- [ ] 14.42 Améliorer health & preflight (compare).
+- [ ] 14.43 Refactorer health & preflight (alerte seuil).
+- [ ] 14.44 Tester health & preflight (perf durée/size).
+- [ ] 14.45 Documenter health & preflight (régression).
+- [ ] 14.46 Centraliser health & preflight (fuzz propriété).
+- [ ] 14.47 Brancher health & preflight (doc ARCHITECTURE).
+- [ ] 14.48 Sécuriser health & preflight (note threat-model).
+- [ ] 14.49 Borner health & preflight (entrée CHANGELOG).
+- [ ] 14.50 Colorer health & preflight en mode human.
+
+---
+
+## Phase 15 — LocalAI (50 étapes)
+- [ ] 15.1 Ajouter localai en mode human.
+- [ ] 15.2 Améliorer localai --format=json.
+- [ ] 15.3 Refactorer localai --format=ndjson.
+- [ ] 15.4 Tester localai --format=tsv.
+- [ ] 15.5 Documenter localai --quiet.
+- [ ] 15.6 Centraliser localai --verbose.
+- [ ] 15.7 Brancher localai --trace.
+- [ ] 15.8 Sécuriser localai --explain.
+- [ ] 15.9 Borner localai --dry-run.
+- [ ] 15.10 Colorer localai en test unitaire.
+- [ ] 15.11 Ajouter localai en test golden.
+- [ ] 15.12 Améliorer localai en test d'erreur.
+- [ ] 15.13 Refactorer localai en doc utilisateur.
+- [ ] 15.14 Tester localai en aide --help.
+- [ ] 15.15 Documenter localai en complétion.
+- [ ] 15.16 Centraliser localai en soak.
+- [ ] 15.17 Brancher localai en matrice JSON.
+- [ ] 15.18 Sécuriser localai via applyGlobalFlag.
+- [ ] 15.19 Borner localai via module dédié.
+- [ ] 15.20 Colorer localai via handler bridge.
+- [ ] 15.21 Ajouter localai (cas vide).
+- [ ] 15.22 Améliorer localai (NOT_FOUND).
+- [ ] 15.23 Refactorer localai (BLOCKED).
+- [ ] 15.24 Tester localai (timeout).
+- [ ] 15.25 Documenter localai (LocalAI down).
+- [ ] 15.26 Centraliser localai (GPU down).
+- [ ] 15.27 Brancher localai (git down).
+- [ ] 15.28 Sécuriser localai (redaction secrets).
+- [ ] 15.29 Borner localai (taille bornée).
+- [ ] 15.30 Colorer localai (path-traversal).
+- [ ] 15.31 Ajouter localai (exit-code F03).
+- [ ] 15.32 Améliorer localai (signal coloré).
+- [ ] 15.33 Refactorer localai (thème clair/sombre).
+- [ ] 15.34 Tester localai (mode mono).
+- [ ] 15.35 Documenter localai (emoji on/off).
+- [ ] 15.36 Centraliser localai (colonnes alignées).
+- [ ] 15.37 Brancher localai (fitLine repli).
+- [ ] 15.38 Sécuriser localai (format table).
+- [ ] 15.39 Borner localai (format csv/markdown).
+- [ ] 15.40 Colorer localai (export config).
+- [ ] 15.41 Ajouter localai (historisation).
+- [ ] 15.42 Améliorer localai (compare).
+- [ ] 15.43 Refactorer localai (alerte seuil).
+- [ ] 15.44 Tester localai (perf durée/size).
+- [ ] 15.45 Documenter localai (régression).
+- [ ] 15.46 Centraliser localai (fuzz propriété).
+- [ ] 15.47 Brancher localai (doc ARCHITECTURE).
+- [ ] 15.48 Sécuriser localai (note threat-model).
+- [ ] 15.49 Borner localai (entrée CHANGELOG).
+- [ ] 15.50 Colorer localai en mode human.
+
+---
+
+## Phase 16 — GPU (50 étapes)
+- [ ] 16.1 Ajouter gpu en mode human.
+- [ ] 16.2 Améliorer gpu --format=json.
+- [ ] 16.3 Refactorer gpu --format=ndjson.
+- [ ] 16.4 Tester gpu --format=tsv.
+- [ ] 16.5 Documenter gpu --quiet.
+- [ ] 16.6 Centraliser gpu --verbose.
+- [ ] 16.7 Brancher gpu --trace.
+- [ ] 16.8 Sécuriser gpu --explain.
+- [ ] 16.9 Borner gpu --dry-run.
+- [ ] 16.10 Colorer gpu en test unitaire.
+- [ ] 16.11 Ajouter gpu en test golden.
+- [ ] 16.12 Améliorer gpu en test d'erreur.
+- [ ] 16.13 Refactorer gpu en doc utilisateur.
+- [ ] 16.14 Tester gpu en aide --help.
+- [ ] 16.15 Documenter gpu en complétion.
+- [ ] 16.16 Centraliser gpu en soak.
+- [ ] 16.17 Brancher gpu en matrice JSON.
+- [ ] 16.18 Sécuriser gpu via applyGlobalFlag.
+- [ ] 16.19 Borner gpu via module dédié.
+- [ ] 16.20 Colorer gpu via handler bridge.
+- [ ] 16.21 Ajouter gpu (cas vide).
+- [ ] 16.22 Améliorer gpu (NOT_FOUND).
+- [ ] 16.23 Refactorer gpu (BLOCKED).
+- [ ] 16.24 Tester gpu (timeout).
+- [ ] 16.25 Documenter gpu (LocalAI down).
+- [ ] 16.26 Centraliser gpu (GPU down).
+- [ ] 16.27 Brancher gpu (git down).
+- [ ] 16.28 Sécuriser gpu (redaction secrets).
+- [ ] 16.29 Borner gpu (taille bornée).
+- [ ] 16.30 Colorer gpu (path-traversal).
+- [ ] 16.31 Ajouter gpu (exit-code F03).
+- [ ] 16.32 Améliorer gpu (signal coloré).
+- [ ] 16.33 Refactorer gpu (thème clair/sombre).
+- [ ] 16.34 Tester gpu (mode mono).
+- [ ] 16.35 Documenter gpu (emoji on/off).
+- [ ] 16.36 Centraliser gpu (colonnes alignées).
+- [ ] 16.37 Brancher gpu (fitLine repli).
+- [ ] 16.38 Sécuriser gpu (format table).
+- [ ] 16.39 Borner gpu (format csv/markdown).
+- [ ] 16.40 Colorer gpu (export config).
+- [ ] 16.41 Ajouter gpu (historisation).
+- [ ] 16.42 Améliorer gpu (compare).
+- [ ] 16.43 Refactorer gpu (alerte seuil).
+- [ ] 16.44 Tester gpu (perf durée/size).
+- [ ] 16.45 Documenter gpu (régression).
+- [ ] 16.46 Centraliser gpu (fuzz propriété).
+- [ ] 16.47 Brancher gpu (doc ARCHITECTURE).
+- [ ] 16.48 Sécuriser gpu (note threat-model).
+- [ ] 16.49 Borner gpu (entrée CHANGELOG).
+- [ ] 16.50 Colorer gpu en mode human.
+
+---
+
+## Phase 17 — Inventaire modèles (50 étapes)
+- [ ] 17.1 Ajouter inventaire modèles en mode human.
+- [ ] 17.2 Améliorer inventaire modèles --format=json.
+- [ ] 17.3 Refactorer inventaire modèles --format=ndjson.
+- [ ] 17.4 Tester inventaire modèles --format=tsv.
+- [ ] 17.5 Documenter inventaire modèles --quiet.
+- [ ] 17.6 Centraliser inventaire modèles --verbose.
+- [ ] 17.7 Brancher inventaire modèles --trace.
+- [ ] 17.8 Sécuriser inventaire modèles --explain.
+- [ ] 17.9 Borner inventaire modèles --dry-run.
+- [ ] 17.10 Colorer inventaire modèles en test unitaire.
+- [ ] 17.11 Ajouter inventaire modèles en test golden.
+- [ ] 17.12 Améliorer inventaire modèles en test d'erreur.
+- [ ] 17.13 Refactorer inventaire modèles en doc utilisateur.
+- [ ] 17.14 Tester inventaire modèles en aide --help.
+- [ ] 17.15 Documenter inventaire modèles en complétion.
+- [ ] 17.16 Centraliser inventaire modèles en soak.
+- [ ] 17.17 Brancher inventaire modèles en matrice JSON.
+- [ ] 17.18 Sécuriser inventaire modèles via applyGlobalFlag.
+- [ ] 17.19 Borner inventaire modèles via module dédié.
+- [ ] 17.20 Colorer inventaire modèles via handler bridge.
+- [ ] 17.21 Ajouter inventaire modèles (cas vide).
+- [ ] 17.22 Améliorer inventaire modèles (NOT_FOUND).
+- [ ] 17.23 Refactorer inventaire modèles (BLOCKED).
+- [ ] 17.24 Tester inventaire modèles (timeout).
+- [ ] 17.25 Documenter inventaire modèles (LocalAI down).
+- [ ] 17.26 Centraliser inventaire modèles (GPU down).
+- [ ] 17.27 Brancher inventaire modèles (git down).
+- [ ] 17.28 Sécuriser inventaire modèles (redaction secrets).
+- [ ] 17.29 Borner inventaire modèles (taille bornée).
+- [ ] 17.30 Colorer inventaire modèles (path-traversal).
+- [ ] 17.31 Ajouter inventaire modèles (exit-code F03).
+- [ ] 17.32 Améliorer inventaire modèles (signal coloré).
+- [ ] 17.33 Refactorer inventaire modèles (thème clair/sombre).
+- [ ] 17.34 Tester inventaire modèles (mode mono).
+- [ ] 17.35 Documenter inventaire modèles (emoji on/off).
+- [ ] 17.36 Centraliser inventaire modèles (colonnes alignées).
+- [ ] 17.37 Brancher inventaire modèles (fitLine repli).
+- [ ] 17.38 Sécuriser inventaire modèles (format table).
+- [ ] 17.39 Borner inventaire modèles (format csv/markdown).
+- [ ] 17.40 Colorer inventaire modèles (export config).
+- [ ] 17.41 Ajouter inventaire modèles (historisation).
+- [ ] 17.42 Améliorer inventaire modèles (compare).
+- [ ] 17.43 Refactorer inventaire modèles (alerte seuil).
+- [ ] 17.44 Tester inventaire modèles (perf durée/size).
+- [ ] 17.45 Documenter inventaire modèles (régression).
+- [ ] 17.46 Centraliser inventaire modèles (fuzz propriété).
+- [ ] 17.47 Brancher inventaire modèles (doc ARCHITECTURE).
+- [ ] 17.48 Sécuriser inventaire modèles (note threat-model).
+- [ ] 17.49 Borner inventaire modèles (entrée CHANGELOG).
+- [ ] 17.50 Colorer inventaire modèles en mode human.
+
+---
+
+## Phase 18 — Routage adaptatif (50 étapes)
+- [ ] 18.1 Ajouter routage adaptatif en mode human.
+- [ ] 18.2 Améliorer routage adaptatif --format=json.
+- [ ] 18.3 Refactorer routage adaptatif --format=ndjson.
+- [ ] 18.4 Tester routage adaptatif --format=tsv.
+- [ ] 18.5 Documenter routage adaptatif --quiet.
+- [ ] 18.6 Centraliser routage adaptatif --verbose.
+- [ ] 18.7 Brancher routage adaptatif --trace.
+- [ ] 18.8 Sécuriser routage adaptatif --explain.
+- [ ] 18.9 Borner routage adaptatif --dry-run.
+- [ ] 18.10 Colorer routage adaptatif en test unitaire.
+- [ ] 18.11 Ajouter routage adaptatif en test golden.
+- [ ] 18.12 Améliorer routage adaptatif en test d'erreur.
+- [ ] 18.13 Refactorer routage adaptatif en doc utilisateur.
+- [ ] 18.14 Tester routage adaptatif en aide --help.
+- [ ] 18.15 Documenter routage adaptatif en complétion.
+- [ ] 18.16 Centraliser routage adaptatif en soak.
+- [ ] 18.17 Brancher routage adaptatif en matrice JSON.
+- [ ] 18.18 Sécuriser routage adaptatif via applyGlobalFlag.
+- [ ] 18.19 Borner routage adaptatif via module dédié.
+- [ ] 18.20 Colorer routage adaptatif via handler bridge.
+- [ ] 18.21 Ajouter routage adaptatif (cas vide).
+- [ ] 18.22 Améliorer routage adaptatif (NOT_FOUND).
+- [ ] 18.23 Refactorer routage adaptatif (BLOCKED).
+- [ ] 18.24 Tester routage adaptatif (timeout).
+- [ ] 18.25 Documenter routage adaptatif (LocalAI down).
+- [ ] 18.26 Centraliser routage adaptatif (GPU down).
+- [ ] 18.27 Brancher routage adaptatif (git down).
+- [ ] 18.28 Sécuriser routage adaptatif (redaction secrets).
+- [ ] 18.29 Borner routage adaptatif (taille bornée).
+- [ ] 18.30 Colorer routage adaptatif (path-traversal).
+- [ ] 18.31 Ajouter routage adaptatif (exit-code F03).
+- [ ] 18.32 Améliorer routage adaptatif (signal coloré).
+- [ ] 18.33 Refactorer routage adaptatif (thème clair/sombre).
+- [ ] 18.34 Tester routage adaptatif (mode mono).
+- [ ] 18.35 Documenter routage adaptatif (emoji on/off).
+- [ ] 18.36 Centraliser routage adaptatif (colonnes alignées).
+- [ ] 18.37 Brancher routage adaptatif (fitLine repli).
+- [ ] 18.38 Sécuriser routage adaptatif (format table).
+- [ ] 18.39 Borner routage adaptatif (format csv/markdown).
+- [ ] 18.40 Colorer routage adaptatif (export config).
+- [ ] 18.41 Ajouter routage adaptatif (historisation).
+- [ ] 18.42 Améliorer routage adaptatif (compare).
+- [ ] 18.43 Refactorer routage adaptatif (alerte seuil).
+- [ ] 18.44 Tester routage adaptatif (perf durée/size).
+- [ ] 18.45 Documenter routage adaptatif (régression).
+- [ ] 18.46 Centraliser routage adaptatif (fuzz propriété).
+- [ ] 18.47 Brancher routage adaptatif (doc ARCHITECTURE).
+- [ ] 18.48 Sécuriser routage adaptatif (note threat-model).
+- [ ] 18.49 Borner routage adaptatif (entrée CHANGELOG).
+- [ ] 18.50 Colorer routage adaptatif en mode human.
+
+---
+
+## Phase 19 — Cache modèle (50 étapes)
+- [ ] 19.1 Ajouter cache modèle en mode human.
+- [ ] 19.2 Améliorer cache modèle --format=json.
+- [ ] 19.3 Refactorer cache modèle --format=ndjson.
+- [ ] 19.4 Tester cache modèle --format=tsv.
+- [ ] 19.5 Documenter cache modèle --quiet.
+- [ ] 19.6 Centraliser cache modèle --verbose.
+- [ ] 19.7 Brancher cache modèle --trace.
+- [ ] 19.8 Sécuriser cache modèle --explain.
+- [ ] 19.9 Borner cache modèle --dry-run.
+- [ ] 19.10 Colorer cache modèle en test unitaire.
+- [ ] 19.11 Ajouter cache modèle en test golden.
+- [ ] 19.12 Améliorer cache modèle en test d'erreur.
+- [ ] 19.13 Refactorer cache modèle en doc utilisateur.
+- [ ] 19.14 Tester cache modèle en aide --help.
+- [ ] 19.15 Documenter cache modèle en complétion.
+- [ ] 19.16 Centraliser cache modèle en soak.
+- [ ] 19.17 Brancher cache modèle en matrice JSON.
+- [ ] 19.18 Sécuriser cache modèle via applyGlobalFlag.
+- [ ] 19.19 Borner cache modèle via module dédié.
+- [ ] 19.20 Colorer cache modèle via handler bridge.
+- [ ] 19.21 Ajouter cache modèle (cas vide).
+- [ ] 19.22 Améliorer cache modèle (NOT_FOUND).
+- [ ] 19.23 Refactorer cache modèle (BLOCKED).
+- [ ] 19.24 Tester cache modèle (timeout).
+- [ ] 19.25 Documenter cache modèle (LocalAI down).
+- [ ] 19.26 Centraliser cache modèle (GPU down).
+- [ ] 19.27 Brancher cache modèle (git down).
+- [ ] 19.28 Sécuriser cache modèle (redaction secrets).
+- [ ] 19.29 Borner cache modèle (taille bornée).
+- [ ] 19.30 Colorer cache modèle (path-traversal).
+- [ ] 19.31 Ajouter cache modèle (exit-code F03).
+- [ ] 19.32 Améliorer cache modèle (signal coloré).
+- [ ] 19.33 Refactorer cache modèle (thème clair/sombre).
+- [ ] 19.34 Tester cache modèle (mode mono).
+- [ ] 19.35 Documenter cache modèle (emoji on/off).
+- [ ] 19.36 Centraliser cache modèle (colonnes alignées).
+- [ ] 19.37 Brancher cache modèle (fitLine repli).
+- [ ] 19.38 Sécuriser cache modèle (format table).
+- [ ] 19.39 Borner cache modèle (format csv/markdown).
+- [ ] 19.40 Colorer cache modèle (export config).
+- [ ] 19.41 Ajouter cache modèle (historisation).
+- [ ] 19.42 Améliorer cache modèle (compare).
+- [ ] 19.43 Refactorer cache modèle (alerte seuil).
+- [ ] 19.44 Tester cache modèle (perf durée/size).
+- [ ] 19.45 Documenter cache modèle (régression).
+- [ ] 19.46 Centraliser cache modèle (fuzz propriété).
+- [ ] 19.47 Brancher cache modèle (doc ARCHITECTURE).
+- [ ] 19.48 Sécuriser cache modèle (note threat-model).
+- [ ] 19.49 Borner cache modèle (entrée CHANGELOG).
+- [ ] 19.50 Colorer cache modèle en mode human.
+
+---
+
+## Phase 20 — Benchmark (50 étapes)
+- [ ] 20.1 Ajouter benchmark en mode human.
+- [ ] 20.2 Améliorer benchmark --format=json.
+- [ ] 20.3 Refactorer benchmark --format=ndjson.
+- [ ] 20.4 Tester benchmark --format=tsv.
+- [ ] 20.5 Documenter benchmark --quiet.
+- [ ] 20.6 Centraliser benchmark --verbose.
+- [ ] 20.7 Brancher benchmark --trace.
+- [ ] 20.8 Sécuriser benchmark --explain.
+- [ ] 20.9 Borner benchmark --dry-run.
+- [ ] 20.10 Colorer benchmark en test unitaire.
+- [ ] 20.11 Ajouter benchmark en test golden.
+- [ ] 20.12 Améliorer benchmark en test d'erreur.
+- [ ] 20.13 Refactorer benchmark en doc utilisateur.
+- [ ] 20.14 Tester benchmark en aide --help.
+- [ ] 20.15 Documenter benchmark en complétion.
+- [ ] 20.16 Centraliser benchmark en soak.
+- [ ] 20.17 Brancher benchmark en matrice JSON.
+- [ ] 20.18 Sécuriser benchmark via applyGlobalFlag.
+- [ ] 20.19 Borner benchmark via module dédié.
+- [ ] 20.20 Colorer benchmark via handler bridge.
+- [ ] 20.21 Ajouter benchmark (cas vide).
+- [ ] 20.22 Améliorer benchmark (NOT_FOUND).
+- [ ] 20.23 Refactorer benchmark (BLOCKED).
+- [ ] 20.24 Tester benchmark (timeout).
+- [ ] 20.25 Documenter benchmark (LocalAI down).
+- [ ] 20.26 Centraliser benchmark (GPU down).
+- [ ] 20.27 Brancher benchmark (git down).
+- [ ] 20.28 Sécuriser benchmark (redaction secrets).
+- [ ] 20.29 Borner benchmark (taille bornée).
+- [ ] 20.30 Colorer benchmark (path-traversal).
+- [ ] 20.31 Ajouter benchmark (exit-code F03).
+- [ ] 20.32 Améliorer benchmark (signal coloré).
+- [ ] 20.33 Refactorer benchmark (thème clair/sombre).
+- [ ] 20.34 Tester benchmark (mode mono).
+- [ ] 20.35 Documenter benchmark (emoji on/off).
+- [ ] 20.36 Centraliser benchmark (colonnes alignées).
+- [ ] 20.37 Brancher benchmark (fitLine repli).
+- [ ] 20.38 Sécuriser benchmark (format table).
+- [ ] 20.39 Borner benchmark (format csv/markdown).
+- [ ] 20.40 Colorer benchmark (export config).
+- [ ] 20.41 Ajouter benchmark (historisation).
+- [ ] 20.42 Améliorer benchmark (compare).
+- [ ] 20.43 Refactorer benchmark (alerte seuil).
+- [ ] 20.44 Tester benchmark (perf durée/size).
+- [ ] 20.45 Documenter benchmark (régression).
+- [ ] 20.46 Centraliser benchmark (fuzz propriété).
+- [ ] 20.47 Brancher benchmark (doc ARCHITECTURE).
+- [ ] 20.48 Sécuriser benchmark (note threat-model).
+- [ ] 20.49 Borner benchmark (entrée CHANGELOG).
+- [ ] 20.50 Colorer benchmark en mode human.
+
+---
+
+## Phase 21 — Usage & coût (50 étapes)
+- [ ] 21.1 Ajouter usage & coût en mode human.
+- [ ] 21.2 Améliorer usage & coût --format=json.
+- [ ] 21.3 Refactorer usage & coût --format=ndjson.
+- [ ] 21.4 Tester usage & coût --format=tsv.
+- [ ] 21.5 Documenter usage & coût --quiet.
+- [ ] 21.6 Centraliser usage & coût --verbose.
+- [ ] 21.7 Brancher usage & coût --trace.
+- [ ] 21.8 Sécuriser usage & coût --explain.
+- [ ] 21.9 Borner usage & coût --dry-run.
+- [ ] 21.10 Colorer usage & coût en test unitaire.
+- [ ] 21.11 Ajouter usage & coût en test golden.
+- [ ] 21.12 Améliorer usage & coût en test d'erreur.
+- [ ] 21.13 Refactorer usage & coût en doc utilisateur.
+- [ ] 21.14 Tester usage & coût en aide --help.
+- [ ] 21.15 Documenter usage & coût en complétion.
+- [ ] 21.16 Centraliser usage & coût en soak.
+- [ ] 21.17 Brancher usage & coût en matrice JSON.
+- [ ] 21.18 Sécuriser usage & coût via applyGlobalFlag.
+- [ ] 21.19 Borner usage & coût via module dédié.
+- [ ] 21.20 Colorer usage & coût via handler bridge.
+- [ ] 21.21 Ajouter usage & coût (cas vide).
+- [ ] 21.22 Améliorer usage & coût (NOT_FOUND).
+- [ ] 21.23 Refactorer usage & coût (BLOCKED).
+- [ ] 21.24 Tester usage & coût (timeout).
+- [ ] 21.25 Documenter usage & coût (LocalAI down).
+- [ ] 21.26 Centraliser usage & coût (GPU down).
+- [ ] 21.27 Brancher usage & coût (git down).
+- [ ] 21.28 Sécuriser usage & coût (redaction secrets).
+- [ ] 21.29 Borner usage & coût (taille bornée).
+- [ ] 21.30 Colorer usage & coût (path-traversal).
+- [ ] 21.31 Ajouter usage & coût (exit-code F03).
+- [ ] 21.32 Améliorer usage & coût (signal coloré).
+- [ ] 21.33 Refactorer usage & coût (thème clair/sombre).
+- [ ] 21.34 Tester usage & coût (mode mono).
+- [ ] 21.35 Documenter usage & coût (emoji on/off).
+- [ ] 21.36 Centraliser usage & coût (colonnes alignées).
+- [ ] 21.37 Brancher usage & coût (fitLine repli).
+- [ ] 21.38 Sécuriser usage & coût (format table).
+- [ ] 21.39 Borner usage & coût (format csv/markdown).
+- [ ] 21.40 Colorer usage & coût (export config).
+- [ ] 21.41 Ajouter usage & coût (historisation).
+- [ ] 21.42 Améliorer usage & coût (compare).
+- [ ] 21.43 Refactorer usage & coût (alerte seuil).
+- [ ] 21.44 Tester usage & coût (perf durée/size).
+- [ ] 21.45 Documenter usage & coût (régression).
+- [ ] 21.46 Centraliser usage & coût (fuzz propriété).
+- [ ] 21.47 Brancher usage & coût (doc ARCHITECTURE).
+- [ ] 21.48 Sécuriser usage & coût (note threat-model).
+- [ ] 21.49 Borner usage & coût (entrée CHANGELOG).
+- [ ] 21.50 Colorer usage & coût en mode human.
+
+---
+
+## Phase 22 — Budget (50 étapes)
+- [ ] 22.1 Ajouter budget en mode human.
+- [ ] 22.2 Améliorer budget --format=json.
+- [ ] 22.3 Refactorer budget --format=ndjson.
+- [ ] 22.4 Tester budget --format=tsv.
+- [ ] 22.5 Documenter budget --quiet.
+- [ ] 22.6 Centraliser budget --verbose.
+- [ ] 22.7 Brancher budget --trace.
+- [ ] 22.8 Sécuriser budget --explain.
+- [ ] 22.9 Borner budget --dry-run.
+- [ ] 22.10 Colorer budget en test unitaire.
+- [ ] 22.11 Ajouter budget en test golden.
+- [ ] 22.12 Améliorer budget en test d'erreur.
+- [ ] 22.13 Refactorer budget en doc utilisateur.
+- [ ] 22.14 Tester budget en aide --help.
+- [ ] 22.15 Documenter budget en complétion.
+- [ ] 22.16 Centraliser budget en soak.
+- [ ] 22.17 Brancher budget en matrice JSON.
+- [ ] 22.18 Sécuriser budget via applyGlobalFlag.
+- [ ] 22.19 Borner budget via module dédié.
+- [ ] 22.20 Colorer budget via handler bridge.
+- [ ] 22.21 Ajouter budget (cas vide).
+- [ ] 22.22 Améliorer budget (NOT_FOUND).
+- [ ] 22.23 Refactorer budget (BLOCKED).
+- [ ] 22.24 Tester budget (timeout).
+- [ ] 22.25 Documenter budget (LocalAI down).
+- [ ] 22.26 Centraliser budget (GPU down).
+- [ ] 22.27 Brancher budget (git down).
+- [ ] 22.28 Sécuriser budget (redaction secrets).
+- [ ] 22.29 Borner budget (taille bornée).
+- [ ] 22.30 Colorer budget (path-traversal).
+- [ ] 22.31 Ajouter budget (exit-code F03).
+- [ ] 22.32 Améliorer budget (signal coloré).
+- [ ] 22.33 Refactorer budget (thème clair/sombre).
+- [ ] 22.34 Tester budget (mode mono).
+- [ ] 22.35 Documenter budget (emoji on/off).
+- [ ] 22.36 Centraliser budget (colonnes alignées).
+- [ ] 22.37 Brancher budget (fitLine repli).
+- [ ] 22.38 Sécuriser budget (format table).
+- [ ] 22.39 Borner budget (format csv/markdown).
+- [ ] 22.40 Colorer budget (export config).
+- [ ] 22.41 Ajouter budget (historisation).
+- [ ] 22.42 Améliorer budget (compare).
+- [ ] 22.43 Refactorer budget (alerte seuil).
+- [ ] 22.44 Tester budget (perf durée/size).
+- [ ] 22.45 Documenter budget (régression).
+- [ ] 22.46 Centraliser budget (fuzz propriété).
+- [ ] 22.47 Brancher budget (doc ARCHITECTURE).
+- [ ] 22.48 Sécuriser budget (note threat-model).
+- [ ] 22.49 Borner budget (entrée CHANGELOG).
+- [ ] 22.50 Colorer budget en mode human.
+
+---
+
+## Phase 23 — Alerting (50 étapes)
+- [ ] 23.1 Ajouter alerting en mode human.
+- [ ] 23.2 Améliorer alerting --format=json.
+- [ ] 23.3 Refactorer alerting --format=ndjson.
+- [ ] 23.4 Tester alerting --format=tsv.
+- [ ] 23.5 Documenter alerting --quiet.
+- [ ] 23.6 Centraliser alerting --verbose.
+- [ ] 23.7 Brancher alerting --trace.
+- [ ] 23.8 Sécuriser alerting --explain.
+- [ ] 23.9 Borner alerting --dry-run.
+- [ ] 23.10 Colorer alerting en test unitaire.
+- [ ] 23.11 Ajouter alerting en test golden.
+- [ ] 23.12 Améliorer alerting en test d'erreur.
+- [ ] 23.13 Refactorer alerting en doc utilisateur.
+- [ ] 23.14 Tester alerting en aide --help.
+- [ ] 23.15 Documenter alerting en complétion.
+- [ ] 23.16 Centraliser alerting en soak.
+- [ ] 23.17 Brancher alerting en matrice JSON.
+- [ ] 23.18 Sécuriser alerting via applyGlobalFlag.
+- [ ] 23.19 Borner alerting via module dédié.
+- [ ] 23.20 Colorer alerting via handler bridge.
+- [ ] 23.21 Ajouter alerting (cas vide).
+- [ ] 23.22 Améliorer alerting (NOT_FOUND).
+- [ ] 23.23 Refactorer alerting (BLOCKED).
+- [ ] 23.24 Tester alerting (timeout).
+- [ ] 23.25 Documenter alerting (LocalAI down).
+- [ ] 23.26 Centraliser alerting (GPU down).
+- [ ] 23.27 Brancher alerting (git down).
+- [ ] 23.28 Sécuriser alerting (redaction secrets).
+- [ ] 23.29 Borner alerting (taille bornée).
+- [ ] 23.30 Colorer alerting (path-traversal).
+- [ ] 23.31 Ajouter alerting (exit-code F03).
+- [ ] 23.32 Améliorer alerting (signal coloré).
+- [ ] 23.33 Refactorer alerting (thème clair/sombre).
+- [ ] 23.34 Tester alerting (mode mono).
+- [ ] 23.35 Documenter alerting (emoji on/off).
+- [ ] 23.36 Centraliser alerting (colonnes alignées).
+- [ ] 23.37 Brancher alerting (fitLine repli).
+- [ ] 23.38 Sécuriser alerting (format table).
+- [ ] 23.39 Borner alerting (format csv/markdown).
+- [ ] 23.40 Colorer alerting (export config).
+- [ ] 23.41 Ajouter alerting (historisation).
+- [ ] 23.42 Améliorer alerting (compare).
+- [ ] 23.43 Refactorer alerting (alerte seuil).
+- [ ] 23.44 Tester alerting (perf durée/size).
+- [ ] 23.45 Documenter alerting (régression).
+- [ ] 23.46 Centraliser alerting (fuzz propriété).
+- [ ] 23.47 Brancher alerting (doc ARCHITECTURE).
+- [ ] 23.48 Sécuriser alerting (note threat-model).
+- [ ] 23.49 Borner alerting (entrée CHANGELOG).
+- [ ] 23.50 Colorer alerting en mode human.
+
+---
+
+## Phase 24 — Projets hub (50 étapes)
+- [ ] 24.1 Ajouter projets hub en mode human.
+- [ ] 24.2 Améliorer projets hub --format=json.
+- [ ] 24.3 Refactorer projets hub --format=ndjson.
+- [ ] 24.4 Tester projets hub --format=tsv.
+- [ ] 24.5 Documenter projets hub --quiet.
+- [ ] 24.6 Centraliser projets hub --verbose.
+- [ ] 24.7 Brancher projets hub --trace.
+- [ ] 24.8 Sécuriser projets hub --explain.
+- [ ] 24.9 Borner projets hub --dry-run.
+- [ ] 24.10 Colorer projets hub en test unitaire.
+- [ ] 24.11 Ajouter projets hub en test golden.
+- [ ] 24.12 Améliorer projets hub en test d'erreur.
+- [ ] 24.13 Refactorer projets hub en doc utilisateur.
+- [ ] 24.14 Tester projets hub en aide --help.
+- [ ] 24.15 Documenter projets hub en complétion.
+- [ ] 24.16 Centraliser projets hub en soak.
+- [ ] 24.17 Brancher projets hub en matrice JSON.
+- [ ] 24.18 Sécuriser projets hub via applyGlobalFlag.
+- [ ] 24.19 Borner projets hub via module dédié.
+- [ ] 24.20 Colorer projets hub via handler bridge.
+- [ ] 24.21 Ajouter projets hub (cas vide).
+- [ ] 24.22 Améliorer projets hub (NOT_FOUND).
+- [ ] 24.23 Refactorer projets hub (BLOCKED).
+- [ ] 24.24 Tester projets hub (timeout).
+- [ ] 24.25 Documenter projets hub (LocalAI down).
+- [ ] 24.26 Centraliser projets hub (GPU down).
+- [ ] 24.27 Brancher projets hub (git down).
+- [ ] 24.28 Sécuriser projets hub (redaction secrets).
+- [ ] 24.29 Borner projets hub (taille bornée).
+- [ ] 24.30 Colorer projets hub (path-traversal).
+- [ ] 24.31 Ajouter projets hub (exit-code F03).
+- [ ] 24.32 Améliorer projets hub (signal coloré).
+- [ ] 24.33 Refactorer projets hub (thème clair/sombre).
+- [ ] 24.34 Tester projets hub (mode mono).
+- [ ] 24.35 Documenter projets hub (emoji on/off).
+- [ ] 24.36 Centraliser projets hub (colonnes alignées).
+- [ ] 24.37 Brancher projets hub (fitLine repli).
+- [ ] 24.38 Sécuriser projets hub (format table).
+- [ ] 24.39 Borner projets hub (format csv/markdown).
+- [ ] 24.40 Colorer projets hub (export config).
+- [ ] 24.41 Ajouter projets hub (historisation).
+- [ ] 24.42 Améliorer projets hub (compare).
+- [ ] 24.43 Refactorer projets hub (alerte seuil).
+- [ ] 24.44 Tester projets hub (perf durée/size).
+- [ ] 24.45 Documenter projets hub (régression).
+- [ ] 24.46 Centraliser projets hub (fuzz propriété).
+- [ ] 24.47 Brancher projets hub (doc ARCHITECTURE).
+- [ ] 24.48 Sécuriser projets hub (note threat-model).
+- [ ] 24.49 Borner projets hub (entrée CHANGELOG).
+- [ ] 24.50 Colorer projets hub en mode human.
+
+---
+
+## Phase 25 — Cycle de vie projet (50 étapes)
+- [ ] 25.1 Ajouter cycle de vie projet en mode human.
+- [ ] 25.2 Améliorer cycle de vie projet --format=json.
+- [ ] 25.3 Refactorer cycle de vie projet --format=ndjson.
+- [ ] 25.4 Tester cycle de vie projet --format=tsv.
+- [ ] 25.5 Documenter cycle de vie projet --quiet.
+- [ ] 25.6 Centraliser cycle de vie projet --verbose.
+- [ ] 25.7 Brancher cycle de vie projet --trace.
+- [ ] 25.8 Sécuriser cycle de vie projet --explain.
+- [ ] 25.9 Borner cycle de vie projet --dry-run.
+- [ ] 25.10 Colorer cycle de vie projet en test unitaire.
+- [ ] 25.11 Ajouter cycle de vie projet en test golden.
+- [ ] 25.12 Améliorer cycle de vie projet en test d'erreur.
+- [ ] 25.13 Refactorer cycle de vie projet en doc utilisateur.
+- [ ] 25.14 Tester cycle de vie projet en aide --help.
+- [ ] 25.15 Documenter cycle de vie projet en complétion.
+- [ ] 25.16 Centraliser cycle de vie projet en soak.
+- [ ] 25.17 Brancher cycle de vie projet en matrice JSON.
+- [ ] 25.18 Sécuriser cycle de vie projet via applyGlobalFlag.
+- [ ] 25.19 Borner cycle de vie projet via module dédié.
+- [ ] 25.20 Colorer cycle de vie projet via handler bridge.
+- [ ] 25.21 Ajouter cycle de vie projet (cas vide).
+- [ ] 25.22 Améliorer cycle de vie projet (NOT_FOUND).
+- [ ] 25.23 Refactorer cycle de vie projet (BLOCKED).
+- [ ] 25.24 Tester cycle de vie projet (timeout).
+- [ ] 25.25 Documenter cycle de vie projet (LocalAI down).
+- [ ] 25.26 Centraliser cycle de vie projet (GPU down).
+- [ ] 25.27 Brancher cycle de vie projet (git down).
+- [ ] 25.28 Sécuriser cycle de vie projet (redaction secrets).
+- [ ] 25.29 Borner cycle de vie projet (taille bornée).
+- [ ] 25.30 Colorer cycle de vie projet (path-traversal).
+- [ ] 25.31 Ajouter cycle de vie projet (exit-code F03).
+- [ ] 25.32 Améliorer cycle de vie projet (signal coloré).
+- [ ] 25.33 Refactorer cycle de vie projet (thème clair/sombre).
+- [ ] 25.34 Tester cycle de vie projet (mode mono).
+- [ ] 25.35 Documenter cycle de vie projet (emoji on/off).
+- [ ] 25.36 Centraliser cycle de vie projet (colonnes alignées).
+- [ ] 25.37 Brancher cycle de vie projet (fitLine repli).
+- [ ] 25.38 Sécuriser cycle de vie projet (format table).
+- [ ] 25.39 Borner cycle de vie projet (format csv/markdown).
+- [ ] 25.40 Colorer cycle de vie projet (export config).
+- [ ] 25.41 Ajouter cycle de vie projet (historisation).
+- [ ] 25.42 Améliorer cycle de vie projet (compare).
+- [ ] 25.43 Refactorer cycle de vie projet (alerte seuil).
+- [ ] 25.44 Tester cycle de vie projet (perf durée/size).
+- [ ] 25.45 Documenter cycle de vie projet (régression).
+- [ ] 25.46 Centraliser cycle de vie projet (fuzz propriété).
+- [ ] 25.47 Brancher cycle de vie projet (doc ARCHITECTURE).
+- [ ] 25.48 Sécuriser cycle de vie projet (note threat-model).
+- [ ] 25.49 Borner cycle de vie projet (entrée CHANGELOG).
+- [ ] 25.50 Colorer cycle de vie projet en mode human.
+
+---
+
+## Phase 26 — Goal (50 étapes)
+- [ ] 26.1 Ajouter goal en mode human.
+- [ ] 26.2 Améliorer goal --format=json.
+- [ ] 26.3 Refactorer goal --format=ndjson.
+- [ ] 26.4 Tester goal --format=tsv.
+- [ ] 26.5 Documenter goal --quiet.
+- [ ] 26.6 Centraliser goal --verbose.
+- [ ] 26.7 Brancher goal --trace.
+- [ ] 26.8 Sécuriser goal --explain.
+- [ ] 26.9 Borner goal --dry-run.
+- [ ] 26.10 Colorer goal en test unitaire.
+- [ ] 26.11 Ajouter goal en test golden.
+- [ ] 26.12 Améliorer goal en test d'erreur.
+- [ ] 26.13 Refactorer goal en doc utilisateur.
+- [ ] 26.14 Tester goal en aide --help.
+- [ ] 26.15 Documenter goal en complétion.
+- [ ] 26.16 Centraliser goal en soak.
+- [ ] 26.17 Brancher goal en matrice JSON.
+- [ ] 26.18 Sécuriser goal via applyGlobalFlag.
+- [ ] 26.19 Borner goal via module dédié.
+- [ ] 26.20 Colorer goal via handler bridge.
+- [ ] 26.21 Ajouter goal (cas vide).
+- [ ] 26.22 Améliorer goal (NOT_FOUND).
+- [ ] 26.23 Refactorer goal (BLOCKED).
+- [ ] 26.24 Tester goal (timeout).
+- [ ] 26.25 Documenter goal (LocalAI down).
+- [ ] 26.26 Centraliser goal (GPU down).
+- [ ] 26.27 Brancher goal (git down).
+- [ ] 26.28 Sécuriser goal (redaction secrets).
+- [ ] 26.29 Borner goal (taille bornée).
+- [ ] 26.30 Colorer goal (path-traversal).
+- [ ] 26.31 Ajouter goal (exit-code F03).
+- [ ] 26.32 Améliorer goal (signal coloré).
+- [ ] 26.33 Refactorer goal (thème clair/sombre).
+- [ ] 26.34 Tester goal (mode mono).
+- [ ] 26.35 Documenter goal (emoji on/off).
+- [ ] 26.36 Centraliser goal (colonnes alignées).
+- [ ] 26.37 Brancher goal (fitLine repli).
+- [ ] 26.38 Sécuriser goal (format table).
+- [ ] 26.39 Borner goal (format csv/markdown).
+- [ ] 26.40 Colorer goal (export config).
+- [ ] 26.41 Ajouter goal (historisation).
+- [ ] 26.42 Améliorer goal (compare).
+- [ ] 26.43 Refactorer goal (alerte seuil).
+- [ ] 26.44 Tester goal (perf durée/size).
+- [ ] 26.45 Documenter goal (régression).
+- [ ] 26.46 Centraliser goal (fuzz propriété).
+- [ ] 26.47 Brancher goal (doc ARCHITECTURE).
+- [ ] 26.48 Sécuriser goal (note threat-model).
+- [ ] 26.49 Borner goal (entrée CHANGELOG).
+- [ ] 26.50 Colorer goal en mode human.
+
+---
+
+## Phase 27 — Todo (50 étapes)
+- [ ] 27.1 Ajouter todo en mode human.
+- [ ] 27.2 Améliorer todo --format=json.
+- [ ] 27.3 Refactorer todo --format=ndjson.
+- [ ] 27.4 Tester todo --format=tsv.
+- [ ] 27.5 Documenter todo --quiet.
+- [ ] 27.6 Centraliser todo --verbose.
+- [ ] 27.7 Brancher todo --trace.
+- [ ] 27.8 Sécuriser todo --explain.
+- [ ] 27.9 Borner todo --dry-run.
+- [ ] 27.10 Colorer todo en test unitaire.
+- [ ] 27.11 Ajouter todo en test golden.
+- [ ] 27.12 Améliorer todo en test d'erreur.
+- [ ] 27.13 Refactorer todo en doc utilisateur.
+- [ ] 27.14 Tester todo en aide --help.
+- [ ] 27.15 Documenter todo en complétion.
+- [ ] 27.16 Centraliser todo en soak.
+- [ ] 27.17 Brancher todo en matrice JSON.
+- [ ] 27.18 Sécuriser todo via applyGlobalFlag.
+- [ ] 27.19 Borner todo via module dédié.
+- [ ] 27.20 Colorer todo via handler bridge.
+- [ ] 27.21 Ajouter todo (cas vide).
+- [ ] 27.22 Améliorer todo (NOT_FOUND).
+- [ ] 27.23 Refactorer todo (BLOCKED).
+- [ ] 27.24 Tester todo (timeout).
+- [ ] 27.25 Documenter todo (LocalAI down).
+- [ ] 27.26 Centraliser todo (GPU down).
+- [ ] 27.27 Brancher todo (git down).
+- [ ] 27.28 Sécuriser todo (redaction secrets).
+- [ ] 27.29 Borner todo (taille bornée).
+- [ ] 27.30 Colorer todo (path-traversal).
+- [ ] 27.31 Ajouter todo (exit-code F03).
+- [ ] 27.32 Améliorer todo (signal coloré).
+- [ ] 27.33 Refactorer todo (thème clair/sombre).
+- [ ] 27.34 Tester todo (mode mono).
+- [ ] 27.35 Documenter todo (emoji on/off).
+- [ ] 27.36 Centraliser todo (colonnes alignées).
+- [ ] 27.37 Brancher todo (fitLine repli).
+- [ ] 27.38 Sécuriser todo (format table).
+- [ ] 27.39 Borner todo (format csv/markdown).
+- [ ] 27.40 Colorer todo (export config).
+- [ ] 27.41 Ajouter todo (historisation).
+- [ ] 27.42 Améliorer todo (compare).
+- [ ] 27.43 Refactorer todo (alerte seuil).
+- [ ] 27.44 Tester todo (perf durée/size).
+- [ ] 27.45 Documenter todo (régression).
+- [ ] 27.46 Centraliser todo (fuzz propriété).
+- [ ] 27.47 Brancher todo (doc ARCHITECTURE).
+- [ ] 27.48 Sécuriser todo (note threat-model).
+- [ ] 27.49 Borner todo (entrée CHANGELOG).
+- [ ] 27.50 Colorer todo en mode human.
+
+---
+
+## Phase 28 — Autonomie (50 étapes)
+- [ ] 28.1 Ajouter autonomie en mode human.
+- [ ] 28.2 Améliorer autonomie --format=json.
+- [ ] 28.3 Refactorer autonomie --format=ndjson.
+- [ ] 28.4 Tester autonomie --format=tsv.
+- [ ] 28.5 Documenter autonomie --quiet.
+- [ ] 28.6 Centraliser autonomie --verbose.
+- [ ] 28.7 Brancher autonomie --trace.
+- [ ] 28.8 Sécuriser autonomie --explain.
+- [ ] 28.9 Borner autonomie --dry-run.
+- [ ] 28.10 Colorer autonomie en test unitaire.
+- [ ] 28.11 Ajouter autonomie en test golden.
+- [ ] 28.12 Améliorer autonomie en test d'erreur.
+- [ ] 28.13 Refactorer autonomie en doc utilisateur.
+- [ ] 28.14 Tester autonomie en aide --help.
+- [ ] 28.15 Documenter autonomie en complétion.
+- [ ] 28.16 Centraliser autonomie en soak.
+- [ ] 28.17 Brancher autonomie en matrice JSON.
+- [ ] 28.18 Sécuriser autonomie via applyGlobalFlag.
+- [ ] 28.19 Borner autonomie via module dédié.
+- [ ] 28.20 Colorer autonomie via handler bridge.
+- [ ] 28.21 Ajouter autonomie (cas vide).
+- [ ] 28.22 Améliorer autonomie (NOT_FOUND).
+- [ ] 28.23 Refactorer autonomie (BLOCKED).
+- [ ] 28.24 Tester autonomie (timeout).
+- [ ] 28.25 Documenter autonomie (LocalAI down).
+- [ ] 28.26 Centraliser autonomie (GPU down).
+- [ ] 28.27 Brancher autonomie (git down).
+- [ ] 28.28 Sécuriser autonomie (redaction secrets).
+- [ ] 28.29 Borner autonomie (taille bornée).
+- [ ] 28.30 Colorer autonomie (path-traversal).
+- [ ] 28.31 Ajouter autonomie (exit-code F03).
+- [ ] 28.32 Améliorer autonomie (signal coloré).
+- [ ] 28.33 Refactorer autonomie (thème clair/sombre).
+- [ ] 28.34 Tester autonomie (mode mono).
+- [ ] 28.35 Documenter autonomie (emoji on/off).
+- [ ] 28.36 Centraliser autonomie (colonnes alignées).
+- [ ] 28.37 Brancher autonomie (fitLine repli).
+- [ ] 28.38 Sécuriser autonomie (format table).
+- [ ] 28.39 Borner autonomie (format csv/markdown).
+- [ ] 28.40 Colorer autonomie (export config).
+- [ ] 28.41 Ajouter autonomie (historisation).
+- [ ] 28.42 Améliorer autonomie (compare).
+- [ ] 28.43 Refactorer autonomie (alerte seuil).
+- [ ] 28.44 Tester autonomie (perf durée/size).
+- [ ] 28.45 Documenter autonomie (régression).
+- [ ] 28.46 Centraliser autonomie (fuzz propriété).
+- [ ] 28.47 Brancher autonomie (doc ARCHITECTURE).
+- [ ] 28.48 Sécuriser autonomie (note threat-model).
+- [ ] 28.49 Borner autonomie (entrée CHANGELOG).
+- [ ] 28.50 Colorer autonomie en mode human.
+
+---
+
+## Phase 29 — Addons (50 étapes)
+- [ ] 29.1 Ajouter addons en mode human.
+- [ ] 29.2 Améliorer addons --format=json.
+- [ ] 29.3 Refactorer addons --format=ndjson.
+- [ ] 29.4 Tester addons --format=tsv.
+- [ ] 29.5 Documenter addons --quiet.
+- [ ] 29.6 Centraliser addons --verbose.
+- [ ] 29.7 Brancher addons --trace.
+- [ ] 29.8 Sécuriser addons --explain.
+- [ ] 29.9 Borner addons --dry-run.
+- [ ] 29.10 Colorer addons en test unitaire.
+- [ ] 29.11 Ajouter addons en test golden.
+- [ ] 29.12 Améliorer addons en test d'erreur.
+- [ ] 29.13 Refactorer addons en doc utilisateur.
+- [ ] 29.14 Tester addons en aide --help.
+- [ ] 29.15 Documenter addons en complétion.
+- [ ] 29.16 Centraliser addons en soak.
+- [ ] 29.17 Brancher addons en matrice JSON.
+- [ ] 29.18 Sécuriser addons via applyGlobalFlag.
+- [ ] 29.19 Borner addons via module dédié.
+- [ ] 29.20 Colorer addons via handler bridge.
+- [ ] 29.21 Ajouter addons (cas vide).
+- [ ] 29.22 Améliorer addons (NOT_FOUND).
+- [ ] 29.23 Refactorer addons (BLOCKED).
+- [ ] 29.24 Tester addons (timeout).
+- [ ] 29.25 Documenter addons (LocalAI down).
+- [ ] 29.26 Centraliser addons (GPU down).
+- [ ] 29.27 Brancher addons (git down).
+- [ ] 29.28 Sécuriser addons (redaction secrets).
+- [ ] 29.29 Borner addons (taille bornée).
+- [ ] 29.30 Colorer addons (path-traversal).
+- [ ] 29.31 Ajouter addons (exit-code F03).
+- [ ] 29.32 Améliorer addons (signal coloré).
+- [ ] 29.33 Refactorer addons (thème clair/sombre).
+- [ ] 29.34 Tester addons (mode mono).
+- [ ] 29.35 Documenter addons (emoji on/off).
+- [ ] 29.36 Centraliser addons (colonnes alignées).
+- [ ] 29.37 Brancher addons (fitLine repli).
+- [ ] 29.38 Sécuriser addons (format table).
+- [ ] 29.39 Borner addons (format csv/markdown).
+- [ ] 29.40 Colorer addons (export config).
+- [ ] 29.41 Ajouter addons (historisation).
+- [ ] 29.42 Améliorer addons (compare).
+- [ ] 29.43 Refactorer addons (alerte seuil).
+- [ ] 29.44 Tester addons (perf durée/size).
+- [ ] 29.45 Documenter addons (régression).
+- [ ] 29.46 Centraliser addons (fuzz propriété).
+- [ ] 29.47 Brancher addons (doc ARCHITECTURE).
+- [ ] 29.48 Sécuriser addons (note threat-model).
+- [ ] 29.49 Borner addons (entrée CHANGELOG).
+- [ ] 29.50 Colorer addons en mode human.
+
+---
+
+## Phase 30 — Drift & snapshots (50 étapes)
+- [ ] 30.1 Ajouter drift & snapshots en mode human.
+- [ ] 30.2 Améliorer drift & snapshots --format=json.
+- [ ] 30.3 Refactorer drift & snapshots --format=ndjson.
+- [ ] 30.4 Tester drift & snapshots --format=tsv.
+- [ ] 30.5 Documenter drift & snapshots --quiet.
+- [ ] 30.6 Centraliser drift & snapshots --verbose.
+- [ ] 30.7 Brancher drift & snapshots --trace.
+- [ ] 30.8 Sécuriser drift & snapshots --explain.
+- [ ] 30.9 Borner drift & snapshots --dry-run.
+- [ ] 30.10 Colorer drift & snapshots en test unitaire.
+- [ ] 30.11 Ajouter drift & snapshots en test golden.
+- [ ] 30.12 Améliorer drift & snapshots en test d'erreur.
+- [ ] 30.13 Refactorer drift & snapshots en doc utilisateur.
+- [ ] 30.14 Tester drift & snapshots en aide --help.
+- [ ] 30.15 Documenter drift & snapshots en complétion.
+- [ ] 30.16 Centraliser drift & snapshots en soak.
+- [ ] 30.17 Brancher drift & snapshots en matrice JSON.
+- [ ] 30.18 Sécuriser drift & snapshots via applyGlobalFlag.
+- [ ] 30.19 Borner drift & snapshots via module dédié.
+- [ ] 30.20 Colorer drift & snapshots via handler bridge.
+- [ ] 30.21 Ajouter drift & snapshots (cas vide).
+- [ ] 30.22 Améliorer drift & snapshots (NOT_FOUND).
+- [ ] 30.23 Refactorer drift & snapshots (BLOCKED).
+- [ ] 30.24 Tester drift & snapshots (timeout).
+- [ ] 30.25 Documenter drift & snapshots (LocalAI down).
+- [ ] 30.26 Centraliser drift & snapshots (GPU down).
+- [ ] 30.27 Brancher drift & snapshots (git down).
+- [ ] 30.28 Sécuriser drift & snapshots (redaction secrets).
+- [ ] 30.29 Borner drift & snapshots (taille bornée).
+- [ ] 30.30 Colorer drift & snapshots (path-traversal).
+- [ ] 30.31 Ajouter drift & snapshots (exit-code F03).
+- [ ] 30.32 Améliorer drift & snapshots (signal coloré).
+- [ ] 30.33 Refactorer drift & snapshots (thème clair/sombre).
+- [ ] 30.34 Tester drift & snapshots (mode mono).
+- [ ] 30.35 Documenter drift & snapshots (emoji on/off).
+- [ ] 30.36 Centraliser drift & snapshots (colonnes alignées).
+- [ ] 30.37 Brancher drift & snapshots (fitLine repli).
+- [ ] 30.38 Sécuriser drift & snapshots (format table).
+- [ ] 30.39 Borner drift & snapshots (format csv/markdown).
+- [ ] 30.40 Colorer drift & snapshots (export config).
+- [ ] 30.41 Ajouter drift & snapshots (historisation).
+- [ ] 30.42 Améliorer drift & snapshots (compare).
+- [ ] 30.43 Refactorer drift & snapshots (alerte seuil).
+- [ ] 30.44 Tester drift & snapshots (perf durée/size).
+- [ ] 30.45 Documenter drift & snapshots (régression).
+- [ ] 30.46 Centraliser drift & snapshots (fuzz propriété).
+- [ ] 30.47 Brancher drift & snapshots (doc ARCHITECTURE).
+- [ ] 30.48 Sécuriser drift & snapshots (note threat-model).
+- [ ] 30.49 Borner drift & snapshots (entrée CHANGELOG).
+- [ ] 30.50 Colorer drift & snapshots en mode human.
+
+---
+
+## Phase 31 — Timeline & événements (50 étapes)
+- [ ] 31.1 Ajouter timeline & événements en mode human.
+- [ ] 31.2 Améliorer timeline & événements --format=json.
+- [ ] 31.3 Refactorer timeline & événements --format=ndjson.
+- [ ] 31.4 Tester timeline & événements --format=tsv.
+- [ ] 31.5 Documenter timeline & événements --quiet.
+- [ ] 31.6 Centraliser timeline & événements --verbose.
+- [ ] 31.7 Brancher timeline & événements --trace.
+- [ ] 31.8 Sécuriser timeline & événements --explain.
+- [ ] 31.9 Borner timeline & événements --dry-run.
+- [ ] 31.10 Colorer timeline & événements en test unitaire.
+- [ ] 31.11 Ajouter timeline & événements en test golden.
+- [ ] 31.12 Améliorer timeline & événements en test d'erreur.
+- [ ] 31.13 Refactorer timeline & événements en doc utilisateur.
+- [ ] 31.14 Tester timeline & événements en aide --help.
+- [ ] 31.15 Documenter timeline & événements en complétion.
+- [ ] 31.16 Centraliser timeline & événements en soak.
+- [ ] 31.17 Brancher timeline & événements en matrice JSON.
+- [ ] 31.18 Sécuriser timeline & événements via applyGlobalFlag.
+- [ ] 31.19 Borner timeline & événements via module dédié.
+- [ ] 31.20 Colorer timeline & événements via handler bridge.
+- [ ] 31.21 Ajouter timeline & événements (cas vide).
+- [ ] 31.22 Améliorer timeline & événements (NOT_FOUND).
+- [ ] 31.23 Refactorer timeline & événements (BLOCKED).
+- [ ] 31.24 Tester timeline & événements (timeout).
+- [ ] 31.25 Documenter timeline & événements (LocalAI down).
+- [ ] 31.26 Centraliser timeline & événements (GPU down).
+- [ ] 31.27 Brancher timeline & événements (git down).
+- [ ] 31.28 Sécuriser timeline & événements (redaction secrets).
+- [ ] 31.29 Borner timeline & événements (taille bornée).
+- [ ] 31.30 Colorer timeline & événements (path-traversal).
+- [ ] 31.31 Ajouter timeline & événements (exit-code F03).
+- [ ] 31.32 Améliorer timeline & événements (signal coloré).
+- [ ] 31.33 Refactorer timeline & événements (thème clair/sombre).
+- [ ] 31.34 Tester timeline & événements (mode mono).
+- [ ] 31.35 Documenter timeline & événements (emoji on/off).
+- [ ] 31.36 Centraliser timeline & événements (colonnes alignées).
+- [ ] 31.37 Brancher timeline & événements (fitLine repli).
+- [ ] 31.38 Sécuriser timeline & événements (format table).
+- [ ] 31.39 Borner timeline & événements (format csv/markdown).
+- [ ] 31.40 Colorer timeline & événements (export config).
+- [ ] 31.41 Ajouter timeline & événements (historisation).
+- [ ] 31.42 Améliorer timeline & événements (compare).
+- [ ] 31.43 Refactorer timeline & événements (alerte seuil).
+- [ ] 31.44 Tester timeline & événements (perf durée/size).
+- [ ] 31.45 Documenter timeline & événements (régression).
+- [ ] 31.46 Centraliser timeline & événements (fuzz propriété).
+- [ ] 31.47 Brancher timeline & événements (doc ARCHITECTURE).
+- [ ] 31.48 Sécuriser timeline & événements (note threat-model).
+- [ ] 31.49 Borner timeline & événements (entrée CHANGELOG).
+- [ ] 31.50 Colorer timeline & événements en mode human.
+
+---
+
+## Phase 32 — Cockpit (50 étapes)
+- [ ] 32.1 Ajouter cockpit en mode human.
+- [ ] 32.2 Améliorer cockpit --format=json.
+- [ ] 32.3 Refactorer cockpit --format=ndjson.
+- [ ] 32.4 Tester cockpit --format=tsv.
+- [ ] 32.5 Documenter cockpit --quiet.
+- [ ] 32.6 Centraliser cockpit --verbose.
+- [ ] 32.7 Brancher cockpit --trace.
+- [ ] 32.8 Sécuriser cockpit --explain.
+- [ ] 32.9 Borner cockpit --dry-run.
+- [ ] 32.10 Colorer cockpit en test unitaire.
+- [ ] 32.11 Ajouter cockpit en test golden.
+- [ ] 32.12 Améliorer cockpit en test d'erreur.
+- [ ] 32.13 Refactorer cockpit en doc utilisateur.
+- [ ] 32.14 Tester cockpit en aide --help.
+- [ ] 32.15 Documenter cockpit en complétion.
+- [ ] 32.16 Centraliser cockpit en soak.
+- [ ] 32.17 Brancher cockpit en matrice JSON.
+- [ ] 32.18 Sécuriser cockpit via applyGlobalFlag.
+- [ ] 32.19 Borner cockpit via module dédié.
+- [ ] 32.20 Colorer cockpit via handler bridge.
+- [ ] 32.21 Ajouter cockpit (cas vide).
+- [ ] 32.22 Améliorer cockpit (NOT_FOUND).
+- [ ] 32.23 Refactorer cockpit (BLOCKED).
+- [ ] 32.24 Tester cockpit (timeout).
+- [ ] 32.25 Documenter cockpit (LocalAI down).
+- [ ] 32.26 Centraliser cockpit (GPU down).
+- [ ] 32.27 Brancher cockpit (git down).
+- [ ] 32.28 Sécuriser cockpit (redaction secrets).
+- [ ] 32.29 Borner cockpit (taille bornée).
+- [ ] 32.30 Colorer cockpit (path-traversal).
+- [ ] 32.31 Ajouter cockpit (exit-code F03).
+- [ ] 32.32 Améliorer cockpit (signal coloré).
+- [ ] 32.33 Refactorer cockpit (thème clair/sombre).
+- [ ] 32.34 Tester cockpit (mode mono).
+- [ ] 32.35 Documenter cockpit (emoji on/off).
+- [ ] 32.36 Centraliser cockpit (colonnes alignées).
+- [ ] 32.37 Brancher cockpit (fitLine repli).
+- [ ] 32.38 Sécuriser cockpit (format table).
+- [ ] 32.39 Borner cockpit (format csv/markdown).
+- [ ] 32.40 Colorer cockpit (export config).
+- [ ] 32.41 Ajouter cockpit (historisation).
+- [ ] 32.42 Améliorer cockpit (compare).
+- [ ] 32.43 Refactorer cockpit (alerte seuil).
+- [ ] 32.44 Tester cockpit (perf durée/size).
+- [ ] 32.45 Documenter cockpit (régression).
+- [ ] 32.46 Centraliser cockpit (fuzz propriété).
+- [ ] 32.47 Brancher cockpit (doc ARCHITECTURE).
+- [ ] 32.48 Sécuriser cockpit (note threat-model).
+- [ ] 32.49 Borner cockpit (entrée CHANGELOG).
+- [ ] 32.50 Colorer cockpit en mode human.
+
+---
+
+## Phase 33 — Git (50 étapes)
+- [ ] 33.1 Ajouter git en mode human.
+- [ ] 33.2 Améliorer git --format=json.
+- [ ] 33.3 Refactorer git --format=ndjson.
+- [ ] 33.4 Tester git --format=tsv.
+- [ ] 33.5 Documenter git --quiet.
+- [ ] 33.6 Centraliser git --verbose.
+- [ ] 33.7 Brancher git --trace.
+- [ ] 33.8 Sécuriser git --explain.
+- [ ] 33.9 Borner git --dry-run.
+- [ ] 33.10 Colorer git en test unitaire.
+- [ ] 33.11 Ajouter git en test golden.
+- [ ] 33.12 Améliorer git en test d'erreur.
+- [ ] 33.13 Refactorer git en doc utilisateur.
+- [ ] 33.14 Tester git en aide --help.
+- [ ] 33.15 Documenter git en complétion.
+- [ ] 33.16 Centraliser git en soak.
+- [ ] 33.17 Brancher git en matrice JSON.
+- [ ] 33.18 Sécuriser git via applyGlobalFlag.
+- [ ] 33.19 Borner git via module dédié.
+- [ ] 33.20 Colorer git via handler bridge.
+- [ ] 33.21 Ajouter git (cas vide).
+- [ ] 33.22 Améliorer git (NOT_FOUND).
+- [ ] 33.23 Refactorer git (BLOCKED).
+- [ ] 33.24 Tester git (timeout).
+- [ ] 33.25 Documenter git (LocalAI down).
+- [ ] 33.26 Centraliser git (GPU down).
+- [ ] 33.27 Brancher git (git down).
+- [ ] 33.28 Sécuriser git (redaction secrets).
+- [ ] 33.29 Borner git (taille bornée).
+- [ ] 33.30 Colorer git (path-traversal).
+- [ ] 33.31 Ajouter git (exit-code F03).
+- [ ] 33.32 Améliorer git (signal coloré).
+- [ ] 33.33 Refactorer git (thème clair/sombre).
+- [ ] 33.34 Tester git (mode mono).
+- [ ] 33.35 Documenter git (emoji on/off).
+- [ ] 33.36 Centraliser git (colonnes alignées).
+- [ ] 33.37 Brancher git (fitLine repli).
+- [ ] 33.38 Sécuriser git (format table).
+- [ ] 33.39 Borner git (format csv/markdown).
+- [ ] 33.40 Colorer git (export config).
+- [ ] 33.41 Ajouter git (historisation).
+- [ ] 33.42 Améliorer git (compare).
+- [ ] 33.43 Refactorer git (alerte seuil).
+- [ ] 33.44 Tester git (perf durée/size).
+- [ ] 33.45 Documenter git (régression).
+- [ ] 33.46 Centraliser git (fuzz propriété).
+- [ ] 33.47 Brancher git (doc ARCHITECTURE).
+- [ ] 33.48 Sécuriser git (note threat-model).
+- [ ] 33.49 Borner git (entrée CHANGELOG).
+- [ ] 33.50 Colorer git en mode human.
+
+---
+
+## Phase 34 — Artefacts (50 étapes)
+- [ ] 34.1 Ajouter artefacts en mode human.
+- [ ] 34.2 Améliorer artefacts --format=json.
+- [ ] 34.3 Refactorer artefacts --format=ndjson.
+- [ ] 34.4 Tester artefacts --format=tsv.
+- [ ] 34.5 Documenter artefacts --quiet.
+- [ ] 34.6 Centraliser artefacts --verbose.
+- [ ] 34.7 Brancher artefacts --trace.
+- [ ] 34.8 Sécuriser artefacts --explain.
+- [ ] 34.9 Borner artefacts --dry-run.
+- [ ] 34.10 Colorer artefacts en test unitaire.
+- [ ] 34.11 Ajouter artefacts en test golden.
+- [ ] 34.12 Améliorer artefacts en test d'erreur.
+- [ ] 34.13 Refactorer artefacts en doc utilisateur.
+- [ ] 34.14 Tester artefacts en aide --help.
+- [ ] 34.15 Documenter artefacts en complétion.
+- [ ] 34.16 Centraliser artefacts en soak.
+- [ ] 34.17 Brancher artefacts en matrice JSON.
+- [ ] 34.18 Sécuriser artefacts via applyGlobalFlag.
+- [ ] 34.19 Borner artefacts via module dédié.
+- [ ] 34.20 Colorer artefacts via handler bridge.
+- [ ] 34.21 Ajouter artefacts (cas vide).
+- [ ] 34.22 Améliorer artefacts (NOT_FOUND).
+- [ ] 34.23 Refactorer artefacts (BLOCKED).
+- [ ] 34.24 Tester artefacts (timeout).
+- [ ] 34.25 Documenter artefacts (LocalAI down).
+- [ ] 34.26 Centraliser artefacts (GPU down).
+- [ ] 34.27 Brancher artefacts (git down).
+- [ ] 34.28 Sécuriser artefacts (redaction secrets).
+- [ ] 34.29 Borner artefacts (taille bornée).
+- [ ] 34.30 Colorer artefacts (path-traversal).
+- [ ] 34.31 Ajouter artefacts (exit-code F03).
+- [ ] 34.32 Améliorer artefacts (signal coloré).
+- [ ] 34.33 Refactorer artefacts (thème clair/sombre).
+- [ ] 34.34 Tester artefacts (mode mono).
+- [ ] 34.35 Documenter artefacts (emoji on/off).
+- [ ] 34.36 Centraliser artefacts (colonnes alignées).
+- [ ] 34.37 Brancher artefacts (fitLine repli).
+- [ ] 34.38 Sécuriser artefacts (format table).
+- [ ] 34.39 Borner artefacts (format csv/markdown).
+- [ ] 34.40 Colorer artefacts (export config).
+- [ ] 34.41 Ajouter artefacts (historisation).
+- [ ] 34.42 Améliorer artefacts (compare).
+- [ ] 34.43 Refactorer artefacts (alerte seuil).
+- [ ] 34.44 Tester artefacts (perf durée/size).
+- [ ] 34.45 Documenter artefacts (régression).
+- [ ] 34.46 Centraliser artefacts (fuzz propriété).
+- [ ] 34.47 Brancher artefacts (doc ARCHITECTURE).
+- [ ] 34.48 Sécuriser artefacts (note threat-model).
+- [ ] 34.49 Borner artefacts (entrée CHANGELOG).
+- [ ] 34.50 Colorer artefacts en mode human.
+
+---
+
+## Phase 35 — MCP (50 étapes)
+- [ ] 35.1 Ajouter mcp en mode human.
+- [ ] 35.2 Améliorer mcp --format=json.
+- [ ] 35.3 Refactorer mcp --format=ndjson.
+- [ ] 35.4 Tester mcp --format=tsv.
+- [ ] 35.5 Documenter mcp --quiet.
+- [ ] 35.6 Centraliser mcp --verbose.
+- [ ] 35.7 Brancher mcp --trace.
+- [ ] 35.8 Sécuriser mcp --explain.
+- [ ] 35.9 Borner mcp --dry-run.
+- [ ] 35.10 Colorer mcp en test unitaire.
+- [ ] 35.11 Ajouter mcp en test golden.
+- [ ] 35.12 Améliorer mcp en test d'erreur.
+- [ ] 35.13 Refactorer mcp en doc utilisateur.
+- [ ] 35.14 Tester mcp en aide --help.
+- [ ] 35.15 Documenter mcp en complétion.
+- [ ] 35.16 Centraliser mcp en soak.
+- [ ] 35.17 Brancher mcp en matrice JSON.
+- [ ] 35.18 Sécuriser mcp via applyGlobalFlag.
+- [ ] 35.19 Borner mcp via module dédié.
+- [ ] 35.20 Colorer mcp via handler bridge.
+- [ ] 35.21 Ajouter mcp (cas vide).
+- [ ] 35.22 Améliorer mcp (NOT_FOUND).
+- [ ] 35.23 Refactorer mcp (BLOCKED).
+- [ ] 35.24 Tester mcp (timeout).
+- [ ] 35.25 Documenter mcp (LocalAI down).
+- [ ] 35.26 Centraliser mcp (GPU down).
+- [ ] 35.27 Brancher mcp (git down).
+- [ ] 35.28 Sécuriser mcp (redaction secrets).
+- [ ] 35.29 Borner mcp (taille bornée).
+- [ ] 35.30 Colorer mcp (path-traversal).
+- [ ] 35.31 Ajouter mcp (exit-code F03).
+- [ ] 35.32 Améliorer mcp (signal coloré).
+- [ ] 35.33 Refactorer mcp (thème clair/sombre).
+- [ ] 35.34 Tester mcp (mode mono).
+- [ ] 35.35 Documenter mcp (emoji on/off).
+- [ ] 35.36 Centraliser mcp (colonnes alignées).
+- [ ] 35.37 Brancher mcp (fitLine repli).
+- [ ] 35.38 Sécuriser mcp (format table).
+- [ ] 35.39 Borner mcp (format csv/markdown).
+- [ ] 35.40 Colorer mcp (export config).
+- [ ] 35.41 Ajouter mcp (historisation).
+- [ ] 35.42 Améliorer mcp (compare).
+- [ ] 35.43 Refactorer mcp (alerte seuil).
+- [ ] 35.44 Tester mcp (perf durée/size).
+- [ ] 35.45 Documenter mcp (régression).
+- [ ] 35.46 Centraliser mcp (fuzz propriété).
+- [ ] 35.47 Brancher mcp (doc ARCHITECTURE).
+- [ ] 35.48 Sécuriser mcp (note threat-model).
+- [ ] 35.49 Borner mcp (entrée CHANGELOG).
+- [ ] 35.50 Colorer mcp en mode human.
+
+---
+
+## Phase 36 — Version & release (50 étapes)
+- [ ] 36.1 Ajouter version & release en mode human.
+- [ ] 36.2 Améliorer version & release --format=json.
+- [ ] 36.3 Refactorer version & release --format=ndjson.
+- [ ] 36.4 Tester version & release --format=tsv.
+- [ ] 36.5 Documenter version & release --quiet.
+- [ ] 36.6 Centraliser version & release --verbose.
+- [ ] 36.7 Brancher version & release --trace.
+- [ ] 36.8 Sécuriser version & release --explain.
+- [ ] 36.9 Borner version & release --dry-run.
+- [ ] 36.10 Colorer version & release en test unitaire.
+- [ ] 36.11 Ajouter version & release en test golden.
+- [ ] 36.12 Améliorer version & release en test d'erreur.
+- [ ] 36.13 Refactorer version & release en doc utilisateur.
+- [ ] 36.14 Tester version & release en aide --help.
+- [ ] 36.15 Documenter version & release en complétion.
+- [ ] 36.16 Centraliser version & release en soak.
+- [ ] 36.17 Brancher version & release en matrice JSON.
+- [ ] 36.18 Sécuriser version & release via applyGlobalFlag.
+- [ ] 36.19 Borner version & release via module dédié.
+- [ ] 36.20 Colorer version & release via handler bridge.
+- [ ] 36.21 Ajouter version & release (cas vide).
+- [ ] 36.22 Améliorer version & release (NOT_FOUND).
+- [ ] 36.23 Refactorer version & release (BLOCKED).
+- [ ] 36.24 Tester version & release (timeout).
+- [ ] 36.25 Documenter version & release (LocalAI down).
+- [ ] 36.26 Centraliser version & release (GPU down).
+- [ ] 36.27 Brancher version & release (git down).
+- [ ] 36.28 Sécuriser version & release (redaction secrets).
+- [ ] 36.29 Borner version & release (taille bornée).
+- [ ] 36.30 Colorer version & release (path-traversal).
+- [ ] 36.31 Ajouter version & release (exit-code F03).
+- [ ] 36.32 Améliorer version & release (signal coloré).
+- [ ] 36.33 Refactorer version & release (thème clair/sombre).
+- [ ] 36.34 Tester version & release (mode mono).
+- [ ] 36.35 Documenter version & release (emoji on/off).
+- [ ] 36.36 Centraliser version & release (colonnes alignées).
+- [ ] 36.37 Brancher version & release (fitLine repli).
+- [ ] 36.38 Sécuriser version & release (format table).
+- [ ] 36.39 Borner version & release (format csv/markdown).
+- [ ] 36.40 Colorer version & release (export config).
+- [ ] 36.41 Ajouter version & release (historisation).
+- [ ] 36.42 Améliorer version & release (compare).
+- [ ] 36.43 Refactorer version & release (alerte seuil).
+- [ ] 36.44 Tester version & release (perf durée/size).
+- [ ] 36.45 Documenter version & release (régression).
+- [ ] 36.46 Centraliser version & release (fuzz propriété).
+- [ ] 36.47 Brancher version & release (doc ARCHITECTURE).
+- [ ] 36.48 Sécuriser version & release (note threat-model).
+- [ ] 36.49 Borner version & release (entrée CHANGELOG).
+- [ ] 36.50 Colorer version & release en mode human.
+
+---
+
+## Phase 37 — CI/CD (50 étapes)
+- [ ] 37.1 Ajouter ci/cd en mode human.
+- [ ] 37.2 Améliorer ci/cd --format=json.
+- [ ] 37.3 Refactorer ci/cd --format=ndjson.
+- [ ] 37.4 Tester ci/cd --format=tsv.
+- [ ] 37.5 Documenter ci/cd --quiet.
+- [ ] 37.6 Centraliser ci/cd --verbose.
+- [ ] 37.7 Brancher ci/cd --trace.
+- [ ] 37.8 Sécuriser ci/cd --explain.
+- [ ] 37.9 Borner ci/cd --dry-run.
+- [ ] 37.10 Colorer ci/cd en test unitaire.
+- [ ] 37.11 Ajouter ci/cd en test golden.
+- [ ] 37.12 Améliorer ci/cd en test d'erreur.
+- [ ] 37.13 Refactorer ci/cd en doc utilisateur.
+- [ ] 37.14 Tester ci/cd en aide --help.
+- [ ] 37.15 Documenter ci/cd en complétion.
+- [ ] 37.16 Centraliser ci/cd en soak.
+- [ ] 37.17 Brancher ci/cd en matrice JSON.
+- [ ] 37.18 Sécuriser ci/cd via applyGlobalFlag.
+- [ ] 37.19 Borner ci/cd via module dédié.
+- [ ] 37.20 Colorer ci/cd via handler bridge.
+- [ ] 37.21 Ajouter ci/cd (cas vide).
+- [ ] 37.22 Améliorer ci/cd (NOT_FOUND).
+- [ ] 37.23 Refactorer ci/cd (BLOCKED).
+- [ ] 37.24 Tester ci/cd (timeout).
+- [ ] 37.25 Documenter ci/cd (LocalAI down).
+- [ ] 37.26 Centraliser ci/cd (GPU down).
+- [ ] 37.27 Brancher ci/cd (git down).
+- [ ] 37.28 Sécuriser ci/cd (redaction secrets).
+- [ ] 37.29 Borner ci/cd (taille bornée).
+- [ ] 37.30 Colorer ci/cd (path-traversal).
+- [ ] 37.31 Ajouter ci/cd (exit-code F03).
+- [ ] 37.32 Améliorer ci/cd (signal coloré).
+- [ ] 37.33 Refactorer ci/cd (thème clair/sombre).
+- [ ] 37.34 Tester ci/cd (mode mono).
+- [ ] 37.35 Documenter ci/cd (emoji on/off).
+- [ ] 37.36 Centraliser ci/cd (colonnes alignées).
+- [ ] 37.37 Brancher ci/cd (fitLine repli).
+- [ ] 37.38 Sécuriser ci/cd (format table).
+- [ ] 37.39 Borner ci/cd (format csv/markdown).
+- [ ] 37.40 Colorer ci/cd (export config).
+- [ ] 37.41 Ajouter ci/cd (historisation).
+- [ ] 37.42 Améliorer ci/cd (compare).
+- [ ] 37.43 Refactorer ci/cd (alerte seuil).
+- [ ] 37.44 Tester ci/cd (perf durée/size).
+- [ ] 37.45 Documenter ci/cd (régression).
+- [ ] 37.46 Centraliser ci/cd (fuzz propriété).
+- [ ] 37.47 Brancher ci/cd (doc ARCHITECTURE).
+- [ ] 37.48 Sécuriser ci/cd (note threat-model).
+- [ ] 37.49 Borner ci/cd (entrée CHANGELOG).
+- [ ] 37.50 Colorer ci/cd en mode human.
+
+---
+
+## Phase 38 — Packaging (50 étapes)
+- [ ] 38.1 Ajouter packaging en mode human.
+- [ ] 38.2 Améliorer packaging --format=json.
+- [ ] 38.3 Refactorer packaging --format=ndjson.
+- [ ] 38.4 Tester packaging --format=tsv.
+- [ ] 38.5 Documenter packaging --quiet.
+- [ ] 38.6 Centraliser packaging --verbose.
+- [ ] 38.7 Brancher packaging --trace.
+- [ ] 38.8 Sécuriser packaging --explain.
+- [ ] 38.9 Borner packaging --dry-run.
+- [ ] 38.10 Colorer packaging en test unitaire.
+- [ ] 38.11 Ajouter packaging en test golden.
+- [ ] 38.12 Améliorer packaging en test d'erreur.
+- [ ] 38.13 Refactorer packaging en doc utilisateur.
+- [ ] 38.14 Tester packaging en aide --help.
+- [ ] 38.15 Documenter packaging en complétion.
+- [ ] 38.16 Centraliser packaging en soak.
+- [ ] 38.17 Brancher packaging en matrice JSON.
+- [ ] 38.18 Sécuriser packaging via applyGlobalFlag.
+- [ ] 38.19 Borner packaging via module dédié.
+- [ ] 38.20 Colorer packaging via handler bridge.
+- [ ] 38.21 Ajouter packaging (cas vide).
+- [ ] 38.22 Améliorer packaging (NOT_FOUND).
+- [ ] 38.23 Refactorer packaging (BLOCKED).
+- [ ] 38.24 Tester packaging (timeout).
+- [ ] 38.25 Documenter packaging (LocalAI down).
+- [ ] 38.26 Centraliser packaging (GPU down).
+- [ ] 38.27 Brancher packaging (git down).
+- [ ] 38.28 Sécuriser packaging (redaction secrets).
+- [ ] 38.29 Borner packaging (taille bornée).
+- [ ] 38.30 Colorer packaging (path-traversal).
+- [ ] 38.31 Ajouter packaging (exit-code F03).
+- [ ] 38.32 Améliorer packaging (signal coloré).
+- [ ] 38.33 Refactorer packaging (thème clair/sombre).
+- [ ] 38.34 Tester packaging (mode mono).
+- [ ] 38.35 Documenter packaging (emoji on/off).
+- [ ] 38.36 Centraliser packaging (colonnes alignées).
+- [ ] 38.37 Brancher packaging (fitLine repli).
+- [ ] 38.38 Sécuriser packaging (format table).
+- [ ] 38.39 Borner packaging (format csv/markdown).
+- [ ] 38.40 Colorer packaging (export config).
+- [ ] 38.41 Ajouter packaging (historisation).
+- [ ] 38.42 Améliorer packaging (compare).
+- [ ] 38.43 Refactorer packaging (alerte seuil).
+- [ ] 38.44 Tester packaging (perf durée/size).
+- [ ] 38.45 Documenter packaging (régression).
+- [ ] 38.46 Centraliser packaging (fuzz propriété).
+- [ ] 38.47 Brancher packaging (doc ARCHITECTURE).
+- [ ] 38.48 Sécuriser packaging (note threat-model).
+- [ ] 38.49 Borner packaging (entrée CHANGELOG).
+- [ ] 38.50 Colorer packaging en mode human.
+
+---
+
+## Phase 39 — Extension VS Code (50 étapes)
+- [ ] 39.1 Ajouter extension vs code en mode human.
+- [ ] 39.2 Améliorer extension vs code --format=json.
+- [ ] 39.3 Refactorer extension vs code --format=ndjson.
+- [ ] 39.4 Tester extension vs code --format=tsv.
+- [ ] 39.5 Documenter extension vs code --quiet.
+- [ ] 39.6 Centraliser extension vs code --verbose.
+- [ ] 39.7 Brancher extension vs code --trace.
+- [ ] 39.8 Sécuriser extension vs code --explain.
+- [ ] 39.9 Borner extension vs code --dry-run.
+- [ ] 39.10 Colorer extension vs code en test unitaire.
+- [ ] 39.11 Ajouter extension vs code en test golden.
+- [ ] 39.12 Améliorer extension vs code en test d'erreur.
+- [ ] 39.13 Refactorer extension vs code en doc utilisateur.
+- [ ] 39.14 Tester extension vs code en aide --help.
+- [ ] 39.15 Documenter extension vs code en complétion.
+- [ ] 39.16 Centraliser extension vs code en soak.
+- [ ] 39.17 Brancher extension vs code en matrice JSON.
+- [ ] 39.18 Sécuriser extension vs code via applyGlobalFlag.
+- [ ] 39.19 Borner extension vs code via module dédié.
+- [ ] 39.20 Colorer extension vs code via handler bridge.
+- [ ] 39.21 Ajouter extension vs code (cas vide).
+- [ ] 39.22 Améliorer extension vs code (NOT_FOUND).
+- [ ] 39.23 Refactorer extension vs code (BLOCKED).
+- [ ] 39.24 Tester extension vs code (timeout).
+- [ ] 39.25 Documenter extension vs code (LocalAI down).
+- [ ] 39.26 Centraliser extension vs code (GPU down).
+- [ ] 39.27 Brancher extension vs code (git down).
+- [ ] 39.28 Sécuriser extension vs code (redaction secrets).
+- [ ] 39.29 Borner extension vs code (taille bornée).
+- [ ] 39.30 Colorer extension vs code (path-traversal).
+- [ ] 39.31 Ajouter extension vs code (exit-code F03).
+- [ ] 39.32 Améliorer extension vs code (signal coloré).
+- [ ] 39.33 Refactorer extension vs code (thème clair/sombre).
+- [ ] 39.34 Tester extension vs code (mode mono).
+- [ ] 39.35 Documenter extension vs code (emoji on/off).
+- [ ] 39.36 Centraliser extension vs code (colonnes alignées).
+- [ ] 39.37 Brancher extension vs code (fitLine repli).
+- [ ] 39.38 Sécuriser extension vs code (format table).
+- [ ] 39.39 Borner extension vs code (format csv/markdown).
+- [ ] 39.40 Colorer extension vs code (export config).
+- [ ] 39.41 Ajouter extension vs code (historisation).
+- [ ] 39.42 Améliorer extension vs code (compare).
+- [ ] 39.43 Refactorer extension vs code (alerte seuil).
+- [ ] 39.44 Tester extension vs code (perf durée/size).
+- [ ] 39.45 Documenter extension vs code (régression).
+- [ ] 39.46 Centraliser extension vs code (fuzz propriété).
+- [ ] 39.47 Brancher extension vs code (doc ARCHITECTURE).
+- [ ] 39.48 Sécuriser extension vs code (note threat-model).
+- [ ] 39.49 Borner extension vs code (entrée CHANGELOG).
+- [ ] 39.50 Colorer extension vs code en mode human.
+
+---
+
+## Phase 40 — Control Center (50 étapes)
+- [ ] 40.1 Ajouter control center en mode human.
+- [ ] 40.2 Améliorer control center --format=json.
+- [ ] 40.3 Refactorer control center --format=ndjson.
+- [ ] 40.4 Tester control center --format=tsv.
+- [ ] 40.5 Documenter control center --quiet.
+- [ ] 40.6 Centraliser control center --verbose.
+- [ ] 40.7 Brancher control center --trace.
+- [ ] 40.8 Sécuriser control center --explain.
+- [ ] 40.9 Borner control center --dry-run.
+- [ ] 40.10 Colorer control center en test unitaire.
+- [ ] 40.11 Ajouter control center en test golden.
+- [ ] 40.12 Améliorer control center en test d'erreur.
+- [ ] 40.13 Refactorer control center en doc utilisateur.
+- [ ] 40.14 Tester control center en aide --help.
+- [ ] 40.15 Documenter control center en complétion.
+- [ ] 40.16 Centraliser control center en soak.
+- [ ] 40.17 Brancher control center en matrice JSON.
+- [ ] 40.18 Sécuriser control center via applyGlobalFlag.
+- [ ] 40.19 Borner control center via module dédié.
+- [ ] 40.20 Colorer control center via handler bridge.
+- [ ] 40.21 Ajouter control center (cas vide).
+- [ ] 40.22 Améliorer control center (NOT_FOUND).
+- [ ] 40.23 Refactorer control center (BLOCKED).
+- [ ] 40.24 Tester control center (timeout).
+- [ ] 40.25 Documenter control center (LocalAI down).
+- [ ] 40.26 Centraliser control center (GPU down).
+- [ ] 40.27 Brancher control center (git down).
+- [ ] 40.28 Sécuriser control center (redaction secrets).
+- [ ] 40.29 Borner control center (taille bornée).
+- [ ] 40.30 Colorer control center (path-traversal).
+- [ ] 40.31 Ajouter control center (exit-code F03).
+- [ ] 40.32 Améliorer control center (signal coloré).
+- [ ] 40.33 Refactorer control center (thème clair/sombre).
+- [ ] 40.34 Tester control center (mode mono).
+- [ ] 40.35 Documenter control center (emoji on/off).
+- [ ] 40.36 Centraliser control center (colonnes alignées).
+- [ ] 40.37 Brancher control center (fitLine repli).
+- [ ] 40.38 Sécuriser control center (format table).
+- [ ] 40.39 Borner control center (format csv/markdown).
+- [ ] 40.40 Colorer control center (export config).
+- [ ] 40.41 Ajouter control center (historisation).
+- [ ] 40.42 Améliorer control center (compare).
+- [ ] 40.43 Refactorer control center (alerte seuil).
+- [ ] 40.44 Tester control center (perf durée/size).
+- [ ] 40.45 Documenter control center (régression).
+- [ ] 40.46 Centraliser control center (fuzz propriété).
+- [ ] 40.47 Brancher control center (doc ARCHITECTURE).
+- [ ] 40.48 Sécuriser control center (note threat-model).
+- [ ] 40.49 Borner control center (entrée CHANGELOG).
+- [ ] 40.50 Colorer control center en mode human.
+
+---
+
+## Phase 41 — Documentation (50 étapes)
+- [ ] 41.1 Ajouter documentation en mode human.
+- [ ] 41.2 Améliorer documentation --format=json.
+- [ ] 41.3 Refactorer documentation --format=ndjson.
+- [ ] 41.4 Tester documentation --format=tsv.
+- [ ] 41.5 Documenter documentation --quiet.
+- [ ] 41.6 Centraliser documentation --verbose.
+- [ ] 41.7 Brancher documentation --trace.
+- [ ] 41.8 Sécuriser documentation --explain.
+- [ ] 41.9 Borner documentation --dry-run.
+- [ ] 41.10 Colorer documentation en test unitaire.
+- [ ] 41.11 Ajouter documentation en test golden.
+- [ ] 41.12 Améliorer documentation en test d'erreur.
+- [ ] 41.13 Refactorer documentation en doc utilisateur.
+- [ ] 41.14 Tester documentation en aide --help.
+- [ ] 41.15 Documenter documentation en complétion.
+- [ ] 41.16 Centraliser documentation en soak.
+- [ ] 41.17 Brancher documentation en matrice JSON.
+- [ ] 41.18 Sécuriser documentation via applyGlobalFlag.
+- [ ] 41.19 Borner documentation via module dédié.
+- [ ] 41.20 Colorer documentation via handler bridge.
+- [ ] 41.21 Ajouter documentation (cas vide).
+- [ ] 41.22 Améliorer documentation (NOT_FOUND).
+- [ ] 41.23 Refactorer documentation (BLOCKED).
+- [ ] 41.24 Tester documentation (timeout).
+- [ ] 41.25 Documenter documentation (LocalAI down).
+- [ ] 41.26 Centraliser documentation (GPU down).
+- [ ] 41.27 Brancher documentation (git down).
+- [ ] 41.28 Sécuriser documentation (redaction secrets).
+- [ ] 41.29 Borner documentation (taille bornée).
+- [ ] 41.30 Colorer documentation (path-traversal).
+- [ ] 41.31 Ajouter documentation (exit-code F03).
+- [ ] 41.32 Améliorer documentation (signal coloré).
+- [ ] 41.33 Refactorer documentation (thème clair/sombre).
+- [ ] 41.34 Tester documentation (mode mono).
+- [ ] 41.35 Documenter documentation (emoji on/off).
+- [ ] 41.36 Centraliser documentation (colonnes alignées).
+- [ ] 41.37 Brancher documentation (fitLine repli).
+- [ ] 41.38 Sécuriser documentation (format table).
+- [ ] 41.39 Borner documentation (format csv/markdown).
+- [ ] 41.40 Colorer documentation (export config).
+- [ ] 41.41 Ajouter documentation (historisation).
+- [ ] 41.42 Améliorer documentation (compare).
+- [ ] 41.43 Refactorer documentation (alerte seuil).
+- [ ] 41.44 Tester documentation (perf durée/size).
+- [ ] 41.45 Documenter documentation (régression).
+- [ ] 41.46 Centraliser documentation (fuzz propriété).
+- [ ] 41.47 Brancher documentation (doc ARCHITECTURE).
+- [ ] 41.48 Sécuriser documentation (note threat-model).
+- [ ] 41.49 Borner documentation (entrée CHANGELOG).
+- [ ] 41.50 Colorer documentation en mode human.
+
+---
+
+## Phase 42 — Tests unitaires (50 étapes)
+- [ ] 42.1 Ajouter tests unitaires en mode human.
+- [ ] 42.2 Améliorer tests unitaires --format=json.
+- [ ] 42.3 Refactorer tests unitaires --format=ndjson.
+- [ ] 42.4 Tester tests unitaires --format=tsv.
+- [ ] 42.5 Documenter tests unitaires --quiet.
+- [ ] 42.6 Centraliser tests unitaires --verbose.
+- [ ] 42.7 Brancher tests unitaires --trace.
+- [ ] 42.8 Sécuriser tests unitaires --explain.
+- [ ] 42.9 Borner tests unitaires --dry-run.
+- [ ] 42.10 Colorer tests unitaires en test unitaire.
+- [ ] 42.11 Ajouter tests unitaires en test golden.
+- [ ] 42.12 Améliorer tests unitaires en test d'erreur.
+- [ ] 42.13 Refactorer tests unitaires en doc utilisateur.
+- [ ] 42.14 Tester tests unitaires en aide --help.
+- [ ] 42.15 Documenter tests unitaires en complétion.
+- [ ] 42.16 Centraliser tests unitaires en soak.
+- [ ] 42.17 Brancher tests unitaires en matrice JSON.
+- [ ] 42.18 Sécuriser tests unitaires via applyGlobalFlag.
+- [ ] 42.19 Borner tests unitaires via module dédié.
+- [ ] 42.20 Colorer tests unitaires via handler bridge.
+- [ ] 42.21 Ajouter tests unitaires (cas vide).
+- [ ] 42.22 Améliorer tests unitaires (NOT_FOUND).
+- [ ] 42.23 Refactorer tests unitaires (BLOCKED).
+- [ ] 42.24 Tester tests unitaires (timeout).
+- [ ] 42.25 Documenter tests unitaires (LocalAI down).
+- [ ] 42.26 Centraliser tests unitaires (GPU down).
+- [ ] 42.27 Brancher tests unitaires (git down).
+- [ ] 42.28 Sécuriser tests unitaires (redaction secrets).
+- [ ] 42.29 Borner tests unitaires (taille bornée).
+- [ ] 42.30 Colorer tests unitaires (path-traversal).
+- [ ] 42.31 Ajouter tests unitaires (exit-code F03).
+- [ ] 42.32 Améliorer tests unitaires (signal coloré).
+- [ ] 42.33 Refactorer tests unitaires (thème clair/sombre).
+- [ ] 42.34 Tester tests unitaires (mode mono).
+- [ ] 42.35 Documenter tests unitaires (emoji on/off).
+- [ ] 42.36 Centraliser tests unitaires (colonnes alignées).
+- [ ] 42.37 Brancher tests unitaires (fitLine repli).
+- [ ] 42.38 Sécuriser tests unitaires (format table).
+- [ ] 42.39 Borner tests unitaires (format csv/markdown).
+- [ ] 42.40 Colorer tests unitaires (export config).
+- [ ] 42.41 Ajouter tests unitaires (historisation).
+- [ ] 42.42 Améliorer tests unitaires (compare).
+- [ ] 42.43 Refactorer tests unitaires (alerte seuil).
+- [ ] 42.44 Tester tests unitaires (perf durée/size).
+- [ ] 42.45 Documenter tests unitaires (régression).
+- [ ] 42.46 Centraliser tests unitaires (fuzz propriété).
+- [ ] 42.47 Brancher tests unitaires (doc ARCHITECTURE).
+- [ ] 42.48 Sécuriser tests unitaires (note threat-model).
+- [ ] 42.49 Borner tests unitaires (entrée CHANGELOG).
+- [ ] 42.50 Colorer tests unitaires en mode human.
+
+---
+
+## Phase 43 — Tests intégration (50 étapes)
+- [ ] 43.1 Ajouter tests intégration en mode human.
+- [ ] 43.2 Améliorer tests intégration --format=json.
+- [ ] 43.3 Refactorer tests intégration --format=ndjson.
+- [ ] 43.4 Tester tests intégration --format=tsv.
+- [ ] 43.5 Documenter tests intégration --quiet.
+- [ ] 43.6 Centraliser tests intégration --verbose.
+- [ ] 43.7 Brancher tests intégration --trace.
+- [ ] 43.8 Sécuriser tests intégration --explain.
+- [ ] 43.9 Borner tests intégration --dry-run.
+- [ ] 43.10 Colorer tests intégration en test unitaire.
+- [ ] 43.11 Ajouter tests intégration en test golden.
+- [ ] 43.12 Améliorer tests intégration en test d'erreur.
+- [ ] 43.13 Refactorer tests intégration en doc utilisateur.
+- [ ] 43.14 Tester tests intégration en aide --help.
+- [ ] 43.15 Documenter tests intégration en complétion.
+- [ ] 43.16 Centraliser tests intégration en soak.
+- [ ] 43.17 Brancher tests intégration en matrice JSON.
+- [ ] 43.18 Sécuriser tests intégration via applyGlobalFlag.
+- [ ] 43.19 Borner tests intégration via module dédié.
+- [ ] 43.20 Colorer tests intégration via handler bridge.
+- [ ] 43.21 Ajouter tests intégration (cas vide).
+- [ ] 43.22 Améliorer tests intégration (NOT_FOUND).
+- [ ] 43.23 Refactorer tests intégration (BLOCKED).
+- [ ] 43.24 Tester tests intégration (timeout).
+- [ ] 43.25 Documenter tests intégration (LocalAI down).
+- [ ] 43.26 Centraliser tests intégration (GPU down).
+- [ ] 43.27 Brancher tests intégration (git down).
+- [ ] 43.28 Sécuriser tests intégration (redaction secrets).
+- [ ] 43.29 Borner tests intégration (taille bornée).
+- [ ] 43.30 Colorer tests intégration (path-traversal).
+- [ ] 43.31 Ajouter tests intégration (exit-code F03).
+- [ ] 43.32 Améliorer tests intégration (signal coloré).
+- [ ] 43.33 Refactorer tests intégration (thème clair/sombre).
+- [ ] 43.34 Tester tests intégration (mode mono).
+- [ ] 43.35 Documenter tests intégration (emoji on/off).
+- [ ] 43.36 Centraliser tests intégration (colonnes alignées).
+- [ ] 43.37 Brancher tests intégration (fitLine repli).
+- [ ] 43.38 Sécuriser tests intégration (format table).
+- [ ] 43.39 Borner tests intégration (format csv/markdown).
+- [ ] 43.40 Colorer tests intégration (export config).
+- [ ] 43.41 Ajouter tests intégration (historisation).
+- [ ] 43.42 Améliorer tests intégration (compare).
+- [ ] 43.43 Refactorer tests intégration (alerte seuil).
+- [ ] 43.44 Tester tests intégration (perf durée/size).
+- [ ] 43.45 Documenter tests intégration (régression).
+- [ ] 43.46 Centraliser tests intégration (fuzz propriété).
+- [ ] 43.47 Brancher tests intégration (doc ARCHITECTURE).
+- [ ] 43.48 Sécuriser tests intégration (note threat-model).
+- [ ] 43.49 Borner tests intégration (entrée CHANGELOG).
+- [ ] 43.50 Colorer tests intégration en mode human.
+
+---
+
+## Phase 44 — Fuzz & propriétés (50 étapes)
+- [ ] 44.1 Ajouter fuzz & propriétés en mode human.
+- [ ] 44.2 Améliorer fuzz & propriétés --format=json.
+- [ ] 44.3 Refactorer fuzz & propriétés --format=ndjson.
+- [ ] 44.4 Tester fuzz & propriétés --format=tsv.
+- [ ] 44.5 Documenter fuzz & propriétés --quiet.
+- [ ] 44.6 Centraliser fuzz & propriétés --verbose.
+- [ ] 44.7 Brancher fuzz & propriétés --trace.
+- [ ] 44.8 Sécuriser fuzz & propriétés --explain.
+- [ ] 44.9 Borner fuzz & propriétés --dry-run.
+- [ ] 44.10 Colorer fuzz & propriétés en test unitaire.
+- [ ] 44.11 Ajouter fuzz & propriétés en test golden.
+- [ ] 44.12 Améliorer fuzz & propriétés en test d'erreur.
+- [ ] 44.13 Refactorer fuzz & propriétés en doc utilisateur.
+- [ ] 44.14 Tester fuzz & propriétés en aide --help.
+- [ ] 44.15 Documenter fuzz & propriétés en complétion.
+- [ ] 44.16 Centraliser fuzz & propriétés en soak.
+- [ ] 44.17 Brancher fuzz & propriétés en matrice JSON.
+- [ ] 44.18 Sécuriser fuzz & propriétés via applyGlobalFlag.
+- [ ] 44.19 Borner fuzz & propriétés via module dédié.
+- [ ] 44.20 Colorer fuzz & propriétés via handler bridge.
+- [ ] 44.21 Ajouter fuzz & propriétés (cas vide).
+- [ ] 44.22 Améliorer fuzz & propriétés (NOT_FOUND).
+- [ ] 44.23 Refactorer fuzz & propriétés (BLOCKED).
+- [ ] 44.24 Tester fuzz & propriétés (timeout).
+- [ ] 44.25 Documenter fuzz & propriétés (LocalAI down).
+- [ ] 44.26 Centraliser fuzz & propriétés (GPU down).
+- [ ] 44.27 Brancher fuzz & propriétés (git down).
+- [ ] 44.28 Sécuriser fuzz & propriétés (redaction secrets).
+- [ ] 44.29 Borner fuzz & propriétés (taille bornée).
+- [ ] 44.30 Colorer fuzz & propriétés (path-traversal).
+- [ ] 44.31 Ajouter fuzz & propriétés (exit-code F03).
+- [ ] 44.32 Améliorer fuzz & propriétés (signal coloré).
+- [ ] 44.33 Refactorer fuzz & propriétés (thème clair/sombre).
+- [ ] 44.34 Tester fuzz & propriétés (mode mono).
+- [ ] 44.35 Documenter fuzz & propriétés (emoji on/off).
+- [ ] 44.36 Centraliser fuzz & propriétés (colonnes alignées).
+- [ ] 44.37 Brancher fuzz & propriétés (fitLine repli).
+- [ ] 44.38 Sécuriser fuzz & propriétés (format table).
+- [ ] 44.39 Borner fuzz & propriétés (format csv/markdown).
+- [ ] 44.40 Colorer fuzz & propriétés (export config).
+- [ ] 44.41 Ajouter fuzz & propriétés (historisation).
+- [ ] 44.42 Améliorer fuzz & propriétés (compare).
+- [ ] 44.43 Refactorer fuzz & propriétés (alerte seuil).
+- [ ] 44.44 Tester fuzz & propriétés (perf durée/size).
+- [ ] 44.45 Documenter fuzz & propriétés (régression).
+- [ ] 44.46 Centraliser fuzz & propriétés (fuzz propriété).
+- [ ] 44.47 Brancher fuzz & propriétés (doc ARCHITECTURE).
+- [ ] 44.48 Sécuriser fuzz & propriétés (note threat-model).
+- [ ] 44.49 Borner fuzz & propriétés (entrée CHANGELOG).
+- [ ] 44.50 Colorer fuzz & propriétés en mode human.
+
+---
+
+## Phase 45 — Performance (50 étapes)
+- [ ] 45.1 Ajouter performance en mode human.
+- [ ] 45.2 Améliorer performance --format=json.
+- [ ] 45.3 Refactorer performance --format=ndjson.
+- [ ] 45.4 Tester performance --format=tsv.
+- [ ] 45.5 Documenter performance --quiet.
+- [ ] 45.6 Centraliser performance --verbose.
+- [ ] 45.7 Brancher performance --trace.
+- [ ] 45.8 Sécuriser performance --explain.
+- [ ] 45.9 Borner performance --dry-run.
+- [ ] 45.10 Colorer performance en test unitaire.
+- [ ] 45.11 Ajouter performance en test golden.
+- [ ] 45.12 Améliorer performance en test d'erreur.
+- [ ] 45.13 Refactorer performance en doc utilisateur.
+- [ ] 45.14 Tester performance en aide --help.
+- [ ] 45.15 Documenter performance en complétion.
+- [ ] 45.16 Centraliser performance en soak.
+- [ ] 45.17 Brancher performance en matrice JSON.
+- [ ] 45.18 Sécuriser performance via applyGlobalFlag.
+- [ ] 45.19 Borner performance via module dédié.
+- [ ] 45.20 Colorer performance via handler bridge.
+- [ ] 45.21 Ajouter performance (cas vide).
+- [ ] 45.22 Améliorer performance (NOT_FOUND).
+- [ ] 45.23 Refactorer performance (BLOCKED).
+- [ ] 45.24 Tester performance (timeout).
+- [ ] 45.25 Documenter performance (LocalAI down).
+- [ ] 45.26 Centraliser performance (GPU down).
+- [ ] 45.27 Brancher performance (git down).
+- [ ] 45.28 Sécuriser performance (redaction secrets).
+- [ ] 45.29 Borner performance (taille bornée).
+- [ ] 45.30 Colorer performance (path-traversal).
+- [ ] 45.31 Ajouter performance (exit-code F03).
+- [ ] 45.32 Améliorer performance (signal coloré).
+- [ ] 45.33 Refactorer performance (thème clair/sombre).
+- [ ] 45.34 Tester performance (mode mono).
+- [ ] 45.35 Documenter performance (emoji on/off).
+- [ ] 45.36 Centraliser performance (colonnes alignées).
+- [ ] 45.37 Brancher performance (fitLine repli).
+- [ ] 45.38 Sécuriser performance (format table).
+- [ ] 45.39 Borner performance (format csv/markdown).
+- [ ] 45.40 Colorer performance (export config).
+- [ ] 45.41 Ajouter performance (historisation).
+- [ ] 45.42 Améliorer performance (compare).
+- [ ] 45.43 Refactorer performance (alerte seuil).
+- [ ] 45.44 Tester performance (perf durée/size).
+- [ ] 45.45 Documenter performance (régression).
+- [ ] 45.46 Centraliser performance (fuzz propriété).
+- [ ] 45.47 Brancher performance (doc ARCHITECTURE).
+- [ ] 45.48 Sécuriser performance (note threat-model).
+- [ ] 45.49 Borner performance (entrée CHANGELOG).
+- [ ] 45.50 Colorer performance en mode human.
+
+---
+
+## Phase 46 — Extensibilité (50 étapes)
+- [ ] 46.1 Ajouter extensibilité en mode human.
+- [ ] 46.2 Améliorer extensibilité --format=json.
+- [ ] 46.3 Refactorer extensibilité --format=ndjson.
+- [ ] 46.4 Tester extensibilité --format=tsv.
+- [ ] 46.5 Documenter extensibilité --quiet.
+- [ ] 46.6 Centraliser extensibilité --verbose.
+- [ ] 46.7 Brancher extensibilité --trace.
+- [ ] 46.8 Sécuriser extensibilité --explain.
+- [ ] 46.9 Borner extensibilité --dry-run.
+- [ ] 46.10 Colorer extensibilité en test unitaire.
+- [ ] 46.11 Ajouter extensibilité en test golden.
+- [ ] 46.12 Améliorer extensibilité en test d'erreur.
+- [ ] 46.13 Refactorer extensibilité en doc utilisateur.
+- [ ] 46.14 Tester extensibilité en aide --help.
+- [ ] 46.15 Documenter extensibilité en complétion.
+- [ ] 46.16 Centraliser extensibilité en soak.
+- [ ] 46.17 Brancher extensibilité en matrice JSON.
+- [ ] 46.18 Sécuriser extensibilité via applyGlobalFlag.
+- [ ] 46.19 Borner extensibilité via module dédié.
+- [ ] 46.20 Colorer extensibilité via handler bridge.
+- [ ] 46.21 Ajouter extensibilité (cas vide).
+- [ ] 46.22 Améliorer extensibilité (NOT_FOUND).
+- [ ] 46.23 Refactorer extensibilité (BLOCKED).
+- [ ] 46.24 Tester extensibilité (timeout).
+- [ ] 46.25 Documenter extensibilité (LocalAI down).
+- [ ] 46.26 Centraliser extensibilité (GPU down).
+- [ ] 46.27 Brancher extensibilité (git down).
+- [ ] 46.28 Sécuriser extensibilité (redaction secrets).
+- [ ] 46.29 Borner extensibilité (taille bornée).
+- [ ] 46.30 Colorer extensibilité (path-traversal).
+- [ ] 46.31 Ajouter extensibilité (exit-code F03).
+- [ ] 46.32 Améliorer extensibilité (signal coloré).
+- [ ] 46.33 Refactorer extensibilité (thème clair/sombre).
+- [ ] 46.34 Tester extensibilité (mode mono).
+- [ ] 46.35 Documenter extensibilité (emoji on/off).
+- [ ] 46.36 Centraliser extensibilité (colonnes alignées).
+- [ ] 46.37 Brancher extensibilité (fitLine repli).
+- [ ] 46.38 Sécuriser extensibilité (format table).
+- [ ] 46.39 Borner extensibilité (format csv/markdown).
+- [ ] 46.40 Colorer extensibilité (export config).
+- [ ] 46.41 Ajouter extensibilité (historisation).
+- [ ] 46.42 Améliorer extensibilité (compare).
+- [ ] 46.43 Refactorer extensibilité (alerte seuil).
+- [ ] 46.44 Tester extensibilité (perf durée/size).
+- [ ] 46.45 Documenter extensibilité (régression).
+- [ ] 46.46 Centraliser extensibilité (fuzz propriété).
+- [ ] 46.47 Brancher extensibilité (doc ARCHITECTURE).
+- [ ] 46.48 Sécuriser extensibilité (note threat-model).
+- [ ] 46.49 Borner extensibilité (entrée CHANGELOG).
+- [ ] 46.50 Colorer extensibilité en mode human.
+
+---
+
+## Phase 47 — DX & completions (50 étapes)
+- [ ] 47.1 Ajouter dx & completions en mode human.
+- [ ] 47.2 Améliorer dx & completions --format=json.
+- [ ] 47.3 Refactorer dx & completions --format=ndjson.
+- [ ] 47.4 Tester dx & completions --format=tsv.
+- [ ] 47.5 Documenter dx & completions --quiet.
+- [ ] 47.6 Centraliser dx & completions --verbose.
+- [ ] 47.7 Brancher dx & completions --trace.
+- [ ] 47.8 Sécuriser dx & completions --explain.
+- [ ] 47.9 Borner dx & completions --dry-run.
+- [ ] 47.10 Colorer dx & completions en test unitaire.
+- [ ] 47.11 Ajouter dx & completions en test golden.
+- [ ] 47.12 Améliorer dx & completions en test d'erreur.
+- [ ] 47.13 Refactorer dx & completions en doc utilisateur.
+- [ ] 47.14 Tester dx & completions en aide --help.
+- [ ] 47.15 Documenter dx & completions en complétion.
+- [ ] 47.16 Centraliser dx & completions en soak.
+- [ ] 47.17 Brancher dx & completions en matrice JSON.
+- [ ] 47.18 Sécuriser dx & completions via applyGlobalFlag.
+- [ ] 47.19 Borner dx & completions via module dédié.
+- [ ] 47.20 Colorer dx & completions via handler bridge.
+- [ ] 47.21 Ajouter dx & completions (cas vide).
+- [ ] 47.22 Améliorer dx & completions (NOT_FOUND).
+- [ ] 47.23 Refactorer dx & completions (BLOCKED).
+- [ ] 47.24 Tester dx & completions (timeout).
+- [ ] 47.25 Documenter dx & completions (LocalAI down).
+- [ ] 47.26 Centraliser dx & completions (GPU down).
+- [ ] 47.27 Brancher dx & completions (git down).
+- [ ] 47.28 Sécuriser dx & completions (redaction secrets).
+- [ ] 47.29 Borner dx & completions (taille bornée).
+- [ ] 47.30 Colorer dx & completions (path-traversal).
+- [ ] 47.31 Ajouter dx & completions (exit-code F03).
+- [ ] 47.32 Améliorer dx & completions (signal coloré).
+- [ ] 47.33 Refactorer dx & completions (thème clair/sombre).
+- [ ] 47.34 Tester dx & completions (mode mono).
+- [ ] 47.35 Documenter dx & completions (emoji on/off).
+- [ ] 47.36 Centraliser dx & completions (colonnes alignées).
+- [ ] 47.37 Brancher dx & completions (fitLine repli).
+- [ ] 47.38 Sécuriser dx & completions (format table).
+- [ ] 47.39 Borner dx & completions (format csv/markdown).
+- [ ] 47.40 Colorer dx & completions (export config).
+- [ ] 47.41 Ajouter dx & completions (historisation).
+- [ ] 47.42 Améliorer dx & completions (compare).
+- [ ] 47.43 Refactorer dx & completions (alerte seuil).
+- [ ] 47.44 Tester dx & completions (perf durée/size).
+- [ ] 47.45 Documenter dx & completions (régression).
+- [ ] 47.46 Centraliser dx & completions (fuzz propriété).
+- [ ] 47.47 Brancher dx & completions (doc ARCHITECTURE).
+- [ ] 47.48 Sécuriser dx & completions (note threat-model).
+- [ ] 47.49 Borner dx & completions (entrée CHANGELOG).
+- [ ] 47.50 Colorer dx & completions en mode human.
+
+---
+
+## Phase 48 — Accessibilité (50 étapes)
+- [ ] 48.1 Ajouter accessibilité en mode human.
+- [ ] 48.2 Améliorer accessibilité --format=json.
+- [ ] 48.3 Refactorer accessibilité --format=ndjson.
+- [ ] 48.4 Tester accessibilité --format=tsv.
+- [ ] 48.5 Documenter accessibilité --quiet.
+- [ ] 48.6 Centraliser accessibilité --verbose.
+- [ ] 48.7 Brancher accessibilité --trace.
+- [ ] 48.8 Sécuriser accessibilité --explain.
+- [ ] 48.9 Borner accessibilité --dry-run.
+- [ ] 48.10 Colorer accessibilité en test unitaire.
+- [ ] 48.11 Ajouter accessibilité en test golden.
+- [ ] 48.12 Améliorer accessibilité en test d'erreur.
+- [ ] 48.13 Refactorer accessibilité en doc utilisateur.
+- [ ] 48.14 Tester accessibilité en aide --help.
+- [ ] 48.15 Documenter accessibilité en complétion.
+- [ ] 48.16 Centraliser accessibilité en soak.
+- [ ] 48.17 Brancher accessibilité en matrice JSON.
+- [ ] 48.18 Sécuriser accessibilité via applyGlobalFlag.
+- [ ] 48.19 Borner accessibilité via module dédié.
+- [ ] 48.20 Colorer accessibilité via handler bridge.
+- [ ] 48.21 Ajouter accessibilité (cas vide).
+- [ ] 48.22 Améliorer accessibilité (NOT_FOUND).
+- [ ] 48.23 Refactorer accessibilité (BLOCKED).
+- [ ] 48.24 Tester accessibilité (timeout).
+- [ ] 48.25 Documenter accessibilité (LocalAI down).
+- [ ] 48.26 Centraliser accessibilité (GPU down).
+- [ ] 48.27 Brancher accessibilité (git down).
+- [ ] 48.28 Sécuriser accessibilité (redaction secrets).
+- [ ] 48.29 Borner accessibilité (taille bornée).
+- [ ] 48.30 Colorer accessibilité (path-traversal).
+- [ ] 48.31 Ajouter accessibilité (exit-code F03).
+- [ ] 48.32 Améliorer accessibilité (signal coloré).
+- [ ] 48.33 Refactorer accessibilité (thème clair/sombre).
+- [ ] 48.34 Tester accessibilité (mode mono).
+- [ ] 48.35 Documenter accessibilité (emoji on/off).
+- [ ] 48.36 Centraliser accessibilité (colonnes alignées).
+- [ ] 48.37 Brancher accessibilité (fitLine repli).
+- [ ] 48.38 Sécuriser accessibilité (format table).
+- [ ] 48.39 Borner accessibilité (format csv/markdown).
+- [ ] 48.40 Colorer accessibilité (export config).
+- [ ] 48.41 Ajouter accessibilité (historisation).
+- [ ] 48.42 Améliorer accessibilité (compare).
+- [ ] 48.43 Refactorer accessibilité (alerte seuil).
+- [ ] 48.44 Tester accessibilité (perf durée/size).
+- [ ] 48.45 Documenter accessibilité (régression).
+- [ ] 48.46 Centraliser accessibilité (fuzz propriété).
+- [ ] 48.47 Brancher accessibilité (doc ARCHITECTURE).
+- [ ] 48.48 Sécuriser accessibilité (note threat-model).
+- [ ] 48.49 Borner accessibilité (entrée CHANGELOG).
+- [ ] 48.50 Colorer accessibilité en mode human.
+
+---
+
+## Phase 49 — Internationalisation (50 étapes)
+- [ ] 49.1 Ajouter internationalisation en mode human.
+- [ ] 49.2 Améliorer internationalisation --format=json.
+- [ ] 49.3 Refactorer internationalisation --format=ndjson.
+- [ ] 49.4 Tester internationalisation --format=tsv.
+- [ ] 49.5 Documenter internationalisation --quiet.
+- [ ] 49.6 Centraliser internationalisation --verbose.
+- [ ] 49.7 Brancher internationalisation --trace.
+- [ ] 49.8 Sécuriser internationalisation --explain.
+- [ ] 49.9 Borner internationalisation --dry-run.
+- [ ] 49.10 Colorer internationalisation en test unitaire.
+- [ ] 49.11 Ajouter internationalisation en test golden.
+- [ ] 49.12 Améliorer internationalisation en test d'erreur.
+- [ ] 49.13 Refactorer internationalisation en doc utilisateur.
+- [ ] 49.14 Tester internationalisation en aide --help.
+- [ ] 49.15 Documenter internationalisation en complétion.
+- [ ] 49.16 Centraliser internationalisation en soak.
+- [ ] 49.17 Brancher internationalisation en matrice JSON.
+- [ ] 49.18 Sécuriser internationalisation via applyGlobalFlag.
+- [ ] 49.19 Borner internationalisation via module dédié.
+- [ ] 49.20 Colorer internationalisation via handler bridge.
+- [ ] 49.21 Ajouter internationalisation (cas vide).
+- [ ] 49.22 Améliorer internationalisation (NOT_FOUND).
+- [ ] 49.23 Refactorer internationalisation (BLOCKED).
+- [ ] 49.24 Tester internationalisation (timeout).
+- [ ] 49.25 Documenter internationalisation (LocalAI down).
+- [ ] 49.26 Centraliser internationalisation (GPU down).
+- [ ] 49.27 Brancher internationalisation (git down).
+- [ ] 49.28 Sécuriser internationalisation (redaction secrets).
+- [ ] 49.29 Borner internationalisation (taille bornée).
+- [ ] 49.30 Colorer internationalisation (path-traversal).
+- [ ] 49.31 Ajouter internationalisation (exit-code F03).
+- [ ] 49.32 Améliorer internationalisation (signal coloré).
+- [ ] 49.33 Refactorer internationalisation (thème clair/sombre).
+- [ ] 49.34 Tester internationalisation (mode mono).
+- [ ] 49.35 Documenter internationalisation (emoji on/off).
+- [ ] 49.36 Centraliser internationalisation (colonnes alignées).
+- [ ] 49.37 Brancher internationalisation (fitLine repli).
+- [ ] 49.38 Sécuriser internationalisation (format table).
+- [ ] 49.39 Borner internationalisation (format csv/markdown).
+- [ ] 49.40 Colorer internationalisation (export config).
+- [ ] 49.41 Ajouter internationalisation (historisation).
+- [ ] 49.42 Améliorer internationalisation (compare).
+- [ ] 49.43 Refactorer internationalisation (alerte seuil).
+- [ ] 49.44 Tester internationalisation (perf durée/size).
+- [ ] 49.45 Documenter internationalisation (régression).
+- [ ] 49.46 Centraliser internationalisation (fuzz propriété).
+- [ ] 49.47 Brancher internationalisation (doc ARCHITECTURE).
+- [ ] 49.48 Sécuriser internationalisation (note threat-model).
+- [ ] 49.49 Borner internationalisation (entrée CHANGELOG).
+- [ ] 49.50 Colorer internationalisation en mode human.
+
+---
+
+## Phase 50 — Release v2 (50 étapes)
+- [ ] 50.1 Ajouter release v2 en mode human.
+- [ ] 50.2 Améliorer release v2 --format=json.
+- [ ] 50.3 Refactorer release v2 --format=ndjson.
+- [ ] 50.4 Tester release v2 --format=tsv.
+- [ ] 50.5 Documenter release v2 --quiet.
+- [ ] 50.6 Centraliser release v2 --verbose.
+- [ ] 50.7 Brancher release v2 --trace.
+- [ ] 50.8 Sécuriser release v2 --explain.
+- [ ] 50.9 Borner release v2 --dry-run.
+- [ ] 50.10 Colorer release v2 en test unitaire.
+- [ ] 50.11 Ajouter release v2 en test golden.
+- [ ] 50.12 Améliorer release v2 en test d'erreur.
+- [ ] 50.13 Refactorer release v2 en doc utilisateur.
+- [ ] 50.14 Tester release v2 en aide --help.
+- [ ] 50.15 Documenter release v2 en complétion.
+- [ ] 50.16 Centraliser release v2 en soak.
+- [ ] 50.17 Brancher release v2 en matrice JSON.
+- [ ] 50.18 Sécuriser release v2 via applyGlobalFlag.
+- [ ] 50.19 Borner release v2 via module dédié.
+- [ ] 50.20 Colorer release v2 via handler bridge.
+- [ ] 50.21 Ajouter release v2 (cas vide).
+- [ ] 50.22 Améliorer release v2 (NOT_FOUND).
+- [ ] 50.23 Refactorer release v2 (BLOCKED).
+- [ ] 50.24 Tester release v2 (timeout).
+- [ ] 50.25 Documenter release v2 (LocalAI down).
+- [ ] 50.26 Centraliser release v2 (GPU down).
+- [ ] 50.27 Brancher release v2 (git down).
+- [ ] 50.28 Sécuriser release v2 (redaction secrets).
+- [ ] 50.29 Borner release v2 (taille bornée).
+- [ ] 50.30 Colorer release v2 (path-traversal).
+- [ ] 50.31 Ajouter release v2 (exit-code F03).
+- [ ] 50.32 Améliorer release v2 (signal coloré).
+- [ ] 50.33 Refactorer release v2 (thème clair/sombre).
+- [ ] 50.34 Tester release v2 (mode mono).
+- [ ] 50.35 Documenter release v2 (emoji on/off).
+- [ ] 50.36 Centraliser release v2 (colonnes alignées).
+- [ ] 50.37 Brancher release v2 (fitLine repli).
+- [ ] 50.38 Sécuriser release v2 (format table).
+- [ ] 50.39 Borner release v2 (format csv/markdown).
+- [ ] 50.40 Colorer release v2 (export config).
+- [ ] 50.41 Ajouter release v2 (historisation).
+- [ ] 50.42 Améliorer release v2 (compare).
+- [ ] 50.43 Refactorer release v2 (alerte seuil).
+- [ ] 50.44 Tester release v2 (perf durée/size).
+- [ ] 50.45 Documenter release v2 (régression).
+- [ ] 50.46 Centraliser release v2 (fuzz propriété).
+- [ ] 50.47 Brancher release v2 (doc ARCHITECTURE).
+- [ ] 50.48 Sécuriser release v2 (note threat-model).
+- [ ] 50.49 Borner release v2 (entrée CHANGELOG).
+- [ ] 50.50 Colorer release v2 en mode human.
+
+---
+
