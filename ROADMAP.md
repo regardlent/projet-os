@@ -56,10 +56,10 @@
 - [ ] 5.2 Cache sémantique (prompt/réponse).
 - [x] 5.3 A/B benchmark (comparateur multi-mesures).
 - [x] 5.4 Gating de qualité (sortie validée).
-- [ ] 5.5 Quota multi-modèles.
-- [ ] 5.6 GPU offload (éligibilité + bascule).
-- [ ] 5.7 Profils de modèles (par type de projet).
-- [ ] 5.8 Policy provider (free/pass/payg).
+- [x] 5.5 Quota multi-modèles.
+- [x] 5.6 GPU offload (éligibilité + bascule).
+- [x] 5.7 Profils de modèles (par type de projet).
+- [x] 5.8 Policy provider (free/pass/payg).
 - [x] 5.9 Éligibilité flash.
 - [x] 5.10 `model route --explain` enrichi.
 

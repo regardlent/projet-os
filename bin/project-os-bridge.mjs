@@ -816,6 +816,69 @@ try {
 		process.exit(0);
 	}
 
+	// F72 model policy: effective provider policy from env (5.8).
+	if (line === "model policy") {
+		const free = process.env.PROJECT_OS_ALLOW_CLINE_FREE !== "false";
+		const pass = process.env.PROJECT_OS_ALLOW_CLINE_PASS !== "false";
+		const payg = process.env.PROJECT_OS_ALLOW_CLINE_PAYG === "true";
+		const mode = process.env.PROJECT_OS_PAID_MODE || "OFF";
+		const rows = [
+			{ k: "free", v: free ? "allowed" : "blocked" },
+			{ k: "pass", v: pass ? "allowed" : "blocked" },
+			{ k: "payg", v: payg ? "allowed" : "blocked" },
+			{ k: "paidMode", v: mode },
+		];
+		const allowsPayg = payg && mode !== "OFF";
+		emit({ command: "models", ok: true, status: "POLICY", score: 0, grade: "", signal: allowsPayg ? "PAYG" : (free ? "FREE" : "RESTRICTED"), rows, details: [], message: `model policy: free=${free} pass=${pass} payg=${payg} (${mode})`, warnings: [], actions: [], artifacts: [] }, 0);
+		process.exit(0);
+	}
+
+	// F73 model quota: per-model usage/quota from the usage store (5.5).
+	if (line === "model quota") {
+		const file = path.join(REPO, "artifacts", "usage", "USAGE_REPORT.json");
+		let store = { reports: [] };
+		try { store = JSON.parse(fs.readFileSync(file, "utf8")); } catch {}
+		const reps = Array.isArray(store.reports) ? store.reports : [];
+		const byModel = {};
+		for (const r of reps) { const m = r.model || "unknown"; byModel[m] = byModel[m] || { runs: 0, tokens: 0, payg: 0 }; byModel[m].runs++; byModel[m].tokens += (r.tokens?.total ?? 0); byModel[m].payg += (r.cost?.payg ?? 0); }
+		const rows = Object.entries(byModel).map(([m, a]) => ({ k: m, v: `runs=${a.runs} tokens=${a.tokens} payg=$${a.payg}` }));
+		const daily = parseFloat(process.env.PROJECT_OS_DAILY_BUDGET || "0") || 0;
+		if (daily > 0) rows.push({ k: "dailyBudget", v: `$` + daily });
+		emit({ command: "models", ok: true, status: "QUOTA", score: 0, grade: "", signal: rows.length ? "HAS_QUOTA" : "NO_QUOTA", rows, details: [], message: `model quota: ${Object.keys(byModel).length} model(s)`, warnings: [], actions: [], artifacts: [] }, 0);
+		process.exit(0);
+	}
+
+	// F74 model profiles: recommended model by project type (5.7).
+	if (line === "model profiles") {
+		const profiles = [
+			{ k: "cpp", v: "granite-4.2-3b-flash" }, { k: "typescript", v: "granite-4.2-3b-flash" }, { k: "python", v: "qwen3-4b" },
+			{ k: "web", v: "granite-4.2-3b-flash" }, { k: "node", v: "granite-4.2-3b-flash" }, { k: "rust", v: "qwen3-4b" },
+			{ k: "go", v: "granite-4.2-3b-flash" }, { k: "localai", v: modelId },
+		];
+		emit({ command: "models", ok: true, status: "PROFILES", score: 0, grade: "", signal: "PROFILES", rows: profiles.map((p) => ({ k: p.k, v: p.v })), details: [], message: `model profiles: ${profiles.length} types`, warnings: [], actions: [], artifacts: [] }, 0);
+		process.exit(0);
+	}
+
+	// F75 model offload <id> [--needs=N]: GPU offload eligibility (5.6).
+	if (line.startsWith("model offload ")) {
+		const parts = line.slice("model offload ".length).trim().split(/\s+/);
+		const id = parts[0]; let need = 480;
+		for (const p of parts) if (p.startsWith("--needs=")) need = parseInt(p.slice(8), 10) || 480;
+		let freeMiB = null;
+		try { const o = spawnSync("nvidia-smi", ["--query-gpu=memory.free", "--format=csv,noheader"], { encoding: "utf8", timeout: 5000 }); freeMiB = parseFloat((o.stdout ?? "").trim().replace(/[^0-9.]/g, "")) || null; } catch {}
+		const l = id.toLowerCase();
+		const flash = l.includes("flash") || l.includes("small") || l.includes("3b") || l.includes("instruct");
+		const ok = freeMiB !== null && freeMiB >= need && flash;
+		const rows = [
+			{ k: "vramFreeMiB", v: freeMiB === null ? "n/a" : String(freeMiB) },
+			{ k: "neededMiB", v: String(need) },
+			{ k: "flashEligible", v: flash ? "yes" : "no" },
+			{ k: "canOffload", v: ok ? "yes" : "no" },
+		];
+		emit({ command: "gpu", ok, status: ok ? "OFFLOAD_OK" : "OFFLOAD_BLOCKED", model: id, score: 0, grade: "", signal: ok ? "PASS" : "BLOCKED", rows, details: [], message: `model offload: ${id} vram=${freeMiB ?? "n/a"}/${need}MiB flash=${flash} -> ${ok ? "OK" : "BLOCKED"}`, warnings: ok ? [] : ["VRAM or flash eligibility not met"], actions: [], artifacts: [] }, ok ? 0 : 1);
+		process.exit(0);
+	}
+
 	// F37 model benchmark <id>: 1 warmup + 3 measured real inferences -> TTFT/tokens-per-sec.
 	if (line.startsWith("model benchmark ")) {
 		const id = line.slice("model benchmark ".length).trim();
