@@ -151,7 +151,7 @@ static int cmdHelpOld() {
 		<< "  diff <a> <b>       compare two projects\n"
 		<< "  goal proof         goal criteria/evidence\n"
 		<< "  todo board         open/done view\n"
-		<< "  artifact list|show|search|verify <id>|publish <name> --type=md|json --content=...\n"
+		<< "  artifact list|show|search|verify <id>|publish <name> --type=md|json --content=...|provenance <id>\n"
 		<< "  addon verify       addon lock/state\n"
 		<< "  config             effective config\n"
 		<< "  doctor             named health checks\n"
@@ -811,6 +811,11 @@ static int cmdArtifactPublish(const std::vector<std::string>& args, pos::OutputF
 	for (auto& a : args) line += " " + a;
 	pos::CmdResult r = pos::dispatch(pos::bridgePath(), line, g_timeoutMs, &g_cancel);
 	printAnalysis("artifact publish", fmt, r, true);
+	return pos::exitFor(r.ok, r.status);
+}
+static int cmdArtifactProvenance(const std::string& id, pos::OutputFormat fmt) {
+	pos::CmdResult r = pos::dispatch(pos::bridgePath(), "artifact provenance " + id, g_timeoutMs, &g_cancel);
+	printAnalysis("artifact provenance", fmt, r, true);
 	return pos::exitFor(r.ok, r.status);
 }
 
@@ -1674,6 +1679,7 @@ int wmain(int argc, wchar_t** wargv) {
 		if (cmd == "artifact" && args.size() >= 2 && args[0] == "search") { return cmdArtifactSearch(args[1], fmt); }
 		if (cmd == "artifact" && args.size() >= 2 && args[0] == "verify") { return cmdArtifactVerify(args[1], fmt); }
 		if (cmd == "artifact" && args.size() >= 2 && args[0] == "publish") { return cmdArtifactPublish(std::vector<std::string>(args.begin() + 1, args.end()), fmt); }
+		if (cmd == "artifact" && args.size() >= 2 && args[0] == "provenance") { return cmdArtifactProvenance(args[1], fmt); }
 		if (cmd == "artifact" && args.size() >= 1 && args[0] == "audit-store") { return cmdArtifactAuditStore(fmt); }
 		if (cmd == "parity") { return cmdParity(fmt); }
 			if (cmd == "addon" && args.size() >= 1 && args[0] == "verify") { return cmdAddonVerify(fmt); }

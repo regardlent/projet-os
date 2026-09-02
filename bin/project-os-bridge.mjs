@@ -714,6 +714,24 @@ try {
 		}
 	}
 
+	// F90 artifact search full-text (7.5): relevance-ranked search with snippet + limit.
+	if (line.startsWith("artifact search ")) {
+		let q = line.slice("artifact search ".length).trim().toLowerCase();
+		const lm = q.match(/--limit=(\d+)/); const limit = lm ? parseInt(lm[1], 10) || 10 : 10; q = q.replace(/--limit=\d+/g, "").trim();
+		const artifactsDir = path.join(REPO, "artifacts");
+		const hits = [], terms = q.split(/\s+/).filter(Boolean);
+		const walk = (d) => { try { for (const e of fs.readdirSync(d, { withFileTypes: true })) { const full = path.join(d, e.name); if (e.isDirectory()) walk(full); else if (/[.]json$|md$/i.test(e.name)) { const id = path.relative(REPO, full).replace(/[\\]/g, "/"); const type = path.extname(e.name).slice(1); let content = ""; try { content = fs.readFileSync(full, "utf8"); } catch {}
+			const cc = content.toLowerCase(); let score = 0;
+			for (const t of terms) { score += id.toLowerCase().includes(t) ? 3 : 0; score += (cc.match(new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g") || []).length); }
+			if (terms.every((t) => id.toLowerCase().includes(t) || cc.includes(t))) { let snippet = ""; const idx = cc.indexOf(terms[0]); if (idx >= 0) snippet = content.slice(Math.max(0, idx - 40), idx + 80).replace(/\s+/g, " ").trim(); hits.push({ id, type, size: fs.statSync(full).size, score, snippet }); }
+		} } } catch {} };
+		walk(artifactsDir);
+		hits.sort((a, b) => b.score - a.score || a.id.localeCompare(b.id));
+		const items = hits.slice(0, limit);
+		emit({ command: "artifact", ok: true, status: "SEARCH", items, message: `search '${q}': ${hits.length} hit(s) (showing ${items.length})`, warnings: [], actions: [], artifacts: [] }, 0);
+		process.exit(0);
+	}
+
 	// F25 artifact search <query>: filter artifacts/ by id/type/content.
 	if (line.startsWith("artifact search ")) {
 		const q = line.slice("artifact search ".length).trim().toLowerCase();
@@ -788,7 +806,34 @@ try {
 		const full = path.join(dir, file); let created = false;
 		try { fs.mkdirSync(dir, { recursive: true }); fs.writeFileSync(full, body); created = true; } catch {}
 		const rel = "artifacts/published/" + file;
-		emit({ command: "artifact", ok: created, status: created ? "PUBLISHED" : "PUBLISH_FAIL", id: rel, size: created ? body.length : 0, rows: [{ k: "id", v: rel }, { k: "size", v: created ? String(body.length) : "n/a" }, { k: "type", v: type }], message: created ? `published ${rel} (${body.length} bytes)` : "publish failed", warnings: created ? [] : ["write failed"], actions: created ? ["artifact verify " + rel] : [], artifacts: created ? [rel] : [] }, created ? 0 : 1);
+		let prov = "";
+		if (created) {
+			// 7.6: record provenance (sha256 + origin + timestamp) in a sidecar manifest.
+			try {
+				const provPath = path.join(REPO, "artifacts", "provenance.json");
+				const manifest = ((() => { try { return JSON.parse(fs.readFileSync(provPath, "utf8")); } catch { return {}; } }))();
+				const sha = crypto.createHash("sha256").update(fs.readFileSync(full)).digest("hex");
+				manifest[rel] = { sha256: sha, source: "cli", owner: process.env.PROJECT_OS_ORIGINATOR || "project-os", createdAt: new Date().toISOString(), type, size: body.length };
+				fs.writeFileSync(provPath, JSON.stringify(manifest, null, 2));
+				prov = "provenance recorded";
+			} catch {}
+		}
+		emit({ command: "artifact", ok: created, status: created ? "PUBLISHED" : "PUBLISH_FAIL", id: rel, size: created ? body.length : 0, rows: [{ k: "id", v: rel }, { k: "size", v: created ? String(body.length) : "n/a" }, { k: "type", v: type }, { k: "provenance", v: prov || "n/a" }], message: created ? `published ${rel} (${body.length} bytes)` : "publish failed", warnings: created ? [] : ["write failed"], actions: created ? ["artifact verify " + rel, "artifact provenance " + rel] : [], artifacts: created ? [rel] : [] }, created ? 0 : 1);
+		process.exit(0);
+	}
+
+	// F91 artifact provenance <id>: show provenance + live integrity vs SHA256 (7.6).
+	if (line.startsWith("artifact provenance ")) {
+		const id = line.slice("artifact provenance ".length).trim().replace(/[\\]/g, "/");
+		const provPath = path.join(REPO, "artifacts", "provenance.json");
+		const manifest = (() => { try { return JSON.parse(fs.readFileSync(provPath, "utf8")); } catch { return null; } })();
+		const rec = manifest ? manifest[id] : null;
+		const full = path.resolve(REPO, id);
+		if (!rec) { emit({ command: "artifact", ok: false, status: "NO_PROVENANCE", id, rows: [{ k: "id", v: id }], message: "artifact provenance: unknown id", warnings: ["no provenance recorded"], actions: [], artifacts: [] }, 1); process.exit(0); }
+		let shaOk = "n/a";
+		try { const actual = crypto.createHash("sha256").update(fs.readFileSync(full)).digest("hex"); shaOk = actual === rec.sha256 ? "INTACT" : "TAMPERED"; } catch { shaOk = "MISSING"; }
+		const ok = shaOk === "INTACT";
+		emit({ command: "artifact", ok, status: ok ? "PROVENANCE" : "PROVENANCE_MISMATCH", id, rows: [{ k: "id", v: id }, { k: "sha256", v: rec.sha256 }, { k: "integrity", v: shaOk }, { k: "source", v: rec.source }, { k: "owner", v: rec.owner }, { k: "createdAt", v: rec.createdAt }], message: `artifact provenance: ${shaOk}`, warnings: ok ? [] : ["content mismatch with recorded SHA256"], actions: [], artifacts: [id] }, ok ? 0 : 1);
 		process.exit(0);
 	}
 

@@ -84,8 +84,8 @@
 - [ ] 7.2 Integration ArtifactStore complète (versions, review).
 - [ ] 7.3 Outils MCP pour artefacts.
 - [ ] 7.4 `bridge tunnel` raffiné.
-- [ ] 7.5 `artifact search` full-text.
-- [ ] 7.6 Provenance + signature.
+- [x] 7.5 `artifact search` full-text.
+- [x] 7.6 Provenance + signature.
 - [ ] 7.7 Partage d'artefacts.
 - [ ] 7.8 Audit de sécurité MCP.
 - [ ] 7.9 Config MCP.
