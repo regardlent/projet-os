@@ -51,6 +51,8 @@ inline std::atomic<bool> g_cancel(false);
 inline void onSigInt(int) { g_cancel.store(true); }
 // F08 improvement (phase 22): global dispatch timeout, override with --timeout=<ms>.
 inline std::atomic<long long> g_timeoutMs(60000);
+// F55: status emojis (✅/⚠️/❌) enabled by default; --no-emoji disables.
+inline std::atomic<bool> g_emoji(true);
 
 // --- Helpers -------------------------------------------------------------
 static int readChoice(int max) {
@@ -233,7 +235,7 @@ static int cmdHelp() {
 	std::cout << "  schema machine         machine-consumer contract\n";
 	sec("Bridge MCP");
 	std::cout << "  bridge status|start|stop|restart|health|tools|test|tunnel\n";
-	std::cout << "\n  Global flags: --format=json|ndjson|tsv  --color=auto|always|never  --timeout=<ms>  --explain/--dry-run\n";
+	std::cout << "\n  Global flags: --format=json|ndjson|tsv  --color=auto|always|never  --timeout=<ms>  --no-emoji  --explain/--dry-run\n";
 	return 0;
 }
 
@@ -1338,6 +1340,17 @@ static const char* signalColor(bool on, const std::string& s) {
 }
 static const char* gradeColor(bool on, const std::string& g) { if (g == "A" || g == "B") return cG(on); if (g == "D" || g == "E") return cR(on); return cY(on); }
 static std::string scoreBar(int score) { const int f = (score < 0 ? 0 : (score > 100 ? 100 : score)) / 10; std::string s = "["; for (int i = 0; i < 10; ++i) s += (i < f ? "#" : "-"); s += "]"; return s; }
+// F55: status emoji (✅ green / ⚠️ caution / ❌ alert), disabled via --no-emoji.
+static const char* emojiFor(const std::string& s) {
+	if (!g_emoji.load()) return "";
+	std::string u = s; for (auto& c : u) if (c >= 'a' && c <= 'z') c = c - 'a' + 'A';
+	if (u.find("GOOD") != std::string::npos || u.find("CLEAR") != std::string::npos || u.find("STRONG") != std::string::npos
+		|| u.find("PASS") != std::string::npos || u.find("IMPROVING") != std::string::npos || u.find("HAS_") != std::string::npos
+		|| u.find("EXACT_ZERO") != std::string::npos || u.find("EQUAL") != std::string::npos) return "\xE2\x9C\x85"; // ✅
+	if (u.find("AT_RISK") != std::string::npos || u.find("ALERT") != std::string::npos || u.find("HIGH") != std::string::npos
+		|| u.find("DECLINING") != std::string::npos || u.find("EXPIRED") != std::string::npos || u.find("FAIL") != std::string::npos) return "\xE2\x9D\x8C"; // ❌
+	return "\xE2\x9A\xA0"; // ⚠️
+}
 
 static int printAnalysis(const std::string& title, pos::OutputFormat fmt, pos::CmdResult& r, bool colorOn) {
 	const std::string sig = r.signal.empty() ? r.status : r.signal;
@@ -1355,7 +1368,8 @@ static int printAnalysis(const std::string& title, pos::OutputFormat fmt, pos::C
 	} else if (fmt == pos::OutputFormat::TsV) {
 		for (auto& kv : r.analysisKv) pos::emitScalar(pos::OutputFormat::TsV, kv.first, kv.second);
 	} else {
-		std::cout << cB(colorOn) << "\xE2\x94\x80\xE2\x94\x80 " << title << " " << signalColor(colorOn, sig) << sig << cX(colorOn)
+		const char* e = emojiFor(sig);
+		std::cout << cB(colorOn) << "\xE2\x94\x80\xE2\x94\x80 " << title << " " << signalColor(colorOn, sig) << e << (e[0] ? " " : "") << sig << cX(colorOn)
 			<< cB(colorOn) << " \xE2\x94\x80\xE2\x94\x80" << cX(colorOn) << "\n";
 		if (r.score > 0) {
 			std::cout << "  score    : " << scoreBar(r.score) << " " << r.score << "/100"
@@ -1418,6 +1432,8 @@ int wmain(int argc, wchar_t** wargv) {
 			if (a.rfind("--color=", 0) == 0) { wrapColor = pos::parseColor(a.substr(8)); continue; }
 			if (a.rfind("--timeout=", 0) == 0) { g_timeoutMs.store(std::atoll(a.substr(10).c_str())); if (g_timeoutMs.load() <= 0) g_timeoutMs.store(60000); continue; }
 			if (a == "--explain" || a == "--dry-run") { explain = true; continue; }
+			if (a == "--no-emoji") { g_emoji.store(false); continue; }
+			if (a == "--emoji") { g_emoji.store(true); continue; }
 			break; // first non-global-flag token = command
 		}
 		for (size_t i = start + 1; i < (size_t)argc; ++i) {
@@ -1426,6 +1442,8 @@ int wmain(int argc, wchar_t** wargv) {
 			if (a.rfind("--color=", 0) == 0) { wrapColor = pos::parseColor(a.substr(8)); continue; }
 			if (a.rfind("--timeout=", 0) == 0) { g_timeoutMs.store(std::atoll(a.substr(10).c_str())); if (g_timeoutMs.load() <= 0) g_timeoutMs.store(60000); continue; }
 			if (a == "--explain" || a == "--dry-run") { explain = true; continue; }
+			if (a == "--no-emoji") { g_emoji.store(false); continue; }
+			if (a == "--emoji") { g_emoji.store(true); continue; }
 			args.push_back(pos::sanitizeTerminalText(a));
 		}
 		color = pos::applyNoColor(wrapColor, noColorEnv);
