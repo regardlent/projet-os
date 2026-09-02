@@ -1,6 +1,7 @@
 // pos_runner.hpp — invoke the Project OS node bridge and surface the result.
 #pragma once
 #include <array>
+#include <algorithm>
 #include <cstdio>
 #include <string>
 #include "pos_json.hpp"
@@ -402,6 +403,44 @@ inline CmdResult dispatch(const std::string& bridgePath, const std::string& slas
 	if (!pr.started) { r.ok = false; r.status = "BRIDGE_FAILURE"; r.message = "bridge not started: " + pr.osError; return r; }
 	if (pr.timedOut) { r.ok = false; r.status = "TIMEOUT_OR_CANCELLED"; r.message = "bridge timed out"; return r; }
         return pos::parseCmdResult(r.raw);
+}
+
+// F51 helpers — pure, unit-testable. Precedence: flag > env > default.
+inline std::string prefer(const std::string& flag, const std::string& env, const std::string& dflt) {
+        if (!flag.empty()) return flag;
+        if (!env.empty()) return env;
+        return dflt;
+}
+
+// Redact bearer / sk- / api-key style secrets from a line (golden redaction).
+inline std::string redactSecret(std::string s) {
+        // Redact "Bearer <token>" (space-separated token up to next space/quote).
+        {
+                static const std::string pre = "Bearer ";
+                size_t p = 0;
+                while ((p = s.find(pre, p)) != std::string::npos) {
+                        size_t start = p + pre.size();
+                        size_t end = start;
+                        while (end < s.size() && s[end] != ' ' && s[end] != '"' && s[end] != ';' && s[end] != ',' && s[end] != '\n' && s[end] != '\r') ++end;
+                        if (end > start) s.replace(start, end - start, "***");
+                        p = start + 3;
+                }
+        }
+        // Redact "sk-..." occurrences (OpenAI/API style).
+        {
+                static const std::string pre = "sk-";
+                size_t p = 0;
+                while ((p = s.find(pre, p)) != std::string::npos) {
+                        size_t start = p + pre.size();
+                        size_t end = start;
+                        while (end < s.size() && s[end] != ' ' && s[end] != '"' && s[end] != ';' && s[end] != ',' && s[end] != '\n' && s[end] != '\r') ++end;
+                        size_t keep = std::min<size_t>(4, end - start);
+                        std::string repl = s.substr(start, keep) + "***";
+                        if (end > start) s.replace(start, end - start, repl);
+                        p = start + repl.size();
+                }
+        }
+        return s;
 }
 
 } // namespace pos

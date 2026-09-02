@@ -405,6 +405,45 @@ static void testJsonQuoteEmit() {
 }
 
 // Phase 28: fuzz/security/stress — the parser must never crash on hostile input.
+static void testConfigPrecedence() {
+	// flag > env > default.
+	CHECK(pos::prefer("flag", "env", "dflt") == "flag");
+	CHECK(pos::prefer("", "env", "dflt") == "env");
+	CHECK(pos::prefer("", "", "dflt") == "dflt");
+	CHECK(pos::prefer("x", "", "dflt") == "x");
+	CHECK(pos::prefer("", "y", "dflt") == "y");
+}
+
+static void testRedaction() {
+	// Bearer token redacted, prefix preserved.
+	std::string a = "Authorization: Bearer abc123def456";
+	std::string ra = pos::redactSecret(a);
+	CHECK(ra.find("abc123def456") == std::string::npos);
+	CHECK(ra.find("Bearer ***") != std::string::npos);
+	// sk- style key keeps first 4 chars + ***.
+	std::string b = "key=sk-abcdefgh1234";
+	std::string rb = pos::redactSecret(b);
+	CHECK(rb.find("1234") == std::string::npos);
+	CHECK(rb.find("abcd***") != std::string::npos);
+	// Plain text untouched.
+	std::string c = "hello world";
+	CHECK(pos::redactSecret(c) == c);
+}
+
+static void testGoldenUnicode() {
+	// Golden UTF-8 for box-drawing and status emojis used by the CLI cards.
+	const unsigned short dash[] = { 0x2500, 0 }; // ─
+	std::string d8; CHECK(pos::utf16ToUtf8(dash, d8)); CHECK(d8 == "\xE2\x94\x80");
+	const unsigned short warn[] = { 0x26A0, 0 }; // ⚠
+	std::string w8; CHECK(pos::utf16ToUtf8(warn, w8)); CHECK(w8 == "\xE2\x9A\xA0");
+	const unsigned short okE[] = { 0x2705, 0 }; // ✅
+	std::string o8; CHECK(pos::utf16ToUtf8(okE, o8)); CHECK(o8 == "\xE2\x9C\x85");
+	const unsigned short xE[] = { 0x274C, 0 }; // ❌
+	std::string x8; CHECK(pos::utf16ToUtf8(xE, x8)); CHECK(x8 == "\xE2\x9D\x8C");
+	// Round-trip back.
+	std::wstring back; CHECK(pos::utf8ToUtf16(o8, back)); CHECK(back.size() == 1 && back[0] == 0x2705);
+}
+
 static void testFuzzSecurity() {
 	// Uses escaped std::string for every hostile input to avoid any raw-delimiter ambiguity.
 	const std::string plusN = "{\"x\":+}";
@@ -480,6 +519,9 @@ int main() {
 	testParseDecodes();
 	testParseInspectGoalProof();
 	testJsonQuoteEmit();
+	testConfigPrecedence();
+	testRedaction();
+	testGoldenUnicode();
 	testFuzzSecurity();
 	std::cout << "\n" << (failures == 0 ? "ALL PASS" : "FAILURES") << " (" << failures << ")\n";
 	return failures == 0 ? 0 : 1;

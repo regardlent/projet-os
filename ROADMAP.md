@@ -94,11 +94,11 @@
 ## Phase 8 — Tests & robustesse
 - [ ] 8.1 Fuzz/property harness (libFuzzer).
 - [ ] 8.2 Sanitizers (ASan/UBSan) en CI.
-- [ ] 8.3 Tests de précédence de config.
-- [ ] 8.4 Golden tests Unicode.
+- [x] 8.3 Tests de précédence de config.
+- [x] 8.4 Golden tests Unicode.
 - [ ] 8.5 Drift compare enrichi.
 - [ ] 8.6 Golden budget.
-- [ ] 8.7 Golden redaction.
+- [x] 8.7 Golden redaction.
 - [ ] 8.8 Budget de perf (mémoire/temps).
 - [ ] 8.9 Robustesse processus (kill/timeout).
 - [ ] 8.10 100 scénarios de soak.
