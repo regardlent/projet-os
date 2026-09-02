@@ -1584,7 +1584,7 @@ int wmain(int argc, wchar_t** wargv) {
 		return runCommandLine(cmd, args, colorOn);
 	}
 
-	std::cout << "\n=== Project OS CLI (C++ menu) ===\n";
+	std::cout << "\n  \xE2\x94\x80\xE2\x94\x80 Project OS CLI \xE2\x94\x80\xE2\x94\x80 \n";
 	std::cout << "  Repo      : " << pos::repoRoot() << "\n";
 	std::cout << "  Registry  : " << pos::registryFile() << "\n";
 	std::cout << "  Projects  : " << pos::projectsRoot() << "\n";
@@ -1594,16 +1594,19 @@ int wmain(int argc, wchar_t** wargv) {
 	if (projects.empty()) std::cout << "  No managed projects yet. Use [2] to create one.\n\n";
 
 	while (true) {
-		std::cout << "  MENU\n";
-		std::cout << "   1. List projects\n";
-		std::cout << "   2. Create project\n";
-		std::cout << "   3. Goal (active)\n";
-		std::cout << "   4. Todo (active)\n";
-		std::cout << "   5. Autonomy (active)\n";
-		std::cout << "   6. Docs online (active)\n";
-		std::cout << "   7. Addons (active)\n";
-		std::cout << "   8. Raw slash command\n";
-		std::cout << "   0. Quit\n";
+		std::cout << "  \xE2\x94\x80\xE2\x94\x80 MENU \xE2\x94\x80\xE2\x94\x80 \n";
+		std::cout << "  [Projet]\n";
+		std::cout << "    1. List projects\n";
+		std::cout << "    2. Create project\n";
+		std::cout << "  [Pilotage]\n";
+		std::cout << "    3. Goal        (active)\n";
+		std::cout << "    4. Todo        (active)\n";
+		std::cout << "    5. Autonomy    (active)\n";
+		std::cout << "  [Aides]\n";
+		std::cout << "    6. Docs online (active)\n";
+		std::cout << "    7. Addons      (active)\n";
+		std::cout << "    8. Raw slash command\n";
+		std::cout << "    0. Quit\n";
 		std::cout << "  Choice> ";
 		int c = readChoice(8);
 		if (c == 0) break;
