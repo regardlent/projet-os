@@ -241,7 +241,7 @@ static int cmdHelp() {
 	std::cout << "  schema machine         machine-consumer contract\n";
 	sec("Bridge MCP");
 	std::cout << "  bridge status|start|stop|restart|health|tools|test|tunnel\n";
-	std::cout << "\n  Global flags: --format=json|ndjson|tsv  --color=auto|always|never  --theme=light|dark  --timeout=<ms>  --no-emoji  --quiet|--verbose  --explain/--dry-run\n";
+	std::cout << "\n  Global flags: --format=json|ndjson|tsv  --color=auto|always|never  --theme=light|dark  --mono  --timeout=<ms>  --no-emoji  --quiet|--verbose  --cockpit  --explain/--dry-run\n";
 	return 0;
 }
 
@@ -1547,6 +1547,7 @@ int wmain(int argc, wchar_t** wargv) {
 		pos::ColorPolicy color = pos::ColorPolicy::Auto;
 		pos::ColorPolicy wrapColor = pos::ColorPolicy::Auto; // avoid shadow
 		bool explain = false; // F20 --explain / --dry-run
+		bool cockpitShortcut = false; // F67 --cockpit global shortcut
 		bool noColorEnv = (getenv("NO_COLOR") != nullptr && getenv("NO_COLOR")[0] != '\0');
 		// F04 fix: global flags may appear BEFORE the command too (e.g. --format=json gpu proof).
 		size_t start = 1;
@@ -1561,6 +1562,8 @@ int wmain(int argc, wchar_t** wargv) {
 			if (a == "--emoji") { g_emoji.store(true); continue; }
 			if (a == "--quiet") { g_quiet.store(true); continue; }
 			if (a == "--verbose") { g_verbose.store(true); continue; }
+			if (a == "--mono") { wrapColor = pos::ColorPolicy::Never; continue; }
+			if (a == "--cockpit") { cockpitShortcut = true; continue; }
 			break; // first non-global-flag token = command
 		}
 		for (size_t i = start + 1; i < (size_t)argc; ++i) {
@@ -1574,10 +1577,14 @@ int wmain(int argc, wchar_t** wargv) {
 			if (a == "--emoji") { g_emoji.store(true); continue; }
 			if (a == "--quiet") { g_quiet.store(true); continue; }
 			if (a == "--verbose") { g_verbose.store(true); continue; }
+			if (a == "--mono") { wrapColor = pos::ColorPolicy::Never; continue; }
+			if (a == "--cockpit") { cockpitShortcut = true; continue; }
 			args.push_back(pos::sanitizeTerminalText(a));
 		}
 		color = pos::applyNoColor(wrapColor, noColorEnv);
 		bool colorOn = pos::colorEnabled(color, isTty);
+		// F67: --cockpit global shortcut launches the dashboard directly.
+		if (cockpitShortcut) { return cmdCockpit(fmt, args, colorOn); }
 		const std::string cmd = (start < (size_t)argc) ? argvS[start] : std::string("help");
 		// F20: --explain / --dry-run => show plan, never mutate.
 		if (explain) { return cmdExplain(cmd, args); }
