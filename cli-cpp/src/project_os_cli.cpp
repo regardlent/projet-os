@@ -296,12 +296,70 @@ static int cmdCompletion(const std::string& shell, bool withProjects) {
 	return 0;
 }
 
-// --- F50 cockpit: inline VT dashboard (no external dep). Read-only, live refresh. ----
+// --- F96 schema: emit a JSON Schema (draft-07) for the bridge protocol v2 envelope (9.3). --------
+static int cmdSchema(const std::string& which) {
+	if (which == "envelope") {
+		std::cout << R"({
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "project-os/bridge/v2/envelope",
+  "title": "Project OS Bridge Protocol v2 Envelope",
+  "type": "object",
+  "required": ["protocol","requestId","ok","status","result","timingMs","errors"],
+  "properties": {
+    "protocol": { "const": 2, "description": "Protocol version" },
+    "requestId": { "type": "string" },
+    "ok": { "type": "boolean" },
+    "status": { "type": "string", "description": "Command status token e.g. READY, LIST, NAV, VERIFIED" },
+    "result": { "type": "object" },
+    "timingMs": { "type": "number", "minimum": 0 },
+    "errors": { "type": "array", "items": { "type": "string" } }
+  }
+}
+)" << "\n";
+		return 0;
+	}
+	if (which == "exitcodes") {
+		std::cout << R"({
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "project-os/cli/exitcodes",
+  "description": "Contract F03: a failure is never mapped to 0.",
+  "type": "integer",
+  "minimum": 0,
+  "maximum": 12,
+  "enum": [0,1,2,3,4,5,6,7,8,9,10,11,12]
+}
+)" << "\n";
+		return 0;
+	}
+	if (which == "list") {
+		std::cout << "  schema envelope      protocol v2 machine envelope\n";
+		std::cout << "  schema exitcodes     exit-code taxonomy (0-12)\n";
+		return 0;
+	}
+	std::cout << "  unknown schema: " << which << " (envelope|exitcodes|list)\n";
+	return 1;
+}
+
+// --- F97 template list: available project templates + structure (9.2). -------------------------
+static int cmdTemplateList() {
+	std::cout << "── project templates ──\n";
+	std::cout << "  cpp      : src/ tests/ CMakeLists.txt README.md\n";
+	std::cout << "  python   : src/ tests/ pyproject.toml\n";
+	std::cout << "  node     : src/ tests/ package.json\n";
+	std::cout << "  web      : src/ index.html vite.config.ts\n";
+	std::cout << "  rust     : src/ tests/ Cargo.toml\n";
+	std::cout << "  empty    : README.md only\n";
+	std::cout << "  create --type=<t> scaffolded the project (see /create).\n";
+	return 0;
+}
+
+
 static std::string readGpuLine(); // F38 helper (defined below)
 // F66 forward decl (defined later): terminal-width line fitting.
 static std::string fitLine(const std::string& s);
 // Forward decl (defined later): intelligence/analysis result printer.
 static int printAnalysis(const std::string& title, pos::OutputFormat fmt, pos::CmdResult& r, bool colorOn);
+// --- F50 cockpit: inline VT dashboard (no external dep). Read-only, live refresh. ----
 static int cmdCockpit(pos::OutputFormat fmt, const std::vector<std::string>& args, bool colorOn) {
 	int watchSec = 0;
 	for (auto& a : args) if (a.rfind("--watch=", 0) == 0) watchSec = std::max(0, std::atoi(a.substr(8).c_str()));
@@ -1771,6 +1829,10 @@ int wmain(int argc, wchar_t** wargv) {
 		if (cmd == "welcome") { return cmdWelcome(); }
 		if (cmd == "config" && args.size() >= 1 && args[0] == "path") { std::cout << "── config path ──\n  path : " << projectOsConfigPath() << "\n"; return 0; }
 		if (cmd == "config" && args.size() >= 1 && args[0] == "env") { return cmdConfigEnv(); }
+		if (cmd == "schema" && args.size() >= 1) { return cmdSchema(args[0]); }
+		if (cmd == "schema" && args.empty()) { return cmdSchema("list"); }
+		if (cmd == "template" && args.size() >= 1 && args[0] == "list") { return cmdTemplateList(); }
+		if (cmd == "template") { return cmdTemplateList(); }
 		if (cmd == "completion" && args.size() >= 1) { bool slugs = false; for (const auto& a : args) if (a == "--slugs") slugs = true; return cmdCompletion(args[0], slugs); }
 		if (cmd == "cockpit" && args.size() >= 1 && args[0] == "history") { return cmdCockpitHistory(fmt); }
 		if (cmd == "cockpit" && args.size() >= 1 && args[0] == "export") { return cmdCockpitExport(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }

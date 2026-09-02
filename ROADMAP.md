@@ -105,8 +105,8 @@
 
 ## Phase 9 — Extensibilité & DX
 - [ ] 9.1 Commande slash personnalisée.
-- [ ] 9.2 Templates de projet.
-- [ ] 9.3 Schémas de sortie (JSON Schema).
+- [x] 9.2 Templates de projet.
+- [x] 9.3 Schémas de sortie (JSON Schema).
 - [x] 9.4 Completion dynamique (slugs + sous-commandes).
 - [x] 9.5 `--dry-run` enrichi.
 - [x] 9.6 Alias de commandes.
