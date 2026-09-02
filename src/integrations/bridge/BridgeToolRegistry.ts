@@ -156,6 +156,50 @@ const READ_HANDLERS: Record<string, ToolHandler> = {
 		const r = await gitRun(["diff", "--color=never"], input.workspaceRoot, input.readTimeoutMs);
 		return { content: [{ type: "text", text: redactLog(r.out).slice(0, 200_000) }] };
 	},
+	async artifact_verify(input) {
+		const rel = String(input.args.id ?? "");
+		if (!rel.startsWith("artifacts")) return { content: [{ type: "text", text: JSON.stringify({ error: "outside artifacts" }) }] };
+		const b = boundaryRead(input.workspaceRoot, rel);
+		if (!b.ok) return { content: [{ type: "text", text: JSON.stringify({ error: b.reason }) }] };
+		const fs = await import("node:fs");
+		const crypto = await import("node:crypto");
+		try { const buf = fs.readFileSync(b.absolute); const sha = crypto.createHash("sha256").update(buf).digest("hex"); return { content: [{ type: "text", text: JSON.stringify({ id: b.absolute, size: buf.length, sha256: sha, ok: buf.length > 0 }) }] }; }
+		catch (e) { return { content: [{ type: "text", text: JSON.stringify({ error: e instanceof Error ? e.message : "read failed" }) }] }; }
+	},
+	async artifact_search(input) {
+		const q = String(input.args.query ?? "").toLowerCase();
+		const max = typeof input.args.limit === "number" ? Math.max(1, Math.min(50, Math.floor(input.args.limit))) : 10;
+		const fs = await import("node:fs");
+		const path = await import("node:path");
+		const root = path.join(input.workspaceRoot, "artifacts");
+		const hits: { id: string; score: number; snippet: string }[] = [];
+		let scanned = 0;
+		const terms = q.split(/\s+/).filter(Boolean);
+		const walk = (dir: string): void => {
+			if (scanned > 500) return;
+			let entries: import("node:fs").Dirent[];
+			try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return; }
+			for (const e of entries) {
+				if (scanned > 500) return;
+				const full = path.join(dir, e.name);
+				if (e.isDirectory()) walk(full);
+				else if (/\.(json|md)$/i.test(e.name)) {
+					scanned++;
+					let content = ""; try { content = fs.readFileSync(full, "utf8"); } catch { continue; }
+					const cc = content.toLowerCase(); let score = 0;
+					for (const t of terms) { score += e.name.toLowerCase().includes(t) ? 3 : 0; const m = cc.match(new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g")); score += m ? m.length : 0; }
+					if (terms.every((t) => e.name.toLowerCase().includes(t) || cc.includes(t))) {
+						const idx = cc.indexOf(terms[0]); let snippet = "";
+						if (idx >= 0) snippet = content.slice(Math.max(0, idx - 40), idx + 80).replace(/\s+/g, " ").trim();
+						hits.push({ id: path.relative(input.workspaceRoot, full).replace(/\\/g, "/"), score, snippet });
+					}
+				}
+			}
+		};
+		walk(root);
+		hits.sort((a, b) => b.score - a.score || a.id.localeCompare(b.id));
+		return { content: [{ type: "text", text: JSON.stringify({ query: q, count: hits.length, items: hits.slice(0, max) }) }] };
+	},
 };
 
 const RUN_HANDLERS: Record<string, ToolHandler> = {
@@ -188,6 +232,8 @@ export const BRIDGE_TOOLS: BridgeTool[] = [
 	{ name: "code_search", description: "Regex search inside workspace (bounded)", required: ["query"], properties: { query: { type: "string" }, maxResults: { type: "integer" } }, handler: READ_HANDLERS.code_search },
 	{ name: "git_status", description: "Read-only git status", required: [], properties: {}, handler: READ_HANDLERS.git_status },
 	{ name: "git_diff", description: "Read-only git diff (redacted)", required: [], properties: {}, handler: READ_HANDLERS.git_diff },
+	{ name: "artifact_verify", description: "Verify an artifact (size + sha256)", required: ["id"], properties: { id: { type: "string" } }, handler: READ_HANDLERS.artifact_verify },
+	{ name: "artifact_search", description: "Full-text search over artifacts/", required: ["query"], properties: { query: { type: "string" }, limit: { type: "integer" } }, handler: READ_HANDLERS.artifact_search },
 	{ name: "tests_run", description: "Run a known npm test script (approval)", required: ["script"], properties: { script: { type: "string" } }, handler: RUN_HANDLERS.tests_run },
 	{ name: "build_run", description: "Run a known npm build script (approval)", required: ["script"], properties: { script: { type: "string" } }, handler: RUN_HANDLERS.build_run },
 	{ name: "antigravity_run", description: "Run an Antigravity headless mission on the workspace (approval)", required: ["prompt"], properties: { prompt: { type: "string" }, readOnly: { type: "string" }, sandbox: { type: "string" }, printTimeout: { type: "string" } }, handler: RUN_HANDLERS.antigravity_run },

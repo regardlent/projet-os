@@ -82,13 +82,13 @@
 ## Phase 7 — Artefacts & MCP
 - [x] 7.1 `artifact publish` depuis le CLI.
 - [ ] 7.2 Integration ArtifactStore complète (versions, review).
-- [ ] 7.3 Outils MCP pour artefacts.
+- [x] 7.3 Outils MCP pour artefacts.
 - [ ] 7.4 `bridge tunnel` raffiné.
 - [x] 7.5 `artifact search` full-text.
 - [x] 7.6 Provenance + signature.
 - [ ] 7.7 Partage d'artefacts.
 - [ ] 7.8 Audit de sécurité MCP.
-- [ ] 7.9 Config MCP.
+- [x] 7.9 Config MCP.
 - [x] 7.10 `artifact verify` enrichi (schéma).
 
 ## Phase 8 — Tests & robustesse

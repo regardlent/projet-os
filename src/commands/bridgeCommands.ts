@@ -38,7 +38,8 @@ export async function bridgeHandler(
 				"  /bridge stop     -> Arreter le serveur MCP\n" +
 				"  /bridge restart  -> Redemarrer le serveur MCP\n" +
 				"  /bridge health   -> Sante du bridge MCP\n" +
-				"  /bridge tools    -> Liste des 10 outils MCP\n" +
+				"  /bridge tools    -> Liste des outils MCP (12)\n" +
+				"  /bridge config   -> Configuration effective MCP\n" +
 				"  /bridge test     -> Tests d'integration MCP\n" +
 				"  /bridge tunnel   -> Configuration tunnel ChatGPT Web\n\n" +
 				"Endpoint: http://127.0.0.1:8412/mcp (localhost only)",
@@ -61,6 +62,8 @@ export async function bridgeHandler(
 			return bridgeHealthHandler();
 		case "tools":
 			return bridgeToolsHandler();
+		case "config":
+			return bridgeConfigHandler(flags);
 		case "test":
 			return bridgeTestHandler();
 		case "tunnel":
@@ -71,7 +74,7 @@ export async function bridgeHandler(
 				ok: false,
 				status: "UNKNOWN_SUBCOMMAND",
 				message: `Unknown sub-command: ${subcommand}\n` +
-					"Use: /bridge status|start|stop|restart|health|tools|test|tunnel",
+					"Use: /bridge status|start|stop|restart|health|tools|config|test|tunnel",
 				warnings: [],
 				actions: [],
 				artifacts: [],
@@ -91,7 +94,7 @@ async function bridgeStatusHandler(flags: Record<string, string>): Promise<Comma
 		enabled: cfgVal.enabled,
 		writeEnabled: cfgVal.writeEnabled,
 		approvalMode: cfgVal.approvalMode,
-		tools: 10,
+		tools: 12,
 		running: state.running,
 		pid: state.pid,
 	};
@@ -214,7 +217,7 @@ function bridgeToolsHandler(): CommandResult {
 		status: "AVAILABLE",
 		message: JSON.stringify({
 			transport: "streamable-http-loopback",
-			totalTools: 10,
+			totalTools: 12,
 			tools: [
 				{ name: "bridge_health", class: "health", description: "Bridge + Project-OS health (no secrets)", approval: "auto" },
 				{ name: "project_status", class: "read", description: "Project root, branch, dirty state", approval: "auto" },
@@ -223,6 +226,8 @@ function bridgeToolsHandler(): CommandResult {
 				{ name: "code_search", class: "read", description: "Regex search inside workspace (bounded)", approval: "auto" },
 				{ name: "git_status", class: "read", description: "Read-only git status", approval: "auto" },
 				{ name: "git_diff", class: "read", description: "Read-only git diff (redacted)", approval: "auto" },
+				{ name: "artifact_verify", class: "read", description: "Verify an artifact (size + sha256)", approval: "auto" },
+				{ name: "artifact_search", class: "read", description: "Full-text search over artifacts/", approval: "auto" },
 				{ name: "tests_run", class: "run", description: "Run a known npm test script (approval)", approval: "manual" },
 				{ name: "build_run", class: "run", description: "Run a known npm build script (approval)", approval: "manual" },
 				{ name: "antigravity_run", class: "antigravity-run", description: "Run an Antigravity headless mission on workspace", approval: "manual" },
@@ -232,6 +237,34 @@ function bridgeToolsHandler(): CommandResult {
 		actions: [],
 		artifacts: [],
 	};
+}
+
+function bridgeConfigHandler(flags: Record<string, string>): CommandResult {
+	const cfgVal = bridgeCfg();
+	const jsonFmt = flags.format === "json" || flags.json === "true";
+	const toolNames = ["bridge_health", "project_status", "project_tree", "file_read", "code_search", "git_status", "git_diff", "artifact_verify", "artifact_search", "tests_run", "build_run", "antigravity_run"];
+	const payload = {
+		service: "project-os-bridge",
+		endpoint: `http://${cfgVal.host}:${cfgVal.port}/mcp`,
+		transport: "streamable-http-loopback",
+		enabled: cfgVal.enabled,
+		writeEnabled: cfgVal.writeEnabled,
+		approvalMode: cfgVal.approvalMode,
+		timeoutMs: cfgVal.timeoutMs,
+		maxRuntimeMs: cfgVal.maxRuntimeMs,
+		totalTools: toolNames.length,
+		tools: toolNames,
+	};
+	if (jsonFmt) return { command: "bridge", ok: true, status: "CONFIG", message: JSON.stringify(payload, null, 2), warnings: [], actions: [], artifacts: [] };
+	const lines = [
+		"Service: MCP Bridge",
+		`Endpoint: ${payload.endpoint}`,
+		"Transport: streamable-http-loopback",
+		`Enabled: ${payload.enabled}  Write: ${payload.writeEnabled}  Approval: ${payload.approvalMode}`,
+		`Timeouts: timeout=${payload.timeoutMs}ms maxRuntime=${payload.maxRuntimeMs}ms`,
+		`Tools (${payload.totalTools}): ${payload.tools.join(", ")}`,
+	];
+	return { command: "bridge", ok: true, status: "CONFIG", message: lines.join("\n"), warnings: [], actions: [], artifacts: [] };
 }
 
 function bridgeTestHandler(): CommandResult {

@@ -60,12 +60,13 @@ test("bridge: /bridge health reports state", async () => {
 	assert.match(r.message, /8412/);
 });
 
-test("bridge: /bridge tools lists 10 MCP tools", async () => {
+test("bridge: /bridge tools lists 12 MCP tools", async () => {
 	const r = await bounded("bridge", ["tools"]);
 	assert.equal(r.ok, true);
 	assert.equal(r.status, "AVAILABLE");
-	assert.match(r.message, /"totalTools": 10/);
+	assert.match(r.message, /"totalTools": 12/);
 	assert.match(r.message, /bridge_health/);
+	assert.match(r.message, /artifact_verify/);
 	assert.match(r.message, /antigravity_run/);
 });
 
@@ -96,7 +97,7 @@ test("bridge: /bridge unknown sub-command fails closed", async () => {
 	const r = await bounded("bridge", ["explode"]);
 	assert.equal(r.ok, false);
 	assert.equal(r.status, "UNKNOWN_SUBCOMMAND");
-	assert.match(r.message, /status\|start\|stop\|restart\|health\|tools\|test\|tunnel/);
+	assert.match(r.message, /status\|start\|stop\|restart\|health\|tools\|config\|test\|tunnel/);
 });
 
 test("bridge: lifecycle sub-commands are recognized (dispatch shape)", { skip: "spawns a real detached server on the shared loopback port 8412, which races with the parallel test suite; verified manually via `node bin/project-os-bridge.mjs /bridge start|stop`" }, async () => {
