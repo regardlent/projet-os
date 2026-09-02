@@ -18,6 +18,16 @@ cmake --build cmake-build
 ctest --test-dir cmake-build --output-on-failure
 ```
 
+### Packaging (CPack) + install
+```bash
+# Installe le binaire + la cible CMake dans <prefix>
+cmake --install cmake-build --prefix <install-dir>
+# Produit un ZIP portable (project-os-cli-0.1.0-v3.zip)
+cpack --config cmake-build/CPackConfig.cmake -G ZIP
+```
+- `cmake --install` : binaire dans `bin/` + `project_os_cliTargets.cmake` (lib target) dans `lib/cmake/project_os_cli/`.
+- `cpack -G ZIP` : archive portable (défaut `project-os-cli-<version>.zip`).
+
 ## Lancer le menu
 ```
 cmake-build\project-os-cli.exe

@@ -35,6 +35,7 @@ credentials*
 # Logs / temp
 *.log
 *.tmp
+*.zip
 menu_out.txt
 
 # OS
