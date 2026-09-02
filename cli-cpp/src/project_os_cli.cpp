@@ -1800,36 +1800,30 @@ int wmain(int argc, wchar_t** wargv) {
 		bool noColorEnv = (getenv("NO_COLOR") != nullptr && getenv("NO_COLOR")[0] != '\0');
 		// F04 fix: global flags may appear BEFORE the command too (e.g. --format=json gpu proof).
 		size_t start = 1;
+		// Unified global-flag handler (refactor: single source of truth, used by both loops).
+		auto applyGlobalFlag = [&](const std::string& a) -> bool {
+			if (a.rfind("--format=", 0) == 0) { fmt = pos::parseFormat(a.substr(9)); return true; }
+			if (a.rfind("--color=", 0) == 0) { wrapColor = pos::parseColor(a.substr(8)); return true; }
+			if (a.rfind("--theme=", 0) == 0) { const std::string t = a.substr(8); if (t == "light") g_theme.store(0); else if (t == "dark") g_theme.store(1); return true; }
+			if (a.rfind("--timeout=", 0) == 0) { g_timeoutMs.store(std::atoll(a.substr(10).c_str())); if (g_timeoutMs.load() <= 0) g_timeoutMs.store(60000); return true; }
+			if (a == "--explain" || a == "--dry-run") { explain = true; return true; }
+			if (a == "--trace") { pos::g_trace.store(true); return true; }
+			if (a == "--no-emoji") { g_emoji.store(false); return true; }
+			if (a == "--emoji") { g_emoji.store(true); return true; }
+			if (a == "--quiet") { g_quiet.store(true); return true; }
+			if (a == "--verbose") { g_verbose.store(true); return true; }
+			if (a == "--mono") { wrapColor = pos::ColorPolicy::Never; return true; }
+			if (a == "--cockpit") { cockpitShortcut = true; return true; }
+			return false;
+		};
 		for (; start < (size_t)argc; ++start) {
 			const std::string a = argvS[start];
-			if (a.rfind("--format=", 0) == 0) { fmt = pos::parseFormat(a.substr(9)); continue; }
-			if (a.rfind("--color=", 0) == 0) { wrapColor = pos::parseColor(a.substr(8)); continue; }
-			if (a.rfind("--theme=", 0) == 0) { const std::string t = a.substr(8); if (t == "light") g_theme.store(0); else if (t == "dark") g_theme.store(1); continue; }
-			if (a.rfind("--timeout=", 0) == 0) { g_timeoutMs.store(std::atoll(a.substr(10).c_str())); if (g_timeoutMs.load() <= 0) g_timeoutMs.store(60000); continue; }
-			if (a == "--explain" || a == "--dry-run") { explain = true; continue; }
-		if (a == "--trace") { pos::g_trace.store(true); continue; }
-			if (a == "--no-emoji") { g_emoji.store(false); continue; }
-			if (a == "--emoji") { g_emoji.store(true); continue; }
-			if (a == "--quiet") { g_quiet.store(true); continue; }
-			if (a == "--verbose") { g_verbose.store(true); continue; }
-			if (a == "--mono") { wrapColor = pos::ColorPolicy::Never; continue; }
-			if (a == "--cockpit") { cockpitShortcut = true; continue; }
+			if (applyGlobalFlag(a)) continue; // global flag before the command
 			break; // first non-global-flag token = command
 		}
 		for (size_t i = start + 1; i < (size_t)argc; ++i) {
 			const std::string a = argvS[i];
-			if (a.rfind("--format=", 0) == 0) { fmt = pos::parseFormat(a.substr(9)); continue; }
-			if (a.rfind("--color=", 0) == 0) { wrapColor = pos::parseColor(a.substr(8)); continue; }
-			if (a.rfind("--theme=", 0) == 0) { const std::string t = a.substr(8); if (t == "light") g_theme.store(0); else if (t == "dark") g_theme.store(1); continue; }
-			if (a.rfind("--timeout=", 0) == 0) { g_timeoutMs.store(std::atoll(a.substr(10).c_str())); if (g_timeoutMs.load() <= 0) g_timeoutMs.store(60000); continue; }
-			if (a == "--explain" || a == "--dry-run") { explain = true; continue; }
-		if (a == "--trace") { pos::g_trace.store(true); continue; }
-			if (a == "--no-emoji") { g_emoji.store(false); continue; }
-			if (a == "--emoji") { g_emoji.store(true); continue; }
-			if (a == "--quiet") { g_quiet.store(true); continue; }
-			if (a == "--verbose") { g_verbose.store(true); continue; }
-			if (a == "--mono") { wrapColor = pos::ColorPolicy::Never; continue; }
-			if (a == "--cockpit") { cockpitShortcut = true; continue; }
+			if (applyGlobalFlag(a)) continue; // global flag after the command
 			args.push_back(pos::sanitizeTerminalText(a));
 		}
 		color = pos::applyNoColor(wrapColor, noColorEnv);
