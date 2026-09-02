@@ -191,6 +191,7 @@ mode scriptable via la passerelle Node (`bin/project-os-bridge.mjs`). Voir `cli-
 
 ## Documentation
 
+- [📚 Index docs](docs/index.md) — hub de navigation.
 - [Guide « rendre le dépôt populaire »](docs/GITHUB_POPULARITY.md) — SEO, topics, community health files, workflow d'abonnements.
 - [Feuille de route 50×50 (2500 étapes)](docs/CLI_ROADMAP_50X50.md) — plan de la prochaine génération du CLI.
 - **`cli-cpp/README.md`** — CLI C++ : build (CMake), menu interactif, mode scriptable, codes de sortie, Intelligence & analyse.
