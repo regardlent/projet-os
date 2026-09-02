@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><title>Project OS CLI C++ — Référence + Handoff (ChatGPT)</title>
+<style>
+body{font-family:'Segoe UI',system-ui,sans-serif;font-size:11.5px;color:#1b1b1b;line-height:1.5;margin:26px auto;max-width:980px;padding:0 24px}
+h1{color:#0b5;border-bottom:3px solid #0b5;padding-bottom:6px;font-size:24px}
+h2{color:#0a4;margin-top:26px;font-size:18px;border-left:6px solid #0a4;padding-left:10px}
+h3{color:#333;font-size:14px;margin-top:18px;border-bottom:1px solid #ddd;padding-bottom:3px}
+code,pre{background:#f4f4f4;border-radius:4px;font-family:'Cascadia Mono',Consolas,monospace;font-size:10.5px}
+code{padding:1px 5px;color:#c7254e}
+pre{padding:11px;border:1px solid #ddd;overflow-x:auto;white-space:pre-wrap}
+table{border-collapse:collapse;width:100%;margin:10px 0}
+th,td{border:1px solid #ccc;padding:5px 8px;text-align:left;vertical-align:top}
+th{background:#e8f6ee;font-weight:600}
+.badge{display:inline-block;background:#0a4;color:#fff;border-radius:3px;padding:1px 6px;font-size:10.5px;font-weight:600}
+.ok{color:#080;font-weight:700}.warn{color:#b60;font-weight:700}.bad{color:#c00;font-weight:700}
+.note{background:#fff8e1;border-left:4px solid #f0a500;padding:8px 12px;margin:10px 0}
+.goal{background:#e6f7ef;border:2px dashed #0a4;padding:14px 18px;margin:14px 0;border-radius:8px}
+ul{margin:4px 0 4px 18px}
+li{margin:2px 0}
+</style></head><body>
+
+<div class="goal">
+<b># PROJECT OS — CLI C++ : Référence exhaustive &amp; Handoff ChatGPT</b><br>
+<b>Objectif</b> : fournir à ChatGPT l'état RÉEL et complet du CLI C++ (client de Project OS) afin
+qu'il génère un <b>promptops</b> pour les prochaines MAJ. <b>Le code réel fait autorité.</b>
+Aucune fonctionnalité inventée.
+</div>
+
+<h1>🛠️ Project OS CLI (C++) — Référence v0.1.0</h1>
+<p><span class="badge">C++17</span> <span class="badge">CMake</span> <span class="badge">Node bridge v2</span> <span class="badge">LocalAI loopback</span></p>
+
+<h2>1. Contexte &amp; chemins (réels)</h2>
+<table>
+<tr><th>Élément</th><th>Valeur réelle</th></tr>
+<tr><td>Répertoire CLI</td><td><code>C:\Users\eiden\Desktop\dev\projet-os\cli-cpp</code></td></tr>
+<tr><td>Binaire</td><td><code>cli-cpp\cmake-build\project-os-cli.exe</code> (ou <code>build\</code>)</td></tr>
+<tr><td>Passerelle Node</td><td><code>bin\project-os-bridge.mjs</code> (protocole v2)</td></tr>
+<tr><td>Endpoint LocalAI canonique</td><td><code>http://127.0.0.1:8080/v1</code></td></tr>
+<tr><td>Toolchain</td><td><code>C:\msys64\mingw64\bin</code> (g++ 16.1, cmake)</td></tr>
+<tr><td>Node / npm</td><td>v24.16.0 / 11.13.0</td></tr>
+<tr><td>Racine repo / projets</td><td><code>C:\Users\eiden\Desktop\dev\projet-os</code> / <code>projects\&lt;slug&gt;</code></td></tr>
+</table>
+
+<h2>2. Architecture (le CLI délègue à la passerelle)</h2>
+<pre>CLI C++ (client de premier niveau, menu + ligne de commande)
+  -> invocation "node project-os-bridge.mjs <slash-line>"
+      -> SlashCommandRegistry (dist/projects/SlashCommands.js)
+          -> handlers /goal /create /addon /autonomy /todo /docs /project
+          -> ProjectFactory, ManagedProjectRegistry, AutonomyService...
+              -> LocalAI loopback + filesystem</pre>
+<p><b>Principe clé</b> : le CLI C++ <b>ne duplique pas la logique</b> — il dispatche une slash-commande
+réelle à la passerelle Node (qui utilise le registre compilé en <code>dist/</code>) et affiche le résultat.
+Il lit aussi directement certains JSON de métadonnées (<code>.project-os/project.json</code>,
+<code>goal.json</code>, <code>todo.json</code>) pour l'affichage de la liste des projets.</p>
+
+<h2>3. Fichiers CLI (rôles)</h2>
+<table>
+<tr><th>Fichier</th><th>Rôle</th></tr>
+<tr><td><code>src/pos_json.hpp</code></td><td>Mini-parseur JSON (header-only, C++17) : JValue (Object/Array/String/Number/Bool/Null), get/asString, gère échappements.</td></tr>
+<tr><td><code>src/pos_model.hpp</code></td><td>Modèle + I/O : ProjectInfo/GoalInfo/TodoItem, readFile, parseRegistry/parseGoal/parseTodo, shellQuote.</td></tr>
+<tr><td><code>src/pos_runner.hpp</code></td><td>Runner : CmdResult, runNodeCommand (_popen), dispatch → parse enveloppe v2 du bridge.</td></tr>
+<tr><td><code>src/project_os_cli.cpp</code></td><td>Main : menu interactif + <b>mode non-interactif</b> (ligne de commande).</td></tr>
+<tr><td><code>tests/test_pos.cpp</code></td><td>Tests parseur JSON + parseRegistry/parseGoal/parseTodo + shellQuote (ctest).</td></tr>
+<tr><td><code>CMakeLists.txt</code></td><td>Build : project-os-cli + pos_json_test + ctest.</td></tr>
+<tr><td><code>README.md</code></td><td>Doc build/lancement/menu/mode non-interactif.</td></tr>
+</table>
+<h2>4. Modes d'utilisation</h2>
+<h3>4.1 Menu interactif</h3>
+<pre>project-os-cli.exe
+1. List projects        # liste + sélectionner actif
+2. Create project       # /create &lt;name&gt; type=&lt;type&gt;
+3. Goal (active)        # /goal &lt;objective&gt;
+4. Todo (active)        # /todo list|add|done
+5. Autonomy (active)    # /autonomy plan|run|summary|--write
+6. Docs online (active) # /docs &lt;domain&gt;
+7. Addons (active)      # /addon list|add|recommended|remove
+8. Raw slash command    # toute commande slash libre
+0. Quit</pre>
+<h3>4.2 Mode non-interactif (scriptable) — ajout récent</h3>
+<pre>project-os-cli &lt;command&gt; [args...]     # préfixe "/" ajouté automatiquement
+project-os-cli docs "swiss football league"
+project-os-cli project &lt;slug&gt;
+project-os-cli goal "Objective"
+project-os-cli todo list
+project-os-cli create myproj type=cpp
+project-os-cli bogus        # -> FAIL UNKNOWN_COMMAND</pre>
+<p>Sortie structurée : <code>OK|FAIL &lt;command&gt; &lt;status&gt;</code> + message + artefacts + raw (si erreur).</p>
+
+<h2>5. Commandes dispatchables (via la passerelle)</h2>
+<table>
+<tr><th>Commande</th><th>Sous-commandes / flags</th><th>Description</th></tr>
+<tr><td><code>/create</code></td><td><code>--type=&lt;t&gt;</code> <code>--git</code> <code>--objective</code></td><td>Crée un projet géré hub-spoke + seed TODO (types: cpp, ts, web, node, rust, go, python, desktop, docker, localai, auto).</td></tr>
+<tr><td><code>/goal</code></td><td><code>&lt;objective&gt;</code> <code>--criteria=&lt;c&gt;</code></td><td>Définit l'objectif + critères du projet actif (goal.json + historique).</td></tr>
+<tr><td><code>/todo</code></td><td><code>list</code> <code>add &lt;label&gt;</code> <code>done &lt;key&gt;</code></td><td>Liste (barré), ajoute, marque fait. Persisté (todo.json + TODO.md).</td></tr>
+<tr><td><code>/addon</code></td><td><code>list</code> <code>recommended</code> <code>add &lt;id&gt;</code> <code>remove</code> <code>disable</code> <code>enable</code></td><td>Gère les addons workspace (core, cpp, web, node, python...).</td></tr>
+<tr><td><code>/autonomy</code></td><td><code>plan --minutes=&lt;n&gt;</code> <code>run</code> <code>summary</code> <code>--write</code></td><td>Plan autonomie (budget minutes par complexité), exécution agent, résumé, write-lane gated.</td></tr>
+<tr><td><code>/docs</code></td><td><code>&lt;domain&gt;</code> <code>--category=&lt;c&gt;</code></td><td>Navigation doc officielle en ligne pour un domaine (SFL, C++, Win32...).</td></tr>
+<tr><td><code>/project</code></td><td><code>&lt;slug&gt;</code> <code>--project=&lt;slug&gt;</code></td><td>Résumé d'un projet géré (type, statut, goal, progress).</td></tr>
+<tr><td><code>/report</code></td><td><code>--job=&lt;id&gt;</code> <code>--model=&lt;id&gt;</code></td><td>Rapport tokens + coût + perf d'un job (export programmatique).</td></tr>
+</table>
+
+<h2>6. Protocole passerelle Node (v2)</h2>
+<p>Le CLI lit une <b>enveloppe v2</b> produite par <code>bin/project-os-bridge.mjs</code> :</p>
+<pre>{ "protocol": 2, "requestId": "...", "ok": bool, "status": "...",
+  "result": { "command": "...", "ok": bool, "status": "...", "message": "...",
+              "next": "...", "warnings": [], "actions": [], "artifacts": [] },
+  "timingMs": number, "errors": [] }</pre>
+<p>La classe <code>CmdResult</code> (pos_runner.hpp) peuple <code>ok/command/status/message/next/warnings/actions/artifacts/raw</code> en lisant <code>result.*</code> (fallback racine pour backward-compat).</p>
+<table>
+<tr><th>Champ</th><th>Type</th><th>Sens</th></tr>
+<tr><td>protocol</td><td>int (2)</td><td>Version du protocole.</td></tr>
+<tr><td>requestId</td><td>string</td><td>Corrélation (env PROJECT_OS_REQUEST_ID ou auto req-...).</td></tr>
+<tr><td>ok / status</td><td>bool / string</td><td>Statut global (READY, NAV, UNKNOWN_COMMAND, BLOCKED...).</td></tr>
+<tr><td>result.message</td><td>string</td><td>Message utilisé par le CLI pour l'affichage.</td></tr>
+<tr><td>result.artifacts</td><td>string[]</td><td>Artefacts produits (ex. .project-os/project.json).</td></tr>
+<tr><td>timingMs</td><td>number</td><td>Latence mesurée du dispatch.</td></tr>
+</table>
+
+<h2>7. Variables d'environnement</h2>
+<table>
+<tr><th>Var</th><th>Défaut</th><th>Rôle</th></tr>
+<tr><td><code>PROJECT_OS_REPO</code></td><td><code>C:\Users\eiden\Desktop\dev\projet-os</code></td><td>Racine du repo (pour localiser la passerelle).</td></tr>
+<tr><td><code>PROJECT_OS_REGISTRY</code></td><td><code>&lt;repo&gt;\.project-os-cli\managed-projects.json</code></td><td>Fichier registre des projets gérés.</td></tr>
+<tr><td><code>PROJECT_OS_PROJECTS_ROOT</code></td><td><code>C:\Users\eiden\Desktop\dev\projects</code></td><td>Racine des workspaces.</td></tr>
+<tr><td><code>PROJECT_OS_ACTIVE_SLUG</code></td><td>(vide)</td><td>Slug du projet actif.</td></tr>
+<tr><td><code>PROJECT_OS_MODEL</code></td><td><code>granite-4.2-3b-flash</code></td><td>Modèle LocalAI pour l'autonomie.</td></tr>
+<tr><td><code>PROJECT_OS_BASE_URL</code></td><td><code>http://127.0.0.1:8080/v1</code></td><td>Endpoint LocalAI.</td></tr>
+</table>
+
+<h2>8. Tests CLI (état réel)</h2>
+<table>
+<tr><td>Build</td><td><code>cmake --build cmake-build</code> → exit 0 (project-os-cli + pos_json_test)</td><td class="ok">PASS</td></tr>
+<tr><td>ctest</td><td>pos_json_test 1/1</td><td class="ok">PASS</td></tr>
+<tr><td>Mode non-interactif docs</td><td><code>project-os-cli docs "swiss football league"</code> → OK docs NAV (SFL)</td><td class="ok">PASS</td></tr>
+<tr><td>Gestion erreur</td><td><code>project-os-cli bogus</code> → FAIL UNKNOWN_COMMAND</td><td class="ok">PASS</td></tr>
+<tr><td>Typecheck (repo)</td><td><code>tsc -p ./ --noEmit</code> → 0 erreur</td><td class="ok">PASS</td></tr>
+</table>
+<p class="note">Le test C++ <code>test_pos.cpp</code> couvre : JKind (Object/Array/String/Number/Bool/Null), accès valeurs, échappements chaîne, parseRegistry, parseGoal, parseTodo, shellQuote.</p>
+
+<h2>9. État du CLI &amp; limites (honnêteté)</h2>
+<ul>
+<li><b>Fonctionnalités livrées</b> : menu interactif 9 entrées, mode non-interactif scriptable, navigation doc officielle (<code>/docs</code>), état projet (<code>/project</code>), goal/todo/addon/autonomy/create dispatchés à la passerelle, gestion d'erreur structurée.</li>
+<li><b>Rôle</b> : client de premier niveau — délègue la logique métier à la passerelle Node (registre slash en <code>dist/</code>) ; ne duplique PAS la logique.</li>
+<li><b>Protocole v2</b> : enveloppe versionnée (protocol/requestId/timingMs/exitCode) lue par <code>CmdResult</code>.</li>
+<li><b>Limites</b> : mode non-interactif qui retourne toujours exit 0 (à durcir avec un exit code ≠ 0 en échec) ; pas encore de commandes <code>status</code>/<code>report</code>/<code>models</code>/<code>gpu</code> dédiées dans le menu ; shellQuote minimaliste (pas toutes les règles de quoting Windows) ; pas de timeout explicite sur <code>_popen</code>.</li>
+</ul>
+
+<h2>10. Pistes d'évolution (pour le promptops ChatGPT)</h2>
+<table>
+<tr><th>Piste</th><th>Description</th></tr>
+<tr><td><code>status</code></td><td>Résumé complet d'un projet (goal, todo, addons, tests, artifacts).</td></tr>
+<tr><td><code>report</code></td><td>Rapport tokens + coût + perf d'un job (réutilise UsageReport).</td></tr>
+<tr><td><code>models</code></td><td>Inventaire LocalAI (get /v1/models, FLASH_READY, paramètres).</td></tr>
+<tr><td><code>gpu</code></td><td>État GPU réel (nvidia-smi, mémoire, offload proof).</td></tr>
+<tr><td>Exit codes</td><td><code>return 0</code> si OK, <code>return 1</code> si FAIL/erreur.</td></tr>
+<tr><td>Quoting</td><td>Renforcer <code>shellQuote</code> pour les cas limites (guillemets, espaces, &amp;, |).</td></tr>
+<tr><td>Timeout</td><td>Ajouter un timeout/annulation sur l'appel <code>_popen</code>.</td></tr>
+<tr><td>Unicode</td><td>Sorties console Windows correctement encodées.</td></tr>
+</table>
+
+<hr>
+<p style="text-align:center;color:#888;font-size:10.5px">Généré par Project OS — Référence CLI C++ (handoff ChatGPT) · v0.1.0.</p>
+</body></html>
+

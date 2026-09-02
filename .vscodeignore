@@ -1,0 +1,10 @@
+.vscode/**
+.vscode-test/**
+src/**
+docs/**
+artifacts/**
+scratch/**
+**/*.ts
+**/*.map
+**/*.test.js
+node_modules/.cache/**

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><title>Project OS — Guide d'utilisation (commandes &amp; chemins)</title>
+<style>
+body{font-family:'Segoe UI',system-ui,sans-serif;font-size:12.5px;color:#1b1b1b;line-height:1.5;margin:30px auto;max-width:900px;padding:0 24px}
+h1{color:#0b5;border-bottom:3px solid #0b5;padding-bottom:6px;font-size:24px}
+h2{color:#0a4;margin-top:30px;font-size:19px;border-left:5px solid #0a4;padding-left:10px}
+h3{color:#333;font-size:15px;margin-top:20px}
+code,pre{background:#f4f4f4;border-radius:4px;font-family:'Cascadia Mono',Consolas,monospace;font-size:11.5px}
+code{padding:1px 5px;color:#c7254e}
+pre{padding:12px;border:1px solid #ddd;overflow-x:auto;white-space:pre-wrap}
+table{border-collapse:collapse;width:100%;margin:12px 0}
+th,td{border:1px solid #ccc;padding:6px 10px;text-align:left;vertical-align:top}
+th{background:#e8f6ee;font-weight:600}
+.status-red{color:#c00;font-weight:700}
+.status-green{color:#080;font-weight:700}
+.badge{display:inline-block;background:#0a4;color:#fff;border-radius:3px;padding:1px 7px;font-size:11px;font-weight:600}
+.note{background:#fff8e1;border-left:4px solid #f0a500;padding:10px 14px;margin:14px 0}
+.warn{background:#fdecea;border-left:4px solid #c0392b;padding:10px 14px;margin:14px 0}
+ul{margin:6px 0 6px 20px}
+li{margin:3px 0}
+</style></head><body>
+
+<h1>🛠️ Project OS — Guide complet d'utilisation</h1>
+<p><span class="badge">v0.1.0</span> Pilotage de projets par commandes, moteur IA local (LocalAI). Ce guide se passe de l'IDE Cline : on utilise <b>les commandes slash et les fichiers</b> directement.</p>
+
+<div class="warn"><b>Prérequis GPU (obligatoire pour la ladder).</b> Project OS exige un vrai GPU. Pas de fallback CPU pour la validation d'endurance. Vérifier : <code>nvidia-smi --query-gpu=memory.free</code> → il faut &gt; ≈3,0 Go libres pour un modèle Q4 2–3 Go. Seul l'utilisateur peut fermer les applications GPU externes (jamais de kill automatique de process).</div>
+
+<h2>1. Où est installé Project OS ? (chemins complets)</h2>
+<table>
+<tr><th>Élément</th><th>Chemin complet</th></tr>
+<tr><td>Racine projet (code)</td><td><code>C:\Users\eiden\Desktop\dev\projet-os</code></td></tr>
+<tr><td>Projets gérés</td><td><code>C:\Users\eiden\Desktop\dev\projects\&lt;slug&gt;</code></td></tr>
+<tr><td>Config VS Code / Antigravity</td><td><code>C:\Users\eiden\.vscode\argv.json</code></td></tr>
+<tr><td>Modèles LocalAI</td><td><code>C:\Users\eiden\LocalAI\models\llama-cpp\...</code></td></tr>
+<tr><td>Artefacts d'endurance</td><td><code>C:\Users\eiden\Desktop\dev\projet-os\artifacts\endurance</code></td></tr>
+<tr><td>Tests</td><td><code>...\projet-os\src\tests</code></td></tr>
+<tr><td>Cible LocalAI</td><td><code>http://127.0.0.1:8080/v1</code></td></tr>
+</table>
+
+<h2>2. Commandes slash (contrôle des projets)</h2>
+<p>Elles s'utilisent dans la console d'input de Project OS (extension VS Code/Antigravity), préfixées par <code>/</code>. Types de projets pilotés : <code>cpp</code>, <code>ts</code>, <code>web</code>, <code>node</code>.</p>
+<table>
+<tr><th>Commande</th><th>Description</th><th>Exemple</th></tr>
+<tr><td><code>/create</code></td><td>Crée un projet neuf (scaffold).</td><td><code>/create myproject type=cpp</code></td></tr>
+<tr><td><code>/goal</code></td><td>Définit l'objectif (critères mesurables).</td><td><code>/goal "Observe Swiss Super League" showStandings showScorers</code></td></tr>
+<tr><td><code>/todo</code></td><td>Liste (barré) / ajoute / marque une tâche.</td><td><code>/todo list</code>, <code>/todo done impl</code></td></tr>
+<tr><td><code>/addon</code></td><td>Gère les addons (core, cpp, web, node).</td><td><code>/addon add project-os-cpp</code></td></tr>
+<tr><td><code>/autonomy</code></td><td>Lance un run autonome (analyse/enrichissement).</td><td><code>/autonomy plan --minutes=60</code>, <code>/autonomy run</code></td></tr>
+<tr><td><code>/docs</code></td><td>Navigation des sources officielles en ligne.</td><td><code>/docs swiss football league</code></td></tr>
+<tr><td><code>/project</code></td><td>Résumé d'un projet géré.</td><td><code>/project sfl-observatory</code></td></tr>
+<tr><td><code>/report</code></td><td>Rapport tokens/cost/perf d'un job.</td><td><code>/report --job=run-60min</code></td></tr>
+</table>
+
+<h2>3. Créer &amp; piloter un projet (exemple réel SFL)</h2>
+<pre>cd C:\Users\eiden\Desktop\dev\projects
+/create sfl-observatory type=cpp
+/goal "Observe Swiss Super League" showStandings showScorers
+/todo add "Implement standings/scorers"
+/todo done scaffold
+/autonomy plan --minutes=60
+/autonomy run            # Project OS analyse et enrichit (write-lane)
+/docs swiss football league      # navigation sources en ligne
+/project sfl-observatory         # état du projet
+/report --job=run-60min          # tokens + coût + perf</pre>
+<h2>4. Anatomie d'un projet géré</h2>
+<pre>&lt;slug&gt;
+├─ project.json            # métadonnées (id, type, status)
+├─ goal.json               # objectif + critères + progress
+├─ todo.json               # tâches durable (persisté par /create)
+├─ .project-os\
+│  ├─ autonomy.json        # plan/mode autonomy
+│  ├─ handoff.md           # note de continuation
+│  └─ addons.lock.json     # addons activés
+├─ .agents\
+│  ├─ rules\&lt;type&gt;.md      # règles (cpp.md…)
+│  └─ skills\&lt;type&gt;-dev\SKILL.md
+├─ src\                    # code
+├─ tests\                  # tests (ctest / node)
+└─ docs\
+   └─ docs-nav.md          # navigation doc en ligne (via /docs)</pre>
+
+<h2>5. Vérifier la santé (baseline) sans GPU</h2>
+<pre>cd C:\Users\eiden\Desktop\dev\projet-os
+npm run compile     # build TS
+npm run typecheck   # 0 erreur
+npm test            # tous les tests PASS</pre>
+
+<h2>6. GUI + build C++ (Win32/CMake)</h2>
+<pre>$ENV:Path='C:\msys64\mingw64\bin;'+$ENV:Path
+cd C:\Users\eiden\Desktop\dev\projects\&lt;slug&gt;
+cmake -S . -B build -G "MinGW Makefiles"
+cmake --build build
+ctest --test-dir build --output-on-failure</pre>
+
+<h2>7. GPU &amp; ladder d'endurance (ne démarre qu'avec GPU prouvé)</h2>
+<div class="note">Le timer de test ne démarre QUE si <code>GPU_OFFLOAD_PROOF=PASS</code> (delta VRAM + monitor + smoke). Un modèle <code>CPU_ONLY</code> ou <code>MODEL_READY_CPU</code> n'est pas autorisé.</div>
+<table>
+<tr><th>Palier</th><th>Durée</th><th>Condition</th></tr>
+<tr><td>GATE_1→GATE_5</td><td>5 / 10 / 20 / 30 / 60 min</td><td>GPU offload prouvé, 0 bug, 0 fallback CPU</td></tr>
+</table>
+<code>node C:\Users\eiden\Desktop\dev\projet-os\scratch\endurance-run.mjs</code>
+
+<h2>8. Règles de sécurité non négociables</h2>
+<ul>
+<li><span class="status-red">Jamais</span> de kill de process ni de reset Docker/Windows ; l'utilisateur contrôle les apps GPU externes.</li>
+<li><span class="status-red">Jamais</span> de CPU fallback, de PASS simulé, ni de qualification inventée.</li>
+<li>Licence ≤ Apache/4B, SHA vérifiée, Defender "NO KNOWN MALWARE INDICATORS".</li>
+<li>Flag <code>trust_remote_code=false</code> obligatoire (BLOCKED si requis).</li>
+</ul>
+
+<h2>9. Dépannage rapide</h2>
+<table>
+<tr><th>Symptôme</th><th>Cause</th><th>Action</th></tr>
+<tr><td><code>BLOCKED_GPU_EXTERNAL_VRAM</code></td><td>&lt;3 Go free</td><td>Fermer navigateur/IDE GPU-accéléré, débrancher écran 2 sur le dGPU</td></tr>
+<tr><td>OOM à ctx long</td><td>Contexte géant (131072)</td><td>Réduire <code>context_size</code> à 8192 (2,8 Go vs 7,9 Go)</td></tr>
+<tr><td>sfl.ch 404 / football-data 403</td><td>Chemin/clé requise</td><td>Corriger le chemin ou fournir la clé API</td></tr>
+</table>
+
+<h2>10. Télémétrie des jobs</h2>
+<p>Chaque run écrit son rapport : <code>artifacts\endurance\*.json</code> / <code>artifacts\sfl\AUTONOMY_USAGE_REPORT.json</code> — tokens (input/output/total), coût (LocalAI = <code>EXACT_ZERO</code>), perf (TTFT, tokens/s, VRAM).</p>
+
+<hr>
+<p style="text-align:center;color:#888;font-size:11px">Généré par Project OS — guide d'utilisation v0.1.0 (Phase 23).</p>
+</body></html>
+

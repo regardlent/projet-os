@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "project-os:cli:machine-schema:v2",
+  "title": "Project OS CLI machine contract v2",
+  "description": "Stable machine-output contract for JSON, NDJSON, events and diagnostics. stdout=data, stderr=diagnostics. Never mix human text into machine output.",
+  "type": "object",
+  "required": ["schemaVersion", "command", "requestId", "status", "timing"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 2, "description": "Machine contract version (v2)." },
+    "command": { "type": "string", "description": "Invoked command (e.g. status, protocol negotiate)." },
+    "requestId": { "type": "string", "description": "Correlation id propagated CLI->bridge->domain." },
+    "status": { "enum": ["OK", "WARN", "FAIL", "BLOCKED", "NOT_SUPPORTED", "PROTOCOL_ERROR", "TIMEOUT_OR_CANCELLED"], "description": "Command outcome." },
+    "data": { "type": ["object", "array", "null"], "description": "Command payload/result." },
+    "warnings": { "type": "array", "items": { "type": "string" }, "description": "Non-blocking diagnostics." },
+    "errors": { "type": "array", "items": { "type": "object", "properties": { "code": { "type": "string" }, "message": { "type": "string" } } }, "description": "Structured errors (never secrets)." },
+    "timing": { "type": "object", "properties": { "totalMs": { "type": "number" }, "parseMs": { "type": "number" }, "bridgeMs": { "type": "number" }, "renderMs": { "type": "number" } } },
+    "exitCode": { "type": "integer", "description": "Process exit code (0 success, 2 invalid usage, 7 blocked, ...)." },
+    "noAnsi": { "type": "boolean", "const": true, "description": "Machine output is always plain text (no ANSI escapes)." }
+  },
+  "additionalProperties": true
+}

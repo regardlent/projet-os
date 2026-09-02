@@ -1,0 +1,37 @@
+# --- Dependencies / build artifacts ----------------------------------------
+node_modules/
+dist/
+out/
+*.vsix
+
+# C++ CLI build output
+cli-cpp/build/
+cli-cpp/cmake-build/
+cli-cpp/Testing/
+*.exe
+*.obj
+
+# Transient / local state & evidence (environment-specific)
+.b-evid*/
+.bridge-e2e-evidence*/
+.project-os-cli/
+artifacts/
+scratch/
+
+# Env / secrets (never commit real secrets)
+.env
+.env.*
+!.env.example
+*.pem
+id_rsa*
+credentials*
+*.key
+
+# Logs / temp
+*.log
+*.tmp
+menu_out.txt
+
+# OS
+.DS_Store
+Thumbs.db

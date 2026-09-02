@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><title>Project OS — V2 Référence complète + Handoff ChatGPT</title>
+<style>
+body{font-family:'Segoe UI',system-ui,sans-serif;font-size:11.5px;color:#1b1b1b;line-height:1.5;margin:26px auto;max-width:1000px;padding:0 24px}
+h1{color:#0b5;border-bottom:3px solid #0b5;padding-bottom:6px;font-size:24px}
+h2{color:#0a4;margin-top:26px;font-size:18px;border-left:6px solid #0a4;padding-left:10px}
+h3{color:#333;font-size:14px;margin-top:18px;border-bottom:1px solid #ddd;padding-bottom:3px}
+code,pre{background:#f4f4f4;border-radius:4px;font-family:'Cascadia Mono',Consolas,monospace;font-size:10.5px}
+code{padding:1px 5px;color:#c7254e}
+pre{padding:11px;border:1px solid #ddd;overflow-x:auto;white-space:pre-wrap}
+table{border-collapse:collapse;width:100%;margin:10px 0}
+th,td{border:1px solid #ccc;padding:5px 8px;text-align:left;vertical-align:top}
+th{background:#e8f6ee;font-weight:600}
+.badge{display:inline-block;background:#0a4;color:#fff;border-radius:3px;padding:1px 6px;font-size:10.5px;font-weight:600}
+.ok{color:#080;font-weight:700}.warn{color:#b60;font-weight:700}.bad{color:#c00;font-weight:700}
+.note{background:#fff8e1;border-left:4px solid #f0a500;padding:8px 12px;margin:10px 0}
+.warn2{background:#fdecea;border-left:4px solid #c0392b;padding:8px 12px;margin:10px 0}
+.goal{background:#e6f7ef;border:2px dashed #0a4;padding:14px 18px;margin:14px 0;border-radius:8px}
+ul{margin:4px 0 4px 18px}
+li{margin:2px 0}
+.toc{background:#f7f9f8;border:1px solid #dbe7e0;padding:12px 18px;margin:12px 0}
+</style></head><body>
+
+<div class="goal">
+<b># PROJECT OS — V2 (handoff ChatGPT web)</b><br>
+<b>Objectif de ce document</b> : fournir à ChatGPT l'état RÉEL et complet de Project OS afin qu'il
+génère le <b>prompt de continuation</b> de la roadmap en 30 phases de développement. Le goal final
+(<code>/goal</code>) = <b>PROJECT_OS_PRODUCTION_READY = PASS</b> après les 30 phases.
+<b>Le code, les tests et le runtime font autorité.</b> Aucune fonctionnalité n'est inventée.
+</div>
+
+<h1>🛠️ Project OS — Référence V2 (v0.1.0)</h1>
+<p><span class="badge">TypeScript/Node</span> <span class="badge">VS Code extension</span> <span class="badge">C++17 CLI</span> <span class="badge">LocalAI (loopback)</span></p>
+
+<h2>1. Contexte &amp; chemins (réels)</h2>
+<table>
+<tr><th>Élément</th><th>Valeur réelle</th></tr>
+<tr><td>Racine (repo)</td><td><code>C:\Users\eiden\Desktop\dev\projet-os</code></td></tr>
+<tr><td>Projets gérés (hub-spoke)</td><td><code>C:\Users\eiden\Desktop\dev\projects\&lt;slug&gt;</code></td></tr>
+<tr><td>Endpoint LocalAI canonique</td><td><code>http://127.0.0.1:8080/v1</code></td></tr>
+<tr><td>CLI C++</td><td><code>C:\Users\eiden\Desktop\dev\projet-os\cli-cpp\cmake-build\project-os-cli.exe</code></td></tr>
+<tr><td>Passerelle Node</td><td><code>bin\project-os-bridge.mjs</code> (protocole v2)</td></tr>
+<tr><td>Toolchain C++</td><td><code>C:\msys64\mingw64\bin</code> (g++ 16.1, cmake)</td></tr>
+<tr><td>Node / npm</td><td>v24.16.0 / 11.13.0</td></tr>
+<tr><td>Typescript</td><td>^5.5.4 · module Node16 · target ES2022</td></tr>
+</table>
+
+<h2>2. Architecture (hub-spoke, à préserver)</h2>
+<pre>UI / extension (VS Code)
+   → application / domain (src/*, pur, sans vscode)
+      → services
+         → providers / adapters
+            → LocalAI (loopback) / filesystem / Node bridge / GPU</pre>
+<table>
+<tr><th>Couche</th><th>Rôle</th></tr>
+<tr><td>Control plane</td><td>Extension VS Code (commandes, arbres, statut, config)</td></tr>
+<tr><td>Domain pur</td><td>Logique testable, aucun <code>vscode</code> import</td></tr>
+<tr><td>Moteur IA</td><td>LocalAI openai-compatible en loopback (no cloud fallback)</td></tr>
+<tr><td>Projets enfant</td><td>Workspaces auto-gouvernés (goal/todo/addons/autonomy/artifacts)</td></tr>
+<tr><td>CLI C++</td><td>Client de premier niveau (menus) → bridge Node</td></tr>
+</table>
+<h2>3. État RÉEL (mesuré — autorité)</h2>
+<h3>3.1 Baseline</h3>
+<table>
+<tr><th>Mesure</th><th>Valeur réelle</th><th>Statut</th></tr>
+<tr><td>typecheck</td><td><code>tsc -p ./ --noEmit</code></td><td class="ok">0 erreur</td></tr>
+<tr><td>tests Node (<code>npm test</code>)</td><td>293/293 (48 fichiers <code>*.test.ts</code>)</td><td class="ok">PASS</td></tr>
+<tr><td>tests C++ (ctest)</td><td>pos_json_test 1/1</td><td class="ok">PASS</td></tr>
+<tr><td>build C++ (cmake)</td><td>project-os-cli + pos_json_test</td><td class="ok">exit 0</td></tr>
+<tr><td>source .ts</td><td>140 fichiers (dist 140)</td><td class="ok">—</td></tr>
+</table>
+
+<h3>3.2 LocalAI</h3>
+<table><tr><td>Endpoint</td><td><code>GET /v1/models</code> HTTP 200</td><td class="ok">Fonctionnel</td></tr>
+<tr><td>Modèles listés</td><td>15 (dont granite-4.2-3b-flash, ministral-3b-flash, granite-4.0-micro-flash, qwen3-4b, qwen3-1.7b, smollm3-3b, deepseek-r1-distill-qwen-1.5b)</td><td class="ok">Inventaire réel</td></tr>
+<tr><td>Preflight V2</td><td>latence + inventoryShape (openai/ollama) + health</td><td class="ok">PASS</td></tr></table>
+
+<h3>3.3 GPU (réel, maintenant débloqué)</h3>
+<table>
+<tr><td>GPU</td><td>NVIDIA GeForce RTX 5060 Laptop, driver 616.56</td></tr>
+<tr><td>VRAM total / libre</td><td>8151 / ~537-605 MiB (modèle chargé)</td></tr>
+<tr><td>Modèle qualifié FLASH_READY</td><td><code>granite-4.2-3b-flash</code> (Q4_K_M, llama-cpp)</td></tr>
+<tr><td>GPU_OFFLOAD_PROOF</td><td class="ok">PASS — delta VRAM <b>−3043 MiB</b> (3648→605), smoke <code>content="4"</code> HTTP 200</td></tr>
+<tr><td>Benchmark réel</td><td>TTFT 379.3 ms · 63.3 tok/s · VRAM peak 7546 MiB · correctness 1 · stability 0.98 · <b>passes true</b></td></tr>
+<tr><td>Endurance GATE_1 5-min</td><td class="ok">PASS — 114 inf GPU, 0 bug, continuité stable (ladder <code>completed=[5]</code>)</td></tr>
+</table>
+<p class="note">Le modèle est en mode <b>reasoning</b> : le <code>content</code> n'apparaît qu'avec assez de <code>max_tokens</code> (le raisonnement remplit d'abord le budget). De plus <code>/backend/monitor</code> renvoie 500 (différent de signature) — la preuve de résidence GPU repose sur le delta VRAM + smoke + benchmark.</p>
+
+<h2>4. Commandes &amp; parité</h2>
+<table>
+<tr><th>Capacité</th><th>Slash <code>/</code></th><th>VS Code</th><th>CLI C++</th><th>Test</th></tr>
+<tr><td>create project</td><td>/create</td><td>clineProjectOS.create</td><td>menu</td><td>projectFactory.test</td></tr>
+<tr><td>set goal</td><td>/goal</td><td>clineProjectOS.goal</td><td>menu</td><td>slashCommand.test</td></tr>
+<tr><td>todo</td><td>/todo</td><td>via /slash</td><td>menu</td><td>todoCommand.test</td></tr>
+<tr><td>addon</td><td>/addon</td><td>clineProjectOS.addon</td><td>menu</td><td>addonManager.test</td></tr>
+<tr><td>autonomy</td><td>/autonomy</td><td>clineProjectOS.autonomy</td><td>menu</td><td>autonomy.test</td></tr>
+<tr><td>docs online</td><td>/docs</td><td>via /slash</td><td>menu</td><td>docsNavigator.test</td></tr>
+<tr><td>project status</td><td>/project</td><td>clineProjectOS.project.status</td><td>slash raw</td><td>productCommands.test</td></tr>
+<tr><td>tokens+cost report</td><td>/report (export)</td><td>clineProjectOS.tokens.*</td><td>—</td><td>usageReport.test</td></tr>
+</table>
+<p><b>Autres commandes VS Code</b> : controlcenter.open, artifact.create/open/search, agent.start/abort, provider.preflight, project.scan, workspace.report, mode.route, budget.status, antigravity.verifyWorkspace, projects.refresh. → <b>22 commandes</b> <code>clineProjectOS.*</code>.</p>
+
+<h2>5. Invariants NON-NÉGOCIABLES (à préserver)</h2>
+<ul>
+<li><b>GPU</b> : <code>allowCpuFallback=false</code>, <code>requireGpu=true</code>, <code>requireFlashReady=true</code> pour les gates concernés ; GPU_OFFLOAD_PROOF doit être une preuve réelle (delta VRAM + backend + smoke) ; jamais de qualification/PASS/benchmark simulé.</li>
+<li><b>Process</b> : jamais de kill auto de process utilisateur, jamais de reset Docker, jamais de restart Windows ; seule la protection IDE (Antigravity) avec conditions validées.</li>
+<li><b>LocalAI</b> : loopback canonique <code>127.0.0.1:8080/v1</code> ; pas de fallback cloud caché.</li>
+<li><b>Security</b> : <code>trust_remote_code=false</code> ; SHA/empreintes vérifiées ; pas de secret dans les logs ; protéger .env/clés/.git/config ; pas de path traversal ; pas d'écriture hors workspace ; delete/rename interdits par défaut ; pas d'élévation destructive.</li>
+<li><b>Honesty</b> : états autorisés PASS / PASS_WITH_WARNINGS / WARN / BLOCKED / FAIL / NOT_TESTED / NOT_APPLICABLE ; interdits : « probablement PASS », « devrait fonctionner », « semble validé ».</li>
+</ul>
+
+<h2>6. Modules &amp; fonctionnalités (implémentés &amp; testés)</h2>
+<table>
+<tr><th>Domaine</th><th>Modules</th><th>Rôle</th></tr>
+<tr><td>Projets</td><td>ProjectFactory (transactionnel + rollback), ManagedProjectRegistry, GoalProofEngine, TodoTracker, AddonManager(verifyLock)</td><td>Création/registre/goal par preuve/todo/addons</td></tr>
+<tr><td>Autonomie</td><td>AutonomyService/Runner, AutonomyWriteScope (guardWritePath), AutonomyWriteLane, AutonomyActivityLedger, AutonomyModelSelector</td><td>Plan/run gated + write-lane borné</td></tr>
+<tr><td>Routing</td><td>IntelligentModelRouter, TaskClassifier (8 classes), ModelCandidate, ModelScoreboard, ModelCatalogService, DeterministicRouter, EnduranceRouter</td><td>8 policies, budget-gated, déterministe</td></tr>
+<tr><td>Budget/Coût</td><td>ProjectBudgetGovernor (réservations atomiques), CostModel/Ledger, BudgetStatus, BudgetSimulator</td><td>Plafond PAOG, LocalAI EXACT_ZERO</td></tr>
+<tr><td>Tokens</td><td>TokenLedger, UsageReport, UsageObservation, WorkspaceRegistry, HistoricalUsageImporter, tokenEstimate</td><td>Télémétrie exacte + coût + perf</td></tr>
+<tr><td>Artifacts</td><td>ArtifactRegistry, ArtifactStateMachine (11 statuts), ArtifactStore(atomic+drop), ArtifactAudit</td><td>26 types, versioning, SHA256</td></tr>
+<tr><td>GPU/Endurance</td><td>GpuEvidence, GpuBenchmark, FleetQualifier, GpuQualificationQueue, EnduranceLadder (5/10/20/30/60), EnduranceLedger/Reset/Failover, EnduranceLab</td><td>Preuve offload + benchmark + ladder</td></tr>
+<tr><td>Qualité</td><td>RegressionEngine, WorkspaceDrift, FailureRecovery</td><td>Anti-régression, drift, récupération</td></tr>
+<tr><td>Docs/Sec</td><td>DocsNavigator, DocsCodingAdviser, DocsCheckPrewrite, StaticPostGen, WriteLaneGuard, ProviderPolicyValidator, OfficialDocsGuard</td><td>Doc officielle + guards</td></tr>
+<tr><td>Observabilité</td><td>StructuredLogger, ProductionLogger(correlation), DashboardRenderer, LiveDashboard, TextOutputFormatter</td><td>Logs structurés + dashboard temps réel</td></tr>
+<tr><td>UI</td><td>ControlCenterProvider, ControlCenterCockpit, ArtifactsTreeProvider, ProjectsTreeProvider</td><td>Dashboard + arbres + cockpit evidence</td></tr>
+<tr><td>Workspace</td><td>WorkspaceTopology, WorkspaceTrustGuard, AntigravityIDERestartGuard, AntigravityProcessResolver</td><td>Confiance/topologie/IDE guard</td></tr>
+<tr><td>Runtime</td><td>ProviderProfile, ProviderPreflight, ClineRuntimeAdapter, RuntimeEventNormalizer, StreamingBuffer, InferenceEvidence</td><td>Provider + adaptateur Cline SDK</td></tr>
+<tr><td>CLI C++</td><td>pos_json.hpp, pos_model.hpp, pos_runner.hpp, project_os_cli.cpp, test_pos.cpp</td><td>Menus + parse JSON + bridge v2</td></tr>
+<tr><td>Bridge</td><td>project-os-bridge.mjs (protocole v2 : protocol/requestId/timing/exitCode)</td><td>Dispatch réel vers registre slash</td></tr>
+</table>
+
+<h2>7. État de la roadmap 30 phases</h2>
+<table>
+<tr><th>Phase</th><th>Gate</th><th>Statut réel</th></tr>
+<tr><td>01 Baseline forensique</td><td>BASELINE_LOCKED</td><td class="ok">PASS</td></tr>
+<tr><td>02 Config canonique &amp; provider</td><td>PROVIDER_POLICY_CANONICAL</td><td class="ok">PASS</td></tr>
+<tr><td>03 LocalAI preflight V2</td><td>LOCALAI_PREFLIGHT_V2</td><td class="ok">PASS</td></tr>
+<tr><td>04 GPU Evidence Engine</td><td>GPU_EVIDENCE_ENGINE</td><td class="ok">PASS</td></tr>
+<tr><td>05 Regression Engine</td><td>REGRESSION_ENGINE</td><td class="ok">PASS</td></tr>
+<tr><td>06 Project Factory V2</td><td>PROJECT_FACTORY_V2</td><td class="ok">PASS</td></tr>
+<tr><td>07 Goal Engine V2</td><td>GOAL_ENGINE_V2</td><td class="ok">PASS</td></tr>
+<tr><td>08 Slash Platform V2</td><td>SLASH_PLATFORM_V2</td><td class="ok">PASS</td></tr>
+<tr><td>09 Command Parity</td><td>COMMAND_PARITY</td><td class="ok">PASS</td></tr>
+<tr><td>10 Control Center V2</td><td>CONTROL_CENTER_V2</td><td class="ok">PASS</td></tr>
+<tr><td>11 Artifact V2</td><td>ARTIFACT_V2</td><td class="ok">PASS</td></tr>
+<tr><td>12 Addon Manager V2</td><td>ADDON_MANAGER_V2</td><td class="ok">PASS</td></tr>
+<tr><td>13 Docs Navigator/Guard V2</td><td>DOCS_GUARD_V2</td><td class="ok">PASS (modules déjà testés)</td></tr>
+<tr><td>14 Project DNA V2</td><td>PROJECT_DNA_V2</td><td class="ok">PASS</td></tr>
+<tr><td>15 Workspace Drift</td><td>WORKSPACE_DRIFT</td><td class="ok">PASS</td></tr>
+<tr><td>16 Autonomy Planner V2</td><td>AUTONOMY_PLAN_V2</td><td class="ok">PASS</td></tr>
+<tr><td>17 Write-Lane Security V2</td><td>WRITE_LANE_SECURITY_V2</td><td class="ok">PASS</td></tr>
+<tr><td>18 Autonomy Runner V2</td><td>AUTONOMY_RUNNER_V2</td><td class="ok">PASS</td></tr>
+<tr><td>19 Model Catalog V2</td><td>MODEL_CATALOG_V2</td><td class="ok">PASS</td></tr>
+<tr><td>20 Router V2</td><td>ROUTER_V2</td><td class="ok">PASS</td></tr>
+<tr><td>21 Budget V2</td><td>BUDGET_V2</td><td class="ok">PASS</td></tr>
+<tr><td>22 Token Intelligence V2</td><td>TOKEN_INTELLIGENCE_V2</td><td class="ok">PASS</td></tr>
+<tr><td>23 Observability V2</td><td>OBSERVABILITY_V2</td><td class="ok">PASS</td></tr>
+<tr><td>24 Endurance Ladder V2</td><td>ENDURANCE_LADDER_V2</td><td class="ok">PASS (harness) / GATE_1 5-min PASS</td></tr>
+<tr><td>25 GPU Benchmark Fleet V2</td><td>GPU_FLEET_V2</td><td class="ok">PASS (qualification réelle granite-4.2)</td></tr>
+<tr><td>26 C++ CLI V2</td><td>CPP_CLI_V2</td><td class="ok">PASS</td></tr>
+<tr><td>27 Node Bridge V2</td><td>NODE_BRIDGE_V2</td><td class="ok">PASS</td></tr>
+<tr><td>28 Security &amp; Recovery</td><td>RECOVERY_SECURITY</td><td class="ok">PASS</td></tr>
+<tr><td>29 Performance / Scale</td><td>PERFORMANCE_SCALE</td><td class="ok">PASS (mesures réelles)</td></tr>
+<tr><td>30 Production Readiness</td><td>FINAL_RELEASE_GATE</td><td class="warn">PENDING — rungs 10/20/30/60 restants à valider en GPU réel</td></tr>
+</table>
+
+<h2>8. Protocole de MAJ : 30 étapes (à appliquer pour CHAQUE phase)</h2>
+<p>Chaque phase est une MAJ qui doit passer ces 30 étapes (aucune supprimée ; NOT_APPLICABLE avec justification si non pertinente).</p>
+<pre>01 Reconnaissance (lire package.json/tsconfig/CMake/src/tests/cli-cpp/bin/artifacts)
+02 Git/Snapshot (branche/HEAD/status ; checkpoint logique — pas de .git dans ce snapshot)
+03 Baseline tests AVANT (typecheck, unit, integration, C++, bridge)
+04 Cartographie d'impact (modules/API/commands/settings/files/tests/artifacts)
+05 Analyse de risque (LOW/MEDIUM/HIGH/CRITICAL ; fs, security, provider, GPU, routing, budget, state machine, concurrency, migration, CLI, VS Code)
+06 Vérification invariants (loopback LocalAI, no CPU fallback, trust_remote_code=false, write guards, approval gates, no destructive process actions)
+07 Preflight LocalAI (si inference) — GET /v1/models réel, health, streaming, erreurs ; jamais inventer
+08 Preflight GPU (si GPU/modèles/endurance) — nvidia-smi, VRAM, backend, preuve d'offload ; no kill
+09 Audit docs officielles (docs officielles > code source > changelogs > issues)
+10 Change contract (GOAL/SCOPE/NON-GOALS/FILES/RISKS/INPUTS/OUTPUTS/ACCEPTANCE/ROLLBACK/TEST PLAN/SECURITY)
+11 Plan de diff minimal (patch local, fonction pure, adapter, service isolé, migration compatible)
+12 Tests de spécification (nominal + edge)
+13 Modification domain (logique métier dans src/*, sans vscode)
+14 Adapter/infrastructure (fs, LocalAI, ledger, registry, provider, bridge, GPU)
+15 Intégration extension VS Code (si applicable)
+16 Parité slash command (slash + VS Code + CLI ; matrice)
+17 Parité CLI C++ (pos_json/model/runner/project_os_cli ; ne pas casser l'existant)
+18 Bridge Node (durcir : schema, exit code, stdout/stderr, JSON, quoting, timeout, error typing)
+19 Tests unitaires (nominal, invalid, boundary, null/empty, exceptions, état persistant, transitions)
+20 Tests intégration (connexions réelles inter-couches ; pas de mock quand la preuve runtime est le but)
+21 Tests négatifs/security (path traversal, secret, protected, invalid slug/transition, malformed JSON, invalid model, unavailable provider, CPU fallback, expired approval/reservation, concurrent writes)
+22 Benchmark avant/après (durée, mémoire, VRAM, TTFT, tokens/s, I/O, startup, refresh, bridge latency) — jamais « plus rapide » sans mesure
+23 Observabilité (StructuredLogger, ProductionLogger, eventNormalizer, InferenceEvidence, ledgers ; no secrets)
+24 Artefacts/preuves (implementation_plan, change_contract, code_diff, test_report, benchmark, security/performance/qa_report, checkpoint ; via ArtifactRegistry)
+25 Build complet (Node, extension, C++, bridge ; capture exit codes)
+26 Full test suite (comparer pré/post ; pas de baisse silencieuse du count)
+27 Regression diff (BEFORE/AFTER : tests, perf, commands, settings, artifacts, API, security invariants)
+28 Failure/recovery test (un scénario d'échec réaliste ; récupération, état persistant, ledger, rollback, erreur affichée, pas de faux PASS)
+29 Documentation + version (README, docs, CHANGELOG, feature matrix)
+30 Gate de sortie (PHASE, STATUS, HEAD (n/a), FILES_CHANGED, TESTS_BEFORE, TESTS_AFTER, NEW_TESTS, REGRESSIONS, GPU_PROOF, LOCALAI_PROOF, SECURITY, PERFORMANCE, ARTIFACTS, KNOWN_LIMITATIONS, NEXT_ACTION)
+   — Ne pas commencer une phase suivante si FAIL/BLOCKED.</pre>
+
+<div class="goal">
+<h2>🎯 9. GOAL FINAL &amp; HANDOFF</h2>
+<p><b><code>/goal</code> atteint</b> quand : <code>PROJECT_OS_PRODUCTION_READY = PASS</code>.</p>
+<p>Condition : <b>Toutes</b> les gates indispensables réelles et vertes — dont la ladder d'endurance
+GPU 5/10/20/30/60 min complète (GATE_1 5-min déjà <span class="ok">PASS</span> ; 10/20/30/60 restants).</p>
+<p><b>Ce qui reste exactement (bloqueur unique)</b> : terminer les rungs GPU 10 → 60 min (105 min de
+durée cumulée) sur le modèle qualifié, puis le pack release final.</p>
+</div>
+
+<h2>10. Format de sortie attendu par MAJ (style Cline)</h2>
+<pre>╔══ PROJECT OS — PHASE XX / 30 ══╗
+STATUS / HEAD BEFORE→AFTER / FILES_CHANGED / TESTS BEFORE→AFTER
+DATAS (chiffres réels)
+GPU_PROOF / LOCALAI_PROOF / SECURITY / BENCHMARK / ARTIFACTS / KNOWN_LIMITATIONS
+NEXT_ACTION
+╚══════════════════════════════════╝
+[1] PREUVES  [2] TESTS  [3] DIFF  [4] BENCHMARK  [5] RISQUES  [6] ARTEFACTS  [7] NEXT ACTION</pre>
+
+<h2>11. Priorité de développement</h2>
+<ol>
+<li>CORRECTNESS · 2. SECURITY · 3. EVIDENCE · 4. REGRESSION SAFETY · 5. RECOVERY · 6. OBSERVABILITY · 7. PERFORMANCE · 8. UX · 9. NEW FEATURES</li>
+</ol>
+<p>Une feature qui augmente la surface mais réduit la fiabilité est refusée.</p>
+
+<div class="warn2"><b>Limites documentées (honnêteté)</b> : VRAM 8 Go → un backend actif à la fois ; granite-4.2 est un modèle de raisonnement (content seulement avec assez de max_tokens) ; /backend/monitor renvoie 500 (signature mismatch) ; licence DeepSeek UNKNOWN ; catalog modèle reporte UNKNOWN pour les champs non déclarés ; ladder 5/5 précédent archivé (ladder-state.backup-5of5.json), cycle relancé à GATE_1.</div>
+
+<hr>
+<p style="text-align:center;color:#888;font-size:10.5px">Généré par Project OS — Référence V2 (handoff ChatGPT web) · v0.1.0.</p>
+</body></html>
+

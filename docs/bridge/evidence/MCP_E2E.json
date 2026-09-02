@@ -1,0 +1,30 @@
+{
+  "mcp": "v1.30.0 (streamable-http loopback)",
+  "sdk": "@modelcontextprotocol/sdk@1.30.0",
+  "tools": [
+    "bridge_health",
+    "project_status",
+    "project_tree",
+    "file_read",
+    "code_search",
+    "git_status",
+    "git_diff",
+    "tests_run",
+    "build_run",
+    "antigravity_run"
+  ],
+  "health": {
+    "projectOS": "v0.1.0",
+    "bridge": "v1",
+    "mcp": "1.30.0",
+    "transport": "streamable-http-loopback"
+  },
+  "fileRead": {
+    "ok": true,
+    "text": "bridge fixture evidence\n"
+  },
+  "life": {
+    "connected": true,
+    "toolsDiscovered": 10
+  }
+}

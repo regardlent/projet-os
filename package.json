@@ -1,0 +1,299 @@
+{
+  "name": "cline-project-os",
+  "displayName": "Cline Project OS",
+  "description": "Project OS + Workspace OS + Artifact Agent Control Center around the Cline SDK",
+  "version": "0.1.0",
+  "publisher": "prob-reddit",
+  "license": "Apache-2.0",
+  "type": "module",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "clineProjectOS",
+          "title": "Cline Project OS",
+          "icon": "$(robot)"
+        }
+      ]
+    },
+    "views": {
+      "clineProjectOS": [
+        {
+          "id": "clineProjectOS.artifacts",
+          "name": "Artifacts",
+          "icon": "$(package)"
+        },
+        {
+          "id": "clineProjectOS.projects",
+          "name": "Projects",
+          "icon": "$(folder)"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "clineProjectOS.artifacts",
+        "contents": "No artifacts yet.\n[Create Plan](command:clineProjectOS.artifact.create)\n[Start Agent](../command:clineProjectOS.agent.start)"
+      }
+    ],
+    "commands": [
+      {
+        "command": "clineProjectOS.controlcenter.open",
+        "title": "Project OS: Open Control Center",
+        "icon": "$(dashboard)"
+      },
+      {
+        "command": "clineProjectOS.artifact.create",
+        "title": "Cline Project OS: Create Artifact"
+      },
+      {
+        "command": "clineProjectOS.artifact.open",
+        "title": "Cline Project OS: Open Artifact"
+      },
+      {
+        "command": "clineProjectOS.artifact.search",
+        "title": "Cline Project OS: Search Artifacts"
+      },
+      {
+        "command": "clineProjectOS.agent.start",
+        "title": "Cline Project OS: Start Agent"
+      },
+      {
+        "command": "clineProjectOS.agent.abort",
+        "title": "Cline Project OS: Abort Active Agent"
+      },
+      {
+        "command": "clineProjectOS.provider.preflight",
+        "title": "Cline Project OS: Provider Preflight"
+      },
+      {
+        "command": "clineProjectOS.project.scan",
+        "title": "Cline Project OS: Scan Project"
+      },
+      {
+        "command": "clineProjectOS.workspace.report",
+        "title": "Cline Project OS: Workspace Report"
+      },
+      {
+        "command": "clineProjectOS.tokens.open",
+        "title": "Cline Project OS: Open Token Intelligence"
+      },
+      {
+        "command": "clineProjectOS.tokens.refresh",
+        "title": "Cline Project OS: Refresh Token Usage"
+      },
+      {
+        "command": "clineProjectOS.tokens.export",
+        "title": "Cline Project OS: Export Token Report"
+      },
+      {
+        "command": "clineProjectOS.mode.route",
+        "title": "Cline Project OS: Model Route (Why this model?)"
+      },
+      {
+        "command": "clineProjectOS.budget.status",
+        "title": "Cline Project OS: Budget Status"
+      },
+      {
+        "command": "clineProjectOS.antigravity.verifyWorkspace",
+        "title": "Cline Project OS: Verify Antigravity Workspace"
+      },
+      {
+        "command": "clineProjectOS.goal",
+        "title": "Project OS: /goal — set or update the active project goal",
+        "icon": "$(target)"
+      },
+      {
+        "command": "clineProjectOS.create",
+        "title": "Project OS: /create — create a managed project workspace",
+        "icon": "$(new-folder)"
+      },
+      {
+        "command": "clineProjectOS.addon",
+        "title": "Project OS: /addon — list/recommend workspace addons",
+        "icon": "$(extensions)"
+      },
+      {
+        "command": "clineProjectOS.slash",
+        "title": "Project OS: run a slash command"
+      },
+      {
+        "command": "clineProjectOS.projects.refresh",
+        "title": "Project OS: Refresh Projects"
+      },
+      {
+        "command": "clineProjectOS.project.status",
+        "title": "Project OS: Project Status"
+      },
+      {
+        "command": "clineProjectOS.autonomy",
+        "title": "Project OS: /autonomy — plan an autonomous run (minutes by complexity)",
+        "icon": "$(clock)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "clineProjectOS.controlcenter.open",
+          "when": "view == clineProjectOS.artifacts",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Cline Project OS",
+      "properties": {
+        "clineProjectOS.providerId": {
+          "type": "string",
+          "default": "openai-compatible",
+          "description": "Cline provider ID used to start sessions (e.g. openai-compatible, anthropic). Canonical = LocalAI loopback."
+        },
+        "clineProjectOS.modelId": {
+          "type": "string",
+          "default": "qwen3-4b",
+          "description": "Model ID used to start sessions. Canonical = LocalAI qwen3-4b."
+        },
+        "clineProjectOS.enableTools": {
+          "type": "boolean",
+          "default": true,
+          "description": "Give the agent the built-in tools (bash, editor, read, search...)."
+        },
+        "clineProjectOS.providerType": {
+          "type": "string",
+          "default": "openai-compatible",
+          "description": "Provider family (e.g. openai-compatible, anthropic)."
+        },
+        "clineProjectOS.providerBaseUrl": {
+          "type": "string",
+          "default": "http://127.0.0.1:8080/v1",
+          "description": "Canonical base URL for the OpenAI-compatible LocalAI loopback endpoint. Credentials are never stored here."
+        },
+        "clineProjectOS.providerModelId": {
+          "type": "string",
+          "default": "qwen3-4b",
+          "description": "Model ID used for provider preflight / sessions."
+        },
+        "clineProjectOS.statusBarMode": {
+          "type": "string",
+          "enum": [
+            "session",
+            "workspace",
+            "project",
+            "off"
+          ],
+          "default": "project",
+          "description": "Which token total to show on the status bar."
+        },
+        "clineProjectOS.routingPolicy": {
+          "type": "string",
+          "enum": [
+            "LOCAL_FIRST",
+            "FREE_FIRST",
+            "FREE_UNTIL_EXHAUSTED",
+            "PASS_FIRST",
+            "BALANCED",
+            "QUALITY_FIRST_WITH_BUDGET",
+            "MANUAL",
+            "FREE_ONLY"
+          ],
+          "default": "FREE_UNTIL_EXHAUSTED",
+          "description": "Model routing policy."
+        },
+        "clineProjectOS.dailyPaidBudget": {
+          "type": "number",
+          "default": 0,
+          "description": "Daily pay-as-you-go budget (0 = no PAYG)."
+        },
+        "clineProjectOS.budgetCurrency": {
+          "type": "string",
+          "default": "USD",
+          "description": "Currency for the daily paid budget."
+        },
+        "clineProjectOS.paidInferenceMode": {
+          "type": "string",
+          "enum": [
+            "OFF",
+            "ASK_EVERY_TIME",
+            "AUTO_WITHIN_PROJECT_BUDGET"
+          ],
+          "default": "OFF",
+          "description": "Pay-as-you-go inference mode."
+        },
+        "clineProjectOS.allowLocalAI": {
+          "type": "boolean",
+          "default": true,
+          "description": "Allow LocalAI as a routing candidate."
+        },
+        "clineProjectOS.allowClineFree": {
+          "type": "boolean",
+          "default": true,
+          "description": "Allow Cline free-tier models as candidates."
+        },
+        "clineProjectOS.allowClinePass": {
+          "type": "boolean",
+          "default": true,
+          "description": "Allow ClinePass subscription models as candidates."
+        },
+        "clineProjectOS.allowClinePayg": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow Cline pay-as-you-go models (requires budget + paid mode)."
+        },
+        "clineProjectOS.restartAntigravityAfterUpdate": {
+          "type": "boolean",
+          "default": true,
+          "description": "After a validated MAJ, run the Antigravity IDE restart gate (IDE only, never Windows)."
+        },
+        "clineProjectOS.projectsRoot": {
+          "type": "string",
+          "default": "C:\\Users\\eiden\\Desktop\\dev\\projects",
+          "description": "Root folder where /create builds managed child project workspaces (hub-spoke)."
+        },
+        "clineProjectOS.activeProjectSlug": {
+          "type": "string",
+          "default": "",
+          "description": "Slug of the active managed project used by /goal, /addon (and future /open, /resume)."
+        },
+        "clineProjectOS.defaultAutonomyMinutes": {
+          "type": "number",
+          "default": 0,
+          "description": "Default /autonomy minutes budget. 0 = auto (computed from project complexity)."
+        },
+        "clineProjectOS.autonomyWriteEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable the /autonomy --write lane (bounded + approval-gated; never blind write)."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "typecheck": "tsc -p ./ --noEmit",
+    "test": "npm run compile && node --test \"dist/tests/*.test.js\"",
+    "package": "vsce package",
+    "bridge:local": "node scripts/bridge-local.mjs",
+    "bridge:local:once": "node scripts/bridge-local.mjs once",
+    "tunnel:init": "node scripts/tunnel-init.mjs"
+  },
+  "dependencies": {
+    "@cline/sdk": "0.0.81",
+    "@modelcontextprotocol/sdk": "^1.30.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/vscode": "^1.90.0",
+    "typescript": "^5.5.4"
+  }
+}

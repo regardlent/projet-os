@@ -1,0 +1,52 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": { "major": 3, "minor": 21, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "${presetName}" }
+    },
+    {
+      "name": "debug",
+      "inherits": "base",
+      "displayName": "Debug (Ninja)",
+      "description": "Build the CLI with debug symbols (min size).",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "release",
+      "inherits": "base",
+      "displayName": "Release (Ninja)",
+      "description": "Build the CLI optimized.",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    },
+    {
+      "name": "test",
+      "inherits": "base",
+      "displayName": "Test (Ninja)",
+      "description": "Build + run CTest suite.",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug", "BUILD_TESTING": "ON" }
+    }
+  ],
+  "buildPresets": [
+    { "name": "debug", "configurePreset": "debug" },
+    { "name": "release", "configurePreset": "release" },
+    { "name": "test", "configurePreset": "test" }
+  ],
+  "testPresets": [
+    { "name": "test", "configurePreset": "test", "output": { "outputOnFailure": true } }
+  ],
+  "workflowPresets": [
+    {
+      "name": "ci",
+      "steps": [
+        { "type": "configure", "name": "test" },
+        { "type": "build", "name": "test" },
+        { "type": "test", "name": "test" }
+      ]
+    }
+  ]
+}

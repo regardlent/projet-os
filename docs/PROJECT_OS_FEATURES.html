@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><title>Project OS — Référence complète des fonctionnalités</title>
+<style>
+body{font-family:'Segoe UI',system-ui,sans-serif;font-size:12px;color:#1b1b1b;line-height:1.5;margin:28px auto;max-width:1000px;padding:0 26px}
+h1{color:#0b5;border-bottom:3px solid #0b5;padding-bottom:6px;font-size:26px}
+h2{color:#0a4;margin-top:28px;font-size:19px;border-left:6px solid #0a4;padding-left:10px}
+h3{color:#333;font-size:15px;margin-top:20px;border-bottom:1px solid #ddd;padding-bottom:3px}
+code,pre{background:#f4f4f4;border-radius:4px;font-family:'Cascadia Mono',Consolas,monospace;font-size:11px}
+code{padding:1px 5px;color:#c7254e}
+pre{padding:11px;border:1px solid #ddd;overflow-x:auto;white-space:pre-wrap}
+table{border-collapse:collapse;width:100%;margin:10px 0}
+th,td{border:1px solid #ccc;padding:5px 9px;text-align:left;vertical-align:top}
+th{background:#e8f6ee;font-weight:600}
+.badge{display:inline-block;background:#0a4;color:#fff;border-radius:3px;padding:1px 6px;font-size:11px;font-weight:600}
+.note{background:#fff8e1;border-left:4px solid #f0a500;padding:9px 13px;margin:12px 0}
+.warn{background:#fdecea;border-left:4px solid #c0392b;padding:9px 13px;margin:12px 0}
+ul{margin:5px 0 5px 20px}
+li{margin:2px 0}
+.toc{background:#f7f9f8;border:1px solid #dbe7e0;padding:12px 18px;margin:14px 0}
+.toc a{color:#0a4;text-decoration:none}
+.mono{font-size:10.5px}
+</style></head><body>
+
+<h1>🗂️ Project OS — Référence complète des fonctionnalités</h1>
+<p><span class="badge">v0.1.0</span> Extension VS Code / Antigravity + CLI C++ + moteur IA local (LocalAI). <b>Toutes</b> les capacités, commandes, modules, tests et artefacts — sans omission.</p>
+
+<div class="note"><b>Ce document couvre :</b> les 8 commandes slash, ~23 commandes VSCode, 13 modules projets, le routing IA, le budget, les tokens, les artefacts, l'autonomie, l'endurance GPU, les guards de sécurité, la config, le CLI C++, les tests (247+) et les artefacts livrés.</div>
+
+<div class="toc">
+<b>Sommaire</b>
+<ol>
+<li>Architecture &amp; périmètre</li>
+<li>Commandes slash (<code>/</code>)</li>
+<li>Commandes VS Code (<code>clineProjectOS.*</code>)</li>
+<li>Modules « projets » (13)</li>
+<li>Routing intelligent des modèles</li>
+<li>Budget &amp; coût</li>
+<li>Télémétrie tokens &amp; coût</li>
+<li>Artifacts (artefacts)</li>
+<li>Autonomie (write-lane gated)</li>
+<li>Endurance GPU Ladder</li>
+<li>Guards de sécurité</li>
+<li>Télémétrie / observabilité / dashboard</li>
+<li>CLI C++ (menus)</li>
+<li>Configuration (settings)</li>
+<li>Tests &amp; baseline</li>
+<li>Artefacts livrés (phases 13-23)</li>
+<li>Chemins &amp; prérequis</li>
+</ol>
+</div>
+
+<h2>1. Architecture &amp; périmètre</h2>
+<p>Project OS = <b>hub-spoke</b> : un « control plane » (l'extension) gère des <i>workspaces de projets enfant</i> créés par <code>/create</code>. Chaque projet enfant est auto-gouverné (goal, todo, addons, autonomy, artifacts).</p>
+<table>
+<tr><th>Couche</th><th>Rôle</th><th>Emplacement</th></tr>
+<tr><td>Extension VS Code</td><td>Commandes, arbres, statut bar, config</td><td><code>dist/extension.js</code></td></tr>
+<tr><td>Domain (pur)</td><td>Logique métier testable (aucun vscode)</td><td><code>src/*</code></td></tr>
+<tr><td>Moteur IA</td><td>Génération via LocalAI</td><td><code>http://127.0.0.1:8080/v1</code></td></tr>
+<tr><td>Projets enfant</td><td>Workspaces gérés</td><td><code>C:\Users\eiden\Desktop\dev\projects\&lt;slug&gt;</code></td></tr>
+<tr><td>CLI C++</td><td>Pilotage par menus</td><td><code>cli-cpp\</code></td></tr>
+</table>
+
+<h2>2. Commandes slash (<code>/</code>)</h2>
+<p>Utilisables dans la console d'input (<code>clineProjectOS.slash</code>) et par le CLI C++. Préfixe <code>/</code>, args + <code>--flags</code> (respect des guillemets).</p>
+<table>
+<tr><th>Commande</th><th>Sous-commandes</th><th>Description</th></tr>
+<tr><td><code>/create</code></td><td><code>--type=&lt;t&gt;</code> <code>--git</code> <code>--objective</code></td><td>Crée un projet géré (hub-spoke) + seed le TODO. Types: cpp, ts, web, node, rust, go, python, desktop, docker, localai, auto.</td></tr>
+<tr><td><code>/goal</code></td><td><code>&lt;objective&gt;</code> <code>--criteria=&lt;c&gt;</code></td><td>Définit/maj l'objectif + critères mesurables du projet actif (<code>goal.json</code> + historique).</td></tr>
+<tr><td><code>/todo</code></td><td><code>list</code> <code>add &lt;label&gt;</code> <code>done &lt;key&gt;</code></td><td>Liste (items <b>barrés</b> si faits), ajoute, marque fait. Persisté (todo.json + TODO.md).</td></tr>
+<tr><td><code>/addon</code></td><td><code>list</code> <code>recommended</code> <code>add &lt;id&gt;</code> <code>remove</code> <code>disable</code> <code>enable</code></td><td>Gère les addons workspace (core, cpp, web, node, python...).</td></tr>
+<tr><td><code>/autonomy</code></td><td><code>plan --minutes=&lt;n&gt;</code> <code>run</code> <code>summary</code> <code>--write</code></td><td>Plan d'autonomie (budget minutes par complexité), exécution agent, résumé. <code>--write</code> = write-lane borné + gated.</td></tr>
+<tr><td><code>/docs</code></td><td><code>&lt;domain&gt;</code> <code>--category=&lt;c&gt;</code></td><td>Navigation des sources officielles en ligne pour un domaine (SFL, C++, Win32...).</td></tr>
+<tr><td><code>/project</code></td><td><code>&lt;slug&gt;</code> <code>--project=&lt;slug&gt;</code></td><td>Résumé d'un projet géré (type, statut, goal, progress).</td></tr>
+<tr><td><code>/report</code></td><td><code>--job=&lt;id&gt;</code> <code>--model=&lt;id&gt;</code></td><td>Rapport tokens + coût + perf d'un job (vrai total, jamais inventé).</td></tr>
+</table>
+<h2>3. Commandes VS Code (<code>clineProjectOS.*</code>)</h2>
+<p>Enregistrées dans <code>contributes.commands</code> + <code>views</code> + arbres.</p>
+<table>
+<tr><th>Commande</th><th>Description</th></tr>
+<tr><td><code>controlcenter.open</code></td><td>Ouvre le Control Center (dashboard des artifacts).</td></tr>
+<tr><td><code>artifact.create</code></td><td>Crée un artifact (choix type + titre + contenu).</td></tr>
+<tr><td><code>artifact.open</code> / <code>artifact.search</code></td><td>Ouvre / recherche un artifact.</td></tr>
+<tr><td><code>agent.start</code> / <code>agent.abort</code></td><td>Démarre / interrompt un agent (session Cline).</td></tr>
+<tr><td><code>provider.preflight</code></td><td>Préflight fournisseur (compatibilité, streaming, santé).</td></tr>
+<tr><td><code>project.scan</code></td><td>Analyse l'ADN du projet (ProjectDNA).</td></tr>
+<tr><td><code>workspace.report</code></td><td>Rapport workspace (topologie single/multi/empty).</td></tr>
+<tr><td><code>tokens.open</code> / <code>tokens.refresh</code> / <code>tokens.export</code></td><td>Ouvre la synthèse tokens, rafraîchit, exporte le rapport.</td></tr>
+<tr><td><code>mode.route</code></td><td>Route « pourquoi ce modèle ? » pour une classe de tâche.</td></tr>
+<tr><td><code>budget.status</code></td><td>Statut budget PAOG (daily/actual/reserved/remaining).</td></tr>
+<tr><td><code>antigravity.verifyWorkspace</code></td><td>Valide le workspace + gate de redémarrage IDE (jamais Windows).</td></tr>
+<tr><td><code>goal</code> / <code>create</code> / <code>addon</code> / <code>autonomy</code> / <code>slash</code></td><td>Équivalents des slash-commandes (invite vs input).</td></tr>
+<tr><td><code>projects.refresh</code> / <code>project.status</code></td><td>Rafraîchit l'arbre / affiche le statut d'un projet.</td></tr>
+</table>
+<p><b>Vues</b> : <code>clineProjectOS.artifacts</code> (arbre artifacts), <code>clineProjectOS.projects</code> (arbre projets), <code>ControlCenterProvider</code>.</p>
+
+<h2>4. Modules « projets » (13)</h2>
+<table>
+<tr><th>Module</th><th>Fonction</th></tr>
+<tr><td><code>ProjectFactory</code></td><td>Création transactionnelle de projet enfant + slugify + anti path-traversal.</td></tr>
+<tr><td><code>ManagedProjectRegistry</code></td><td>Registre hub (persisté JSON) : list/get/add/update/<b>remove</b>.</td></tr>
+<tr><td><code>GoalService</code></td><td>Objectif + critères + progress + historique.</td></tr>
+<tr><td><code>TodoTracker</code> / <code>FsTodoIO</code></td><td>TODO durable (todo.json + TODO.md), items barrés.</td></tr>
+<tr><td><code>AddonManager</code> / <code>AddonCatalog</code></td><td>Addons workspace install/list/recommended/disable/enable.</td></tr>
+<tr><td><code>AutonomyService</code> / <code>AutonomyRunner</code> / <code>AutonomyModelSelector</code></td><td>Plan autonome, exécution agent, sélection de modèle.</td></tr>
+<tr><td><code>AutonomyWriteScope</code> / <code>AutonomyWriteLane</code></td><td>Write-lane borné : plan + scope + guard de chemins (protected/secret).</td></tr>
+<tr><td><code>AutonomyActivityLedger</code></td><td>Journal d'activité chronométré (budget minutes).</td></tr>
+<tr><td><code>SlashCommands</code> (Registry + handlers)</td><td>Parsing slash + dispatch + handlers /goal /create /addon /autonomy /todo.</td></tr>
+<tr><td><code>ProductCommands</code></td><td>Handlers /docs /project /report.</td></tr>
+<tr><td><code>ProjectDNA</code></td><td>ADN projet (scan workspace).</td></tr>
+<tr><td><code>DocsNavigator</code> / <code>DocsCodingAdviser</code> / <code>DocsCheckPrewrite</code> / <code>StaticPostGen</code></td><td>Navigation doc officielle + conseil + pre-write + post-check conformité.</td></tr>
+<tr><td><code>WriteLaneGuard</code></td><td>Anti-régression + conformity (symboles requis) pour le write-lane.</td></tr>
+</table>
+
+<h2>5. Routing intelligent des modèles</h2>
+<p>Module <code>IntelligentModelRouter</code> + <code>TaskClassifier</code> + <code>ModelCandidate</code> + <code>ModelPerformanceRegistry</code> + <code>ModelScoreboard</code> + <code>ModelCatalogService</code> + <code>DeterministicRouter</code>.</p>
+<ul>
+<li><b>Politiques</b> : <code>LOCAL_FIRST</code>, <code>FREE_FIRST</code>, <code>FREE_UNTIL_EXHAUSTED</code>, <code>PASS_FIRST</code>, <code>BALANCED</code>, <code>QUALITY_FIRST_WITH_BUDGET</code>, <code>MANUAL</code>, <code>FREE_ONLY</code>.</li>
+<li><b>Classes de tâche</b> : <code>MICRO_EDIT</code>, <code>DOCUMENTATION</code>, <code>UNIT_TEST</code>, <code>SMALL_BUG</code>, <code>SMALL_FEATURE</code>, <code>MEDIUM_FEATURE</code>, <code>REFACTOR</code>, <code>ARCHITECTURE</code>.</li>
+<li><b>Sélection</b> : filtre capacités + contexte, applique la politique, gate chaque choix payant via <code>ProjectBudgetGovernor</code>. <i>Déterministe, ne mute jamais le budget.</i></li>
+<li><b>Output</b> : modèle choisi + raisons + alternatives + effet budget + confiance.</li>
+<li><b>Diagnostic</b> : <code>ToolCallClassification</code> / <code>ToolCallDiagnostic</code> (analyse des appels d'outils).</li>
+</ul>
+
+<h2>6. Budget &amp; coût</h2>
+<table>
+<tr><th>Module</th><th>Fonction</th></tr>
+<tr><td><code>ProjectBudgetGovernor</code></td><td>Plafond journalier pays-as-you-go par projet, <b>réservations atomiques</b> (TTL 30 min) empêchant les agents concurrents de dépasser. Modes <code>OFF</code>/<code>ASK_EVERY_TIME</code>/<code>AUTO_WITHIN_PROJECT_BUDGET</code>.</td></tr>
+<tr><td><code>BudgetReservation</code></td><td>Réservation de budget (id, montant, expires).</td></tr>
+<tr><td><code>CostModel</code></td><td>Modèle de coût (SDK_BILLED / LOCALAI / CATALOG_ESTIMATE / PROJECT / UNKNOWN) + qualité.</td></tr>
+<tr><td><code>CostLedger</code></td><td>Registre des coûts encourus.</td></tr>
+<tr><td><code>BudgetStatus</code></td><td>Statut budget.</td></tr>
+<tr><td><code>BudgetSimulator</code></td><td>Simulation de scénarios budget.</td></tr>
+</table>
+<p><b>Règle d'honnêteté</b> : LocalAI = <code>EXACT_ZERO</code> (jamais un prix inventé) ; pay-as-you-go = <code>EXACT_BILLED</code> ; sinon ESTIMATED / SUBSCRIPTION_COVERED / UNKNOWN.</p>
+
+<h2>7. Télémétrie tokens &amp; coût</h2>
+<table>
+<tr><th>Module</th><th>Fonction</th></tr>
+<tr><td><code>TokenLedger</code></td><td>Registre d'usage tokens par session (input/output/total), qualité (EXACT/DERIVED/ESTIMATED/UNKNOWN).</td></tr>
+<tr><td><code>WorkspaceRegistry</code></td><td>Association session → workspace (état de la ligne de statut).</td></tr>
+<tr><td><code>UsageObservation</code></td><td>Observation unitaire d'usage (modelId, providerId, tokens).</td></tr>
+<tr><td><code>UsageReport</code></td><td>Consolidation job : tokens <b>total</b> (input+output) + coût + perf (TTFT, tokens/s, VRAM, correctness, stability).</td></tr>
+<tr><td><code>HistoricalUsageImporter</code></td><td>Import de sessions historiques.</td></tr>
+<tr><td><code>numberFormat</code> / <code>tokenEstimate</code></td><td>Formatage + estimation de tokens.</td></tr>
+<tr><td><code>statusBarMode</code></td><td>Quel total afficher : session / workspace / project / off.</td></tr>
+</table>
+
+<h2>8. Artifacts (artefacts)</h2>
+<p>Objets versionnés avec cycle de vie complet.</p>
+<ul>
+<li><b>Types</b> (26) : implementation_plan, change_contract, project_dna, workspace_drift, architecture, dependency_graph, project_map, code_diff, changed_files, markdown, documentation, test_report, bug_report, audit_report, benchmark, chart, image, screenshot, terminal_log, command_log, build_report, qa_report, security_report, performance_report, release_report, checkpoint, ADR, reference.</li>
+<li><b>Statuts</b> (11) : DRAFT, GENERATING, READY_FOR_REVIEW, CHANGES_REQUESTED, APPROVED, APPLYING, VERIFYING, VERIFIED, FAILED, SUPERSEDED, ARCHIVED.</li>
+<li><b>Machine à états</b> : <code>ArtifactStateMachine</code> (transitions valides, terminal, canTransition, nextStatuses).</li>
+<li><b>Contenu</b> : index + contenu séparé, SHA256, version auto-incrémentée, comments, pinned, archived, verification+evidence, sourceFiles.</li>
+<li><b>Registry</b> : <code>ArtifactRegistry</code> (list/get/readContent).</li>
+</ul>
+
+<h2>9. Autonomie (write-lane gated)</h2>
+<p>L'agent autonome travaille dans un cadre <b>borné et approuvé</b>.</p>
+<ol>
+<li><code>/autonomy plan</code> → <code>buildAutonomyPlan</code> (budget minutes par complexité + checkpoints + deadline).</li>
+<li><code>buildWritePlan</code> + <code>buildWriteScope</code> → plan de write-lane : opérations autorisées (create/modify/patch), <code>maxFiles</code>, <code>maxBytesChanged</code>, <code>maxPatchLines</code>, delete/rename bloqués par défaut, <code>expiresAt</code>.</li>
+<li><code>guardWritePath</code> → refuse hors workspace (transversal), fichiers protégés (<code>.git/config</code>, <code>node_modules</code>), secrets (<code>.env</code>, clés).</li>
+<li><b>Approbation explicite</b> avant toute mutation (jamais d'écriture aveugle).</li>
+<li>Boucle : activitée journalisée + <code>summary</code> + handoff.</li>
+<li><code>AutonomyModelSelector</code> : choisit le modèle selon la complexité.</li>
+<li><code>AutonomyActivityLedger</code> : suivi minute par minute (détecte le dépassement de budget).</li>
+</ol>
+
+<h2>10. Endurance GPU Ladder</h2>
+<p>Validation de création de projet <b>obligatoire sur GPU</b> (pas de fallback CPU). <code>EnduranceLadder</code> (machine à états pure, séquence 5→10→20→30→60 sans skip).</p>
+<ul>
+<li><b>Gate dur</b> : le timer ne démarre que si <code>GPU_OFFLOAD_PROOF = PASS</code> (GPU détecté + NVIDIA + backend LocalAI GPU + VRAM libre + modèle éligible + sécurité + ≤4B + FLASH_READY). Sinon <code>BLOCKED_GPU</code>.</li>
+<li><b>Reset-on-failure</b> : échec/bug/OOM → temps accumulé perdu, reprise à 00:00 sur le <b>même</b> palier (attempt++).</li>
+<li><b>Modules</b> : <code>EnduranceLedger</code> (bug + GPU entries), <code>EnduranceReset</code> (reset-from-zero + isolation), <code>ProjectCreationEvidence</code> (model record + evidence pack), <code>EnduranceFailover</code> (failover dédié), <code>GpuBenchmark</code> (TTFT/tokens·s/VRAM/stability), <code>FleetQualifier</code> (qualification flotte), <code>EnduranceRouter</code>, <code>EnduranceLab</code> (API produit unique), <code>GpuQualificationQueue</code>.</li>
+<li><b>Policy</b> : <code>requireGpu=true</code>, <code>requireFlashReady=true</code>, <code>allowCpuFallback=false</code>. <b>Jamais</b> de PASS simulé ni de kill de process.</li>
+<li><b>Preuve offload</b> : delta VRAM (nvidia-smi avant/après) + <code>/backend/monitor?model=</code> + smoke inference. <code>GpuBenchmark</code> : 1 warmup + ≥3 mesures.</li>
+</ul>
+<p><b>Résultat final :</b> ladder 5/5 passée (5·10·20·30·60 min) → <code>PROJECT_CREATION_ENDURANCE_READY = PASS</code>.</p>
+
+<h2>11. Guards de sécurité</h2>
+<table>
+<tr><th>Guard</th><th>Fonction</th></tr>
+<tr><td><code>WorkspaceTrustGuard</code></td><td>Décide si une opération est permise (write/...) selon l'état de confiance du workspace + raison du refus.</td></tr>
+<tr><td><code>WorkspaceTopology</code></td><td>Classifie SINGLE_ROOT/MULTI_ROOT/EMPTY + racine canonique.</td></tr>
+<tr><td><code>AntigravityIDERestartGuard</code></td><td>Valide workspace + autorise redémarrage IDE (jamais Windows).</td></tr>
+<tr><td><code>AntigravityProcessResolver</code></td><td>Résout la fenêtre top-level du process IDE (confidence PROVEN/STRONG/WEAK/AMBIGUOUS/NOT_FOUND).</td></tr>
+<tr><td><code>AutonomyWriteScope</code> / <code>guardWritePath</code></td><td>Write-lane borné : chemins protégés/secrets/bloqués + ops contrôlées.</td></tr>
+<tr><td><code>WriteLaneGuard</code></td><td>StaticPostGen (conformité signatures officielles) + anti-régression (symboles requis).</td></tr>
+<tr><td><code>ProviderPolicyValidator</code></td><td>Valide provider = <code>openai-compatible</code> + base URL loopback + pas de fallback + pas de cloud + router <code>allowCpuFallback=false</code>.</td></tr>
+<tr><td><code>ApprovalBridge</code> / <code>WriteApproval</code></td><td>Pont d'approbation Cline + approbation d'écriture.</td></tr>
+<tr><td><code>PermissionsAdapter</code></td><td>Adaptateur de permissions.</td></tr>
+<tr><td><code>OfficialDocsGuard</code> / <code>ReasoningResponseNormalizer</code></td><td>Gardien doc officielle + normalisation raisonnement.</td></tr>
+</table>
+
+<h2>12. Télémétrie / observabilité / dashboard</h2>
+<ul>
+<li><code>OutputChannel</code> (<code>StructuredLogger</code>) : logs structurés.</li>
+<li><code>ProductionLogger</code> : format de sortie de prod canonique.</li>
+<li><code>DashboardRenderer</code> : layout fixe (header + k/v + progress + TODO barré + footer).</li>
+<li><code>LiveDashboard</code> : dashboard temps réel (refresh in-place, détecte l'atteinte du goal).</li>
+<li><code>TextOutputFormatter</code> : headers, KV alignés, barres de progress, <b>TODO barré</b>.</li>
+<li><code>ReasoningResponseNormalizer</code>, <code>StreamingBuffer</code>, <code>RuntimeEventNormalizer</code>, <code>InferenceEvidence</code>.</li>
+</ul>
+
+<h2>13. CLI C++ (menus)</h2>
+<p>CLI C++17/CMake qui pilote Project OS par menus, invoquant la passerelle Node (<code>bin/project-os-bridge.mjs</code>).</p>
+<table>
+<tr><th>Fichier</th><th>Rôle</th></tr>
+<tr><td><code>cli-cpp/src/pos_json.hpp</code></td><td>Mini-parseur JSON header-only.</td></tr>
+<tr><td><code>cli-cpp/src/pos_model.hpp</code></td><td>Lecture registry/project/goal/todo + helpers + shellQuote.</td></tr>
+<tr><td><code>cli-cpp/src/pos_runner.hpp</code></td><td>Invocation passerelle (<code>_popen</code>) + parsing JSON résultat.</td></tr>
+<tr><td><code>cli-cpp/src/project_os_cli.cpp</code></td><td>Menu interactif (list/create/goal/todo/autonomy/docs/addon/slash/quit).</td></tr>
+<tr><td><code>cli-cpp/tests/test_pos.cpp</code></td><td>Tests JSON/modèle (ctest).</td></tr>
+</table>
+<p><b>Build</b> : <code>cmake -S . -B cmake-build -G "MinGW Makefiles"; cmake --build cmake-build</code> puis <code>cmake-build\project-os-cli.exe</code>.</p>
+
+<h2>14. Configuration (settings)</h2>
+<table>
+<tr><th>Setting</th><th>Défaut</th><th>Description</th></tr>
+<tr><td><code>providerId</code></td><td>anthropic</td><td>Provider ID des sessions.</td></tr>
+<tr><td><code>modelId</code></td><td>claude-sonnet-4-6</td><td>Modèle des sessions.</td></tr>
+<tr><td><code>enableTools</code></td><td>true</td><td>Outils intégrés (bash, editor, read, search...).</td></tr>
+<tr><td><code>providerType</code></td><td>openai-compatible</td><td>Famille provider.</td></tr>
+<tr><td><code>providerBaseUrl</code></td><td>http://localhost:8080/v1</td><td>Endpoint OpenAI-compatible/local.</td></tr>
+<tr><td><code>providerModelId</code></td><td>qwen3-4b</td><td>Modèle préflight/session.</td></tr>
+<tr><td><code>statusBarMode</code></td><td>project</td><td>Quel total tokens afficher (session/workspace/project/off).</td></tr>
+<tr><td><code>routingPolicy</code></td><td>FREE_UNTIL_EXHAUSTED</td><td>Politique de routage (8 valeurs).</td></tr>
+<tr><td><code>dailyPaidBudget</code></td><td>0</td><td>Plafond pay-as-you-go journalier.</td></tr>
+<tr><td><code>budgetCurrency</code></td><td>USD</td><td>Devise du budget.</td></tr>
+<tr><td><code>paidInferenceMode</code></td><td>OFF</td><td>Mode inférence payante.</td></tr>
+<tr><td><code>allowLocalAI</code> / <code>allowClineFree</code> / <code>allowClinePass</code> / <code>allowClinePayg</code></td><td>true/true/true/false</td><td>Augmente/quels candidats autorisés au routing.</td></tr>
+<tr><td><code>restartAntigravityAfterUpdate</code></td><td>true</td><td>Gate de redémarrage IDE après MAJ validée (jamais Windows).</td></tr>
+<tr><td><code>projectsRoot</code></td><td>C:\Users\eiden\Desktop\dev\projects</td><td>Racine des workspaces gérés.</td></tr>
+<tr><td><code>activeProjectSlug</code></td><td>""</td><td>Slug du projet actif.</td></tr>
+<tr><td><code>defaultAutonomyMinutes</code></td><td>0</td><td>Budget minutes /autonomy (0 = auto).</td></tr>
+<tr><td><code>autonomyWriteEnabled</code></td><td>true</td><td>Active le write-lane (borné + gated).</td></tr>
+</table>
+
+<h2>15. Tests &amp; baseline</h2>
+<p><code>src/tests/*</code> : ≥44 fichiers de test, node:test. Baseline gardée : <code>typecheck 0</code> · tests <b>247/247 PASS</b> · régression 0 · tests C++ <b>ALL PASS</b>.</p>
+<p>Domaines couverts : slash commands, autonomy, autonomy routing, todo, docs, write-lane, writeLaneGuard, staticPostGen, dashboard, liveDashboard, textOutput, provider preflight/profile, routing budget, artifacts (registry/stateMachine), permissions, approvalBridge, antigravity guards, workspace, streamingBuffer, outputChannel, tokenIntelligence, usageReport, toolCallDiagnostic, projectFactory, managedProjectRegistry.</p>
+
+<h2>16. Artefacts livrés (phases 13-23)</h2>
+<p><code>artifacts/</code> : <code>antigravity-restarts</code>, <code>endurance</code> (PROJECT_CREATION_ENDURANCE, GPU_LEDGER, BUG_LEDGER, ENDURANCE_GATE_PROOF, FLEET_QUALIFICATION, ENDURANCE_ORCHESTRATOR_REPORT, ENDURANCE_ROUTER_PROOF, ENDURANCE_LAB_REPORT, GPU_CONSUMER_INVENTORY, GPU_CONFIG_TUNING, FLEET_QUALIFICATION), <code>model-security</code>, <code>phase17/18/19/20/21/22/23</code>, <code>sfl</code> (SFL_USAGE_REPORT, AUTONOMY_USAGE_REPORT, dashboard, GOAL_REACHED), <code>FLASH_FLEET_MANIFEST.json</code>.</p>
+
+<h2>17. Chemins &amp; prérequis</h2>
+<table>
+<tr><th>Élément</th><th>Chemin</th></tr>
+<tr><td>Repo</td><td><code>C:\Users\eiden\Desktop\dev\projet-os</code></td></tr>
+<tr><td>Projets gérés</td><td><code>C:\Users\eiden\Desktop\dev\projects\&lt;slug&gt;</code></td></tr>
+<tr><td>CLI C++</td><td><code>C:\Users\eiden\Desktop\dev\projet-os\cli-cpp\cmake-build\project-os-cli.exe</code></td></tr>
+<tr><td>Passerelle</td><td><code>C:\Users\eiden\Desktop\dev\projet-os\bin\project-os-bridge.mjs</code></td></tr>
+<tr><td>LocalAI</td><td><code>http://127.0.0.1:8080/v1</code></td></tr>
+<tr><td>Toolchain C++</td><td><code>C:\msys64\mingw64\bin</code></td></tr>
+</table>
+<div class="warn"><b>Règles non négociables</b> : jamais de kill de process ni reset Docker/Windows (l'utilisateur contrôle les apps GPU externes) ; jamais de CPU fallback, de PASS simulé ni de qualification inventée ; licence ≤4B, SHA vérifiée, Defender « NO KNOWN MALWARE INDICATORS » ; <code>trust_remote_code=false</code> obligatoire.</div>
+
+<hr>
+<p style="text-align:center;color:#888;font-size:11px">Généré par Project OS — Référence complète des fonctionnalités v0.1.0.</p>
+</body></html>
+
