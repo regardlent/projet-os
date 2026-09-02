@@ -192,7 +192,7 @@ static int cmdHelp() {
 	std::cout << "  completion <shell>     shell completions (powershell|bash|zsh)\n";
 	std::cout << "  exitcodes              exit-code taxonomy\n";
 	std::cout << "  health [--watch]       periodic read-only health\n";
-	std::cout << "  cockpit                live VT dashboard\n";
+	std::cout << "  cockpit [--watch=<s>]|history  live VT dashboard / recorded frames\n";
 	sec("Projet");
 	std::cout << "  status                 active project summary\n";
 	std::cout << "  project list           enumerate managed projects\n";
@@ -305,10 +305,32 @@ static int cmdCockpit(pos::OutputFormat fmt, const std::vector<std::string>& arg
 		std::cout << "  [Health]  " << hs.score << "/100 " << (hs.grade.empty() ? "" : "[" + hs.grade + "] ") << "(" << hs.signal << ")  " << hs.message << "\n";
 		std::cout << "  [Usage]   " << (usTotal.empty() ? "(no usage)" : usTotal) << "\n";
 		std::cout << "  [GPU]     " << (gpuLine.empty() ? "(nvidia-smi unavailable)" : gpuLine) << "\n";
+		if (live) {
+			// F64 historisation: append a frame (JSONL) to artifacts/usage/cockpit-history.jsonl.
+			const auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+			std::string frame = "{\"at\":" + std::to_string((long long)now) + ",\"active\":" + pos::json_quote(st.activeSlug)
+				+ ",\"goalStatus\":" + pos::json_quote(st.goalStatus) + ",\"goalProgress\":" + std::to_string(st.goalProgress)
+				+ ",\"todoDone\":" + std::to_string(st.todoDone) + ",\"todoCount\":" + std::to_string(st.todoCount)
+				+ ",\"healthScore\":" + std::to_string(hs.score) + ",\"healthGrade\":" + pos::json_quote(hs.grade) + ",\"healthSignal\":" + pos::json_quote(hs.signal)
+				+ ",\"usage\":" + pos::json_quote(usTotal) + ",\"gpu\":" + pos::json_quote(gpuLine) + "}";
+			try { std::ofstream of(std::string(pos::repoRoot()) + "\\artifacts\\usage\\cockpit-history.jsonl", std::ios::app); of << frame << "\n"; } catch (...) {}
+		}
 		if (!live || g_cancel.load()) break;
 		for (int i = 0; i < 20 && !g_cancel.load(); ++i) std::this_thread::sleep_for(std::chrono::milliseconds(watchSec * 1000 / 20));
 	} while (live && !g_cancel.load());
 	if (live) { std::cout << "\x1b[?25h"; }
+	return 0;
+}
+
+// F64 cockpit history: read the recorded frames (JSONL written during --watch).
+static int cmdCockpitHistory(pos::OutputFormat fmt) {
+	std::ifstream f(std::string(pos::repoRoot()) + "\\artifacts\\usage\\cockpit-history.jsonl");
+	std::vector<std::string> lines; std::string line;
+	while (std::getline(f, line)) if (!line.empty()) lines.push_back(line);
+	if (fmt == pos::OutputFormat::Json) { std::cout << "{\"frames\":" << lines.size() << ",\"last\":" << (lines.empty() ? "null" : lines.back()) << "}\n"; return 0; }
+	std::cout << "\xE2\x94\x80\xE2\x94\x80 cockpit history \xE2\x94\x80\xE2\x94\x80 \n";
+	std::cout << "  frames : " << lines.size() << "\n";
+	if (!lines.empty()) std::cout << "  latest : " << lines.back() << "\n";
 	return 0;
 }
 
@@ -1519,6 +1541,7 @@ int wmain(int argc, wchar_t** wargv) {
 		if (explain) { return cmdExplain(cmd, args); }
 		if (cmd == "help" || cmd == "--help" || cmd == "-h") { return cmdHelp(); }
 		if (cmd == "completion" && args.size() >= 1) { return cmdCompletion(args[0]); }
+		if (cmd == "cockpit" && args.size() >= 1 && args[0] == "history") { return cmdCockpitHistory(fmt); }
 		if (cmd == "cockpit") { return cmdCockpit(fmt, args, colorOn); }
 		if (cmd == "version") { cmdVersion(fmt); return 0; }
 		if (cmd == "capabilities") { cmdCapabilities(fmt); return 0; }

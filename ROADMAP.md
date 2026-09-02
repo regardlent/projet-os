@@ -30,7 +30,7 @@
 ## Phase 3 — Cockpit / dashboard
 - [x] 3.1 `cockpit` restructuré en tuiles (health, gpu, usage, goal, todo).
 - [x] 3.2 Refresh live multi-sources.
-- [ ] 3.3 Historisation (snapshot des tuiles).
+- [x] 3.3 Historisation (snapshot des tuiles).
 - [ ] 3.4 Export du cockpit (JSON/PNG).
 - [ ] 3.5 Navigation clavier (flèches/onglets).
 - [ ] 3.6 Minimum-width + repli si terminal étroit.
