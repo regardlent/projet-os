@@ -107,12 +107,12 @@
 - [ ] 9.1 Commande slash personnalisée.
 - [ ] 9.2 Templates de projet.
 - [ ] 9.3 Schémas de sortie (JSON Schema).
-- [ ] 9.4 Completion dynamique (slugs + sous-commandes).
+- [x] 9.4 Completion dynamique (slugs + sous-commandes).
 - [x] 9.5 `--dry-run` enrichi.
 - [x] 9.6 Alias de commandes.
 - [x] 9.7 Fichier de config (`~/.project-os/config`).
 - [x] 9.8 Doc env (`PROJECT_OS_*`) enrichie.
-- [ ] 9.9 Script d'installation.
+- [x] 9.9 Script d'installation.
 - [x] 9.10 Onboarding / guide rapide.
 
 ## Phase 10 — Finition & release
