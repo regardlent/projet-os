@@ -231,7 +231,7 @@ static int cmdHelp() {
 	std::cout << "  preflight              aggregate bridge/LocalAI/GPU check\n";
 	std::cout << "  models                 LocalAI model inventory\n";
 	std::cout << "  model show|smoke|benchmark <id>\n";
-	std::cout << "  route <task-class>     deterministic model selection\n";
+	std::cout << "  route <task-class> [--alt]  adaptive model selection (ranked alternatives)\n";
 	std::cout << "  gpu|gpu watch|gpu proof  real nvidia-smi\n";
 	std::cout << "  benchmark              model performance testing\n";
 	sec("Qualité & release");
@@ -1315,15 +1315,20 @@ static int cmdModelShow(const std::string& id, pos::OutputFormat fmt) {
 
 
 // --- F35 route explain <task-class> ---------------------------------------------
-static int cmdRoute(const std::string& taskClass, pos::OutputFormat fmt) {
-	pos::CmdResult r = pos::dispatch(pos::bridgePath(), "route " + taskClass, g_timeoutMs, &g_cancel);
+static int cmdRoute(pos::OutputFormat fmt, const std::vector<std::string>& args) {
+	std::string line = "route";
+	for (auto& a : args) line += " " + a;
+	pos::CmdResult r = pos::dispatch(pos::bridgePath(), line, g_timeoutMs, &g_cancel);
 	if (!r.ok) { std::cout << "  FAIL route: " << r.status << " — " << r.message << "\n"; return 1; }
 	if (fmt == pos::OutputFormat::Json) {
-		std::cout << "{\"task\":" << pos::json_quote(r.routeTaskClass) << ",\"chosen\":" << pos::json_quote(r.routeChosen) << ",\"reason\":" << pos::json_quote(r.routeReason) << "}\n";
+		std::cout << "{\"task\":" << pos::json_quote(r.routeTaskClass) << ",\"chosen\":" << pos::json_quote(r.routeChosen) << ",\"reason\":" << pos::json_quote(r.routeReason) << ",\"alternatives\":[";
+		for (size_t i = 0; i < r.details.size(); ++i) { if (i) std::cout << ","; std::cout << pos::json_quote(r.details[i]); }
+		std::cout << "]}\n";
 	} else {
 		std::cout << "  task     : " << r.routeTaskClass << "\n";
 		std::cout << "  chosen   : " << r.routeChosen << "\n";
 		std::cout << "  reason   : " << r.routeReason << "\n";
+		for (auto& d : r.details) std::cout << "  alt      : " << d << "\n";
 	}
 	return 0;
 }
@@ -1677,7 +1682,7 @@ int wmain(int argc, wchar_t** wargv) {
 		if (cmd == "model" && args.size() >= 2 && args[0] == "smoke") { std::string rmode = "hide"; for (auto& a : args) if (a.rfind("--reasoning=", 0) == 0) rmode = a.substr(12); return cmdModelSmoke(args[1], rmode, fmt); }
 		if (cmd == "localai" && args.size() >= 1 && args[0] == "capabilities") { return cmdLocalaiCapabilities(fmt); }
 		if (cmd == "model" && args.size() >= 2 && args[0] == "benchmark") { return cmdModelBenchmark(args[1], fmt); }
-		if (cmd == "route" && args.size() >= 1) { return cmdRoute(args[0], fmt); }
+		if (cmd == "route" && !args.empty()) { return cmdRoute(fmt, args); }
 		if (cmd == "gpu" && args.size() >= 1 && args[0] == "watch") { int iv = (args.size() >= 2 ? std::atoi(args[1].c_str()) : 0); return cmdGpuWatch(fmt, iv); }
 		if (cmd == "gpu" && args.size() >= 1 && args[0] == "proof") { std::string mid = (args.size() >= 2 ? args[1] : std::string()); return cmdGpuProof(mid, fmt); }
 		if (cmd == "gpu") { return cmdGpuStatus(fmt); }

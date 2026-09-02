@@ -52,7 +52,7 @@
 - [ ] 4.10 Génération des docs (md → pdf/html) en CI.
 
 ## Phase 5 — Modèles & routing
-- [ ] 5.1 Routeur adaptatif au contexte (task-class + longueur).
+- [x] 5.1 Routeur adaptatif au contexte (task-class + longueur).
 - [ ] 5.2 Cache sémantique (prompt/réponse).
 - [ ] 5.3 A/B benchmark (comparateur multi-mesures).
 - [ ] 5.4 Gating de qualité (sortie validée).
@@ -61,7 +61,7 @@
 - [ ] 5.7 Profils de modèles (par type de projet).
 - [ ] 5.8 Policy provider (free/pass/payg).
 - [ ] 5.9 Éligibilité flash.
-- [ ] 5.10 `model route --explain` enrichi.
+- [x] 5.10 `model route --explain` enrichi.
 
 ## Phase 6 — Git & workflows
 - [ ] 6.1 `git status` intégré (branche + dirty + commit).

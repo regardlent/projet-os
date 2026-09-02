@@ -713,12 +713,23 @@ try {
 		emit(result, 0); process.exit(0);
 	}
 
-	// F35 route explain <task-class>: deterministic model selection for a task class.
+	// F35 route explain <task-class>: adaptive, ranked model selection for a task class.
 	if (line.startsWith("route ")) {
-		const taskClass = line.slice("route ".length).trim();
-		// Deterministic, delegated: model chosen as the qualified flash model for CODING roles to keep it simple.
-		const chosen = modelId;
-		const result = { command: "route", ok: true, status: "ROUTE", taskClass, chosen, reason: "deterministic: qualified project-creation model", alternatives: [], policy: "FREE_UNTIL_EXHAUSTED", message: `route ${taskClass} -> ${chosen}`, warnings: [], actions: [], artifacts: [] };
+		const rest = line.slice("route ".length).trim();
+		const parts = rest.split(/\s+/);
+		const taskClass = parts[0] || "CODING";
+		const explain = rest.includes("--alt") || rest.includes("--long");
+		// Adaptive: rank the LocalAI models by task-class bias + name heuristic + configured preference.
+		let available = [];
+		try { const r = await fetch(baseUrl + "/models"); const body = await r.json(); available = (body.data ?? []).map((m) => m.id); } catch {}
+		const prefer = ["granite", "qwen", "ministral", "phi", "deepseek", "smollm", "gpt", "llama", "mistral"];
+		const score = (id) => { const l = id.toLowerCase(); let s = 0; if (id === modelId) s += 3; for (const p of prefer) { if (l.includes(p)) { s += (p === "granite" ? 2 : 1); break; } } if (l.includes("flash") || l.includes("small") || l.includes("function")) s += 1; return s; };
+		const bias = (cls) => { const u = cls.toUpperCase(); if (u.includes("REASON")) return { long: 3, flash: 0 }; if (u.includes("FAST") || u.includes("EDIT")) return { long: 0, flash: 3 }; if (u.includes("SUM") || u.includes("DOC")) return { long: 0, flash: 2 }; if (u.includes("CODING")) return { long: 2, flash: 1 }; return { long: 1, flash: 1 }; };
+		const b = bias(taskClass);
+		const ranked = available.map((id) => ({ id, sc: score(id) + (id.toLowerCase().includes("flash") ? b.flash : 0) + (!id.toLowerCase().includes("flash") ? b.long : 0) })).sort((x, y) => y.sc - x.sc);
+		const chosen = ranked.length ? ranked[0].id : modelId;
+		const reason = explain ? `adaptive: ranked ${ranked.length} model(s) for ${taskClass} (long-bias=${b.long} flash-bias=${b.flash}); top=${chosen}` : `adaptive: ${taskClass} -> ${chosen}`;
+		const result = { command: "route", ok: true, status: "ROUTE", taskClass, chosen, reason, alternatives: explain ? ranked.slice(0, 5).map((r) => ({ id: r.id, score: r.sc })) : [], details: explain ? ranked.slice(0, 5).map((r) => `${r.id} (score ${r.sc})`) : [], policy: "FREE_UNTIL_EXHAUSTED", message: `route ${taskClass} -> ${chosen}${explain ? " (explain)" : ""}`, warnings: [], actions: [], artifacts: [] };
 		emit(result, 0); process.exit(0);
 	}
 
