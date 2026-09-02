@@ -192,7 +192,7 @@ static int cmdHelp() {
 	std::cout << "  completion <shell>     shell completions (powershell|bash|zsh)\n";
 	std::cout << "  exitcodes              exit-code taxonomy\n";
 	std::cout << "  health [--watch]       periodic read-only health\n";
-	std::cout << "  cockpit [--watch=<s>]|history  live VT dashboard / recorded frames\n";
+	std::cout << "  cockpit [--watch=<s>]|history|export  live dashboard / frames / export\n";
 	sec("Projet");
 	std::cout << "  status                 active project summary\n";
 	std::cout << "  project list           enumerate managed projects\n";
@@ -331,6 +331,35 @@ static int cmdCockpitHistory(pos::OutputFormat fmt) {
 	std::cout << "\xE2\x94\x80\xE2\x94\x80 cockpit history \xE2\x94\x80\xE2\x94\x80 \n";
 	std::cout << "  frames : " << lines.size() << "\n";
 	if (!lines.empty()) std::cout << "  latest : " << lines.back() << "\n";
+	return 0;
+}
+
+// F65 cockpit export: write the current tile snapshot to a CSV/JSON file (format from --out extension).
+static int cmdCockpitExport(pos::OutputFormat fmt, const std::vector<std::string>& args, bool colorOn) {
+	std::string out;
+	for (auto& a : args) if (a.rfind("--out=", 0) == 0) out = a.substr(6);
+	pos::CmdResult st = pos::dispatch(pos::bridgePath(), "status", g_timeoutMs, &g_cancel);
+	pos::CmdResult hs = pos::dispatch(pos::bridgePath(), "health score", g_timeoutMs, &g_cancel);
+	pos::CmdResult us = pos::dispatch(pos::bridgePath(), "usage summary", g_timeoutMs, &g_cancel);
+	std::string gpuLine = readGpuLine();
+	auto kv = [](const std::vector<std::pair<std::string, std::string>>& v, const std::string& k) -> std::string { for (auto& p : v) if (p.first == k) return p.second; return ""; };
+	const std::string usTotal = kv(us.analysisKv, "TOTAL");
+	bool csv = out.empty() ? false : (out.size() > 4 && out.substr(out.size() - 4) == ".csv");
+	std::string path = out.empty() ? (std::string(pos::repoRoot()) + "\\artifacts\\usage\\cockpit-export.json") : out;
+	std::string data;
+	if (csv) {
+		data = "active,goalStatus,goalProgress,todoDone,todoCount,healthScore,healthGrade,healthSignal,usage,gpu\n"
+			+ st.activeSlug + "," + st.goalStatus + "," + std::to_string(st.goalProgress) + "," + std::to_string(st.todoDone) + "," + std::to_string(st.todoCount)
+			+ "," + std::to_string(hs.score) + "," + hs.grade + "," + hs.signal + "," + usTotal + "," + gpuLine + "\n";
+	} else {
+		data = "{\"active\":" + pos::json_quote(st.activeSlug) + ",\"goalStatus\":" + pos::json_quote(st.goalStatus)
+			+ ",\"goalProgress\":" + std::to_string(st.goalProgress) + ",\"todoDone\":" + std::to_string(st.todoDone) + ",\"todoCount\":" + std::to_string(st.todoCount)
+			+ ",\"healthScore\":" + std::to_string(hs.score) + ",\"healthGrade\":" + pos::json_quote(hs.grade) + ",\"healthSignal\":" + pos::json_quote(hs.signal)
+			+ ",\"usage\":" + pos::json_quote(usTotal) + ",\"gpu\":" + pos::json_quote(gpuLine) + "}\n";
+	}
+	bool ok = false;
+	try { std::ofstream of(path); of << data; ok = true; } catch (...) {}
+	std::cout << "  written : " << (ok ? path : "(failed)") << "\n  tiles   : status / health / usage / gpu (" << (csv ? "csv" : "json") << ")\n";
 	return 0;
 }
 
@@ -1542,6 +1571,7 @@ int wmain(int argc, wchar_t** wargv) {
 		if (cmd == "help" || cmd == "--help" || cmd == "-h") { return cmdHelp(); }
 		if (cmd == "completion" && args.size() >= 1) { return cmdCompletion(args[0]); }
 		if (cmd == "cockpit" && args.size() >= 1 && args[0] == "history") { return cmdCockpitHistory(fmt); }
+		if (cmd == "cockpit" && args.size() >= 1 && args[0] == "export") { return cmdCockpitExport(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }
 		if (cmd == "cockpit") { return cmdCockpit(fmt, args, colorOn); }
 		if (cmd == "version") { cmdVersion(fmt); return 0; }
 		if (cmd == "capabilities") { cmdCapabilities(fmt); return 0; }
