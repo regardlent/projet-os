@@ -36,6 +36,7 @@ credentials*
 *.log
 *.tmp
 *.zip
+_CPack_Packages/
 menu_out.txt
 
 # OS
