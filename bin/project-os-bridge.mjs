@@ -808,12 +808,17 @@ try {
 		const rel = "artifacts/published/" + file;
 		let prov = "";
 		if (created) {
-			// 7.6: record provenance (sha256 + origin + timestamp) in a sidecar manifest.
+			// 7.2/7.6: record provenance + version history + review status in a sidecar manifest.
 			try {
 				const provPath = path.join(REPO, "artifacts", "provenance.json");
 				const manifest = ((() => { try { return JSON.parse(fs.readFileSync(provPath, "utf8")); } catch { return {}; } }))();
 				const sha = crypto.createHash("sha256").update(fs.readFileSync(full)).digest("hex");
-				manifest[rel] = { sha256: sha, source: "cli", owner: process.env.PROJECT_OS_ORIGINATOR || "project-os", createdAt: new Date().toISOString(), type, size: body.length };
+				const existing = manifest[rel];
+				const nextVersion = (existing?.version ?? 0) + 1;
+				const status = existing?.status ?? "draft";
+				const versions = existing?.versions ?? [];
+				versions.unshift({ version: nextVersion, sha256: sha, createdAt: new Date().toISOString(), size: body.length, status });
+				manifest[rel] = { sha256: sha, source: "cli", owner: process.env.PROJECT_OS_ORIGINATOR || "project-os", createdAt: new Date().toISOString(), type, size: body.length, version: nextVersion, status, versions };
 				fs.writeFileSync(provPath, JSON.stringify(manifest, null, 2));
 				prov = "provenance recorded";
 			} catch {}
@@ -853,6 +858,36 @@ try {
 		const share = { schema: "project-os-artifact-share/v1", artifactId: id, type: "json", content, sha256: sha, source: rec.source ?? "unknown", owner: rec.owner ?? "project-os", createdAt: rec.createdAt ?? new Date().toISOString() };
 		let written = ""; try { fs.mkdirSync(shareDir, { recursive: true }); fs.writeFileSync(path.join(shareDir, shareName), JSON.stringify(share, null, 2)); written = "artifacts/shared/" + shareName; } catch {}
 		emit({ command: "artifact", ok: !!written, status: written ? "SHARED" : "SHARE_FAIL", id, rows: [{ k: "id", v: id }, { k: "share", v: written || "n/a" }, { k: "sha256", v: sha }, { k: "contentBytes", v: String(content.length) }], message: written ? `shared ${id} -> ${written}` : "share failed", warnings: written ? [] : ["write failed"], actions: written ? ["artifact verify " + written] : [], artifacts: written ? [written] : [] }, written ? 0 : 1);
+		process.exit(0);
+	}
+
+	// F93 artifact versions <id>: list version history from the provenance manifest (7.2).
+	if (line.startsWith("artifact versions ")) {
+		const id = line.slice("artifact versions ".length).trim().replace(/[\\]/g, "/");
+		const provPath = path.join(REPO, "artifacts", "provenance.json");
+		const manifest = (() => { try { return JSON.parse(fs.readFileSync(provPath, "utf8")); } catch { return null; } })();
+		const rec = manifest ? manifest[id] : null;
+		if (!rec) { emit({ command: "artifact", ok: false, status: "NO_VERSION_HISTORY", id, rows: [{ k: "id", v: id }], message: "artifact versions: unknown id", warnings: ["no version history recorded"], actions: [], artifacts: [] }, 1); process.exit(0); }
+		const versions = (rec.versions ?? [{ version: rec.version ?? 1, sha256: rec.sha256, createdAt: rec.createdAt, size: rec.size, status: rec.status ?? "draft" }]).slice(0, 10);
+		const rows = versions.map((v) => ({ k: "v" + v.version + (v.status && v.status !== "draft" ? " (" + v.status + ")" : ""), v: (v.sha256 ?? "").slice(0, 12) + " @" + (v.createdAt ?? "") }));
+		emit({ command: "artifact", ok: true, status: "VERSIONS", id, rows, message: `artifact versions: ${versions.length} for ${id}`, warnings: [], actions: [], artifacts: [id] }, 0);
+		process.exit(0);
+	}
+
+	// F94 artifact review <id> --status=draft|review|released: transition review status (7.2).
+	if (line.startsWith("artifact review ")) {
+		const id = line.slice("artifact review ".length).trim().replace(/[\\]/g, "/");
+		const m = id.match(/^(.*?)\s*--status=(draft|review|released)$/);
+		if (!m) { emit({ command: "artifact", ok: false, status: "INVALID_USAGE", id, rows: [{ k: "id", v: id }], message: "usage: artifact review <id> --status=draft|review|released", warnings: ["bad status"], actions: [], artifacts: [] }, 2); process.exit(0); }
+		const cleanId = m[1].trim(); const newStatus = m[2];
+		const provPath = path.join(REPO, "artifacts", "provenance.json");
+		const manifest = (() => { try { return JSON.parse(fs.readFileSync(provPath, "utf8")); } catch { return null; } })();
+		const rec = manifest ? manifest[cleanId] : null;
+		if (!rec) { emit({ command: "artifact", ok: false, status: "NO_RECORD", id: cleanId, rows: [{ k: "id", v: cleanId }], message: "artifact review: unknown id", warnings: ["no provenance record"], actions: [], artifacts: [] }, 1); process.exit(0); }
+		rec.status = newStatus;
+		if (rec.versions && rec.versions.length) rec.versions[0].status = newStatus;
+		try { fs.writeFileSync(provPath, JSON.stringify(manifest, null, 2)); } catch {}
+		emit({ command: "artifact", ok: true, status: "REVIEWED", id: cleanId, rows: [{ k: "id", v: cleanId }, { k: "status", v: newStatus }], message: `artifact review: ${cleanId} -> ${newStatus}`, warnings: [], actions: ["artifact versions " + cleanId], artifacts: [cleanId] }, 0);
 		process.exit(0);
 	}
 
