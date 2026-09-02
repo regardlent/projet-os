@@ -279,26 +279,36 @@ static int cmdCompletion(const std::string& shell) {
 
 // --- F50 cockpit: inline VT dashboard (no external dep). Read-only, live refresh. ----
 static std::string readGpuLine(); // F38 helper (defined below)
-static int cmdCockpit(pos::OutputFormat fmt) {
-	// Phase 3 dashboard: compose status + health score + usage summary + gpu into tiles.
-	pos::CmdResult st = pos::dispatch(pos::bridgePath(), "status", g_timeoutMs, &g_cancel);
-	pos::CmdResult hs = pos::dispatch(pos::bridgePath(), "health score", g_timeoutMs, &g_cancel);
-	pos::CmdResult us = pos::dispatch(pos::bridgePath(), "usage summary", g_timeoutMs, &g_cancel);
-	std::string gpuLine = readGpuLine();
-	auto kv = [](const std::vector<std::pair<std::string, std::string>>& v, const std::string& k) -> std::string { for (auto& p : v) if (p.first == k) return p.second; return ""; };
-	const std::string usTotal = kv(us.analysisKv, "TOTAL");
-	if (fmt == pos::OutputFormat::Json) {
-		std::cout << "{\"active\":" << pos::json_quote(st.activeSlug) << ",\"goalStatus\":" << pos::json_quote(st.goalStatus)
-			<< ",\"goalProgress\":" << st.goalProgress << ",\"todoDone\":" << st.todoDone << ",\"todoCount\":" << st.todoCount
-			<< ",\"healthScore\":" << hs.score << ",\"healthGrade\":" << pos::json_quote(hs.grade) << ",\"healthSignal\":" << pos::json_quote(hs.signal)
-			<< ",\"usage\":" << pos::json_quote(usTotal) << ",\"gpu\":" << pos::json_quote(gpuLine) << "}\n";
-		return 0;
-	}
-	std::cout << "\xE2\x94\x80\xE2\x94\x80 PROJECT OS COCKPIT \xE2\x94\x80\xE2\x94\x80 \n";
-	std::cout << "  [Status]  active=" << (st.activeSlug.empty() ? "(none)" : st.activeSlug) << "  goal=" << st.goalStatus << " (" << st.goalProgress << "%)  todo=" << st.todoDone << "/" << st.todoCount << "\n";
-	std::cout << "  [Health]  " << hs.score << "/100 " << (hs.grade.empty() ? "" : "[" + hs.grade + "] ") << "(" << hs.signal << ")  " << hs.message << "\n";
-	std::cout << "  [Usage]   " << (usTotal.empty() ? "(no usage)" : usTotal) << "\n";
-	std::cout << "  [GPU]     " << (gpuLine.empty() ? "(nvidia-smi unavailable)" : gpuLine) << "\n";
+static int cmdCockpit(pos::OutputFormat fmt, const std::vector<std::string>& args, bool colorOn) {
+	int watchSec = 0;
+	for (auto& a : args) if (a.rfind("--watch=", 0) == 0) watchSec = std::max(0, std::atoi(a.substr(8).c_str()));
+	const bool live = watchSec > 0;
+	if (live) std::cout << "\x1b[?25l"; // hide cursor during live refresh
+	do {
+		// Phase 3 dashboard: compose status + health score + usage summary + gpu into tiles.
+		pos::CmdResult st = pos::dispatch(pos::bridgePath(), "status", g_timeoutMs, &g_cancel);
+		pos::CmdResult hs = pos::dispatch(pos::bridgePath(), "health score", g_timeoutMs, &g_cancel);
+		pos::CmdResult us = pos::dispatch(pos::bridgePath(), "usage summary", g_timeoutMs, &g_cancel);
+		std::string gpuLine = readGpuLine();
+		auto kv = [](const std::vector<std::pair<std::string, std::string>>& v, const std::string& k) -> std::string { for (auto& p : v) if (p.first == k) return p.second; return ""; };
+		const std::string usTotal = kv(us.analysisKv, "TOTAL");
+		if (fmt == pos::OutputFormat::Json) {
+			std::cout << "{\"active\":" << pos::json_quote(st.activeSlug) << ",\"goalStatus\":" << pos::json_quote(st.goalStatus)
+				<< ",\"goalProgress\":" << st.goalProgress << ",\"todoDone\":" << st.todoDone << ",\"todoCount\":" << st.todoCount
+				<< ",\"healthScore\":" << hs.score << ",\"healthGrade\":" << pos::json_quote(hs.grade) << ",\"healthSignal\":" << pos::json_quote(hs.signal)
+				<< ",\"usage\":" << pos::json_quote(usTotal) << ",\"gpu\":" << pos::json_quote(gpuLine) << "}\n";
+			return 0;
+		}
+		if (live) std::cout << "\x1b[2J\x1b[H"; // clear screen
+		std::cout << "\xE2\x94\x80\xE2\x94\x80 PROJECT OS COCKPIT \xE2\x94\x80\xE2\x94\x80  " << (live ? "live (Ctrl+C to stop)" : "") << "\n";
+		std::cout << "  [Status]  active=" << (st.activeSlug.empty() ? "(none)" : st.activeSlug) << "  goal=" << st.goalStatus << " (" << st.goalProgress << "%)  todo=" << st.todoDone << "/" << st.todoCount << "\n";
+		std::cout << "  [Health]  " << hs.score << "/100 " << (hs.grade.empty() ? "" : "[" + hs.grade + "] ") << "(" << hs.signal << ")  " << hs.message << "\n";
+		std::cout << "  [Usage]   " << (usTotal.empty() ? "(no usage)" : usTotal) << "\n";
+		std::cout << "  [GPU]     " << (gpuLine.empty() ? "(nvidia-smi unavailable)" : gpuLine) << "\n";
+		if (!live || g_cancel.load()) break;
+		for (int i = 0; i < 20 && !g_cancel.load(); ++i) std::this_thread::sleep_for(std::chrono::milliseconds(watchSec * 1000 / 20));
+	} while (live && !g_cancel.load());
+	if (live) { std::cout << "\x1b[?25h"; }
 	return 0;
 }
 
@@ -1509,7 +1519,7 @@ int wmain(int argc, wchar_t** wargv) {
 		if (explain) { return cmdExplain(cmd, args); }
 		if (cmd == "help" || cmd == "--help" || cmd == "-h") { return cmdHelp(); }
 		if (cmd == "completion" && args.size() >= 1) { return cmdCompletion(args[0]); }
-		if (cmd == "cockpit") { return cmdCockpit(fmt); }
+		if (cmd == "cockpit") { return cmdCockpit(fmt, args, colorOn); }
 		if (cmd == "version") { cmdVersion(fmt); return 0; }
 		if (cmd == "capabilities") { cmdCapabilities(fmt); return 0; }
 		if (cmd == "status") { return cmdStatus(fmt); }
