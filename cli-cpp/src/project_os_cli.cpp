@@ -245,7 +245,7 @@ static int cmdHelp() {
 	std::cout << "  schema machine         machine-consumer contract\n";
 	sec("Bridge MCP");
 	std::cout << "  bridge status|start|stop|restart|health|tools|test|tunnel\n";
-	std::cout << "\n  Global flags: --format=json|ndjson|tsv  --color=auto|always|never  --theme=light|dark  --mono  --timeout=<ms>  --no-emoji  --quiet|--verbose  --cockpit  --explain/--dry-run\n";
+	std::cout << "\n  Global flags: --format=json|ndjson|tsv  --color=auto|always|never  --theme=light|dark  --mono  --timeout=<ms>  --no-emoji  --quiet|--verbose  --cockpit  --explain/--dry-run  --trace\n";
 	return 0;
 }
 
@@ -1856,6 +1856,7 @@ int wmain(int argc, wchar_t** wargv) {
 			if (a.rfind("--theme=", 0) == 0) { const std::string t = a.substr(8); if (t == "light") g_theme.store(0); else if (t == "dark") g_theme.store(1); continue; }
 			if (a.rfind("--timeout=", 0) == 0) { g_timeoutMs.store(std::atoll(a.substr(10).c_str())); if (g_timeoutMs.load() <= 0) g_timeoutMs.store(60000); continue; }
 			if (a == "--explain" || a == "--dry-run") { explain = true; continue; }
+		if (a == "--trace") { pos::g_trace.store(true); continue; }
 			if (a == "--no-emoji") { g_emoji.store(false); continue; }
 			if (a == "--emoji") { g_emoji.store(true); continue; }
 			if (a == "--quiet") { g_quiet.store(true); continue; }
@@ -1871,6 +1872,7 @@ int wmain(int argc, wchar_t** wargv) {
 			if (a.rfind("--theme=", 0) == 0) { const std::string t = a.substr(8); if (t == "light") g_theme.store(0); else if (t == "dark") g_theme.store(1); continue; }
 			if (a.rfind("--timeout=", 0) == 0) { g_timeoutMs.store(std::atoll(a.substr(10).c_str())); if (g_timeoutMs.load() <= 0) g_timeoutMs.store(60000); continue; }
 			if (a == "--explain" || a == "--dry-run") { explain = true; continue; }
+		if (a == "--trace") { pos::g_trace.store(true); continue; }
 			if (a == "--no-emoji") { g_emoji.store(false); continue; }
 			if (a == "--emoji") { g_emoji.store(true); continue; }
 			if (a == "--quiet") { g_quiet.store(true); continue; }

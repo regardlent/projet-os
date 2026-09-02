@@ -123,6 +123,6 @@
 - [ ] 10.5 README polish final.
 - [ ] 10.6 Mise à jour de `docs/ARCHITECTURE_DECISION.md`.
 - [ ] 10.7 Mise à jour du threat model / security report.
-- [ ] 10.8 Trace de bout en bout (request id).
+- [x] 10.8 Trace de bout en bout (request id).
 - [ ] 10.9 Test de régression complet (typecheck + node + cpp).
 - [ ] 10.10 TAG de release v1.0.

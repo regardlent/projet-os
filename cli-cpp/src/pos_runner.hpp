@@ -27,6 +27,7 @@ struct CmdResult {
 	std::vector<std::string> actions;
 	std::vector<std::string> artifacts;
 	std::string raw;
+	std::string requestId; // 10.8 end-to-end trace (bridge envelope requestId)
 	// F01/F02: capability negotiation fields (bridge "capabilities").
 	int protocol = 0;
 	std::vector<int> protocols;
@@ -174,6 +175,7 @@ inline CmdResult parseCmdResult(const std::string& raw) {
 		if (auto* s = src->get("command")) r.command = s->asString();
 		if (auto* s = src->get("status")) r.status = s->asString();
 		if (auto* s = src->get("message")) r.message = s->asString();
+		if (auto* s = root.get("requestId")) r.requestId = s->asString(); // 10.8 end-to-end trace
 		if (auto* s = src->get("next")) r.next = s->asString();
 		if (auto* a = src->get("warnings"); a && a->kind == JKind::Array) for (auto& e : a->arr) r.warnings.push_back(e.asString());
 		if (auto* a = src->get("actions"); a && a->kind == JKind::Array) for (auto& e : a->arr) r.actions.push_back(e.asString());
@@ -372,6 +374,10 @@ inline CmdResult parseCmdResult(const std::string& raw) {
         return r;
 }
 
+// 10.8 end-to-end trace: capture last requestId + a --trace toggle (emitted on stderr).
+inline std::atomic<bool> g_trace{ false };
+inline std::string g_lastRequestId;
+
 // Dispatch a slash line to the bridge. bridgePath = path to project-os-bridge.mjs.
 inline CmdResult dispatch(const std::string& bridgePath, const std::string& slashLine, int timeoutMs = 60000, std::atomic<bool>* cancelOverride = nullptr) {
 	// F07: explicit process runner (CreateProcessW, no shell) — resolves node.exe once, passes argv exactly.
@@ -402,7 +408,10 @@ inline CmdResult dispatch(const std::string& bridgePath, const std::string& slas
 	r.raw = pr.out + pr.err;
 	if (!pr.started) { r.ok = false; r.status = "BRIDGE_FAILURE"; r.message = "bridge not started: " + pr.osError; return r; }
 	if (pr.timedOut) { r.ok = false; r.status = "TIMEOUT_OR_CANCELLED"; r.message = "bridge timed out"; return r; }
-        return pos::parseCmdResult(r.raw);
+        CmdResult parsed = pos::parseCmdResult(r.raw);
+        g_lastRequestId = parsed.requestId;
+        if (g_trace.load() && !parsed.requestId.empty()) std::cerr << "[trace] requestId=" << parsed.requestId << "\n";
+        return parsed;
 }
 
 // F51 helpers — pure, unit-testable. Precedence: flag > env > default.
