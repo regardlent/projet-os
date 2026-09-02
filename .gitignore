@@ -42,3 +42,11 @@ menu_out.txt
 # OS
 .DS_Store
 Thumbs.db
+
+# VS Code workspace settings (machine-specific paths)
+.vscode/
+
+# Project OS CLI runtime caches (published artifacts + provenance)
+artifacts/published/
+artifacts/provenance.json
+
