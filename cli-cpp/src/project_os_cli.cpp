@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <chrono>
+#include <exception>
 #include <thread>
 #include <limits>
 #include <filesystem>
@@ -69,6 +70,11 @@ inline std::atomic<bool> g_check(false);
 inline std::atomic<bool> g_timing(false);
 
 // --- Helpers -------------------------------------------------------------
+// Phase 1.32: unhandled exception => clean message + exit 70 (never a silent crash / 0).
+static void posTerminate() { std::cerr << "Erreur (non gérée): exception inattendue\n"; std::exit(70); }
+// Phase 1.14/1.15: normaliser les messages d'erreur / succès.
+inline void errMsg(const std::string& m) { std::cerr << "Erreur : " << m << "\n"; }
+inline void okMsg(const std::string& m) { std::cout << "OK : " << m << "\n"; }
 static int readChoice(int max) {
 	std::string line; std::getline(std::cin, line);
 	line = pos::trim(line);
@@ -328,7 +334,7 @@ static int cmdRelease(const std::vector<std::string>& args) {
 	const std::string ver = readVersion();
 	if (!args.empty() && args[0] == "version") { std::cout << "  version : " << ver << "\n"; return 0; }
 	if (!args.empty() && args[0] == "bump") {
-		if (args.size() < 2) { std::cout << "  usage: release bump <version>\n"; return 2; }
+		if (args.size() < 2) { errMsg("usage: release bump <version>"); return 2; }
 		std::string cm = std::string(pos::repoRoot()) + "\\cli-cpp\\CMakeLists.txt";
 		std::ifstream in(cm); std::string all((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>()); in.close();
 		size_t pos = all.find("set(CPACK_PACKAGE_VERSION \"");
@@ -1776,6 +1782,8 @@ static int cmdConfigEnv() {
 int wmain(int argc, wchar_t** wargv) {
 	// F09: cooperative Ctrl+C (never kills an external/user process).
 	std::signal(SIGINT, onSigInt);
+	// Phase 1.32: unhandled exception => clean exit 70 rather than a crash / 0.
+	std::set_terminate(posTerminate);
 	// F06: preserve Unicode argv via wmain (code page ANSI would corrupt names).
 	std::vector<std::string> argvS;
 	for (int i = 0; i < argc; ++i) { std::string u; if (pos::utf16ToUtf8((unsigned short*)wargv[i], u)) argvS.push_back(u); else argvS.push_back(std::string(wargv[i], wargv[i] + wcslen(wargv[i]))); }
