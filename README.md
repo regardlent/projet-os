@@ -6,6 +6,13 @@
   <img alt="platform" src="https://img.shields.io/badge/platform-Windows-blue.svg">
   <img alt="vscode" src="https://img.shields.io/badge/vscode-%E2%89%A51.90-blue.svg">
   <img alt="ci" src="https://img.shields.io/github/actions/workflow/status/regardlent/projet-os/ci.yml?branch=main&style=flat">
+  <img alt="release" src="https://img.shields.io/github/v/release/regardlent/projet-os?style=flat">
+  <img alt="stars" src="https://img.shields.io/github/stars/regardlent/projet-os?style=flat">
+  <img alt="forks" src="https://img.shields.io/github/forks/regardlent/projet-os?style=flat">
+  <img alt="issues" src="https://img.shields.io/github/issues/regardlent/projet-os?style=flat">
+  <img alt="code-size" src="https://img.shields.io/github/languages/code-size/regardlent/projet-os?style=flat">
+  <img alt="last-commit" src="https://img.shields.io/github/last-commit/regardlent/projet-os?style=flat">
+  <img alt="top-lang" src="https://img.shields.io/github/languages/top/regardlent/projet-os?style=flat">
 </p>
 
 Une extension VS Code qui branche un **Control Center / Artifact System** autour du **vrai SDK Cline** (`@cline/sdk`). Construite comme chantier greenfield **autonome** (sans dépendance à un autre projet).
