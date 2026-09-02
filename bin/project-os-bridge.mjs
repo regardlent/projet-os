@@ -837,6 +837,25 @@ try {
 		process.exit(0);
 	}
 
+	// F92 artifact share <id>: bundle content + provenance into a shareable manifest (7.7).
+	if (line.startsWith("artifact share ")) {
+		const id = line.slice("artifact share ".length).trim().replace(/[\\]/g, "/");
+		const full = path.resolve(REPO, id);
+		if (!full.startsWith(path.resolve(REPO, "artifacts"))) { emit({ command: "artifact", ok: false, status: "SECURITY_BLOCKED", id, rows: [{ k: "id", v: id }], message: "artifact share: path outside artifacts", warnings: ["blocked"], actions: [], artifacts: [] }, 6); process.exit(0); }
+		let content = ""; try { content = fs.readFileSync(full, "utf8"); } catch { emit({ command: "artifact", ok: false, status: "NOT_FOUND", id, rows: [{ k: "id", v: id }], message: "artifact share: not found", warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
+		const provPath = path.join(REPO, "artifacts", "provenance.json");
+		const manifest = (() => { try { return JSON.parse(fs.readFileSync(provPath, "utf8")); } catch { return {}; } })();
+		const rec = manifest[id] ?? {};
+		const sha = crypto.createHash("sha256").update(fs.readFileSync(full)).digest("hex");
+		const base = path.basename(id).replace(/\.[^.]+$/, "");
+		const shareName = (base || "artifact").replace(/[^a-zA-Z0-9_.-]/g, "_") + ".share.json";
+		const shareDir = path.join(REPO, "artifacts", "shared");
+		const share = { schema: "project-os-artifact-share/v1", artifactId: id, type: "json", content, sha256: sha, source: rec.source ?? "unknown", owner: rec.owner ?? "project-os", createdAt: rec.createdAt ?? new Date().toISOString() };
+		let written = ""; try { fs.mkdirSync(shareDir, { recursive: true }); fs.writeFileSync(path.join(shareDir, shareName), JSON.stringify(share, null, 2)); written = "artifacts/shared/" + shareName; } catch {}
+		emit({ command: "artifact", ok: !!written, status: written ? "SHARED" : "SHARE_FAIL", id, rows: [{ k: "id", v: id }, { k: "share", v: written || "n/a" }, { k: "sha256", v: sha }, { k: "contentBytes", v: String(content.length) }], message: written ? `shared ${id} -> ${written}` : "share failed", warnings: written ? [] : ["write failed"], actions: written ? ["artifact verify " + written] : [], artifacts: written ? [written] : [] }, written ? 0 : 1);
+		process.exit(0);
+	}
+
 	// F27 addon verify: verify enabled addons / lock / missing deps for the active project.
 	if (line === "addon verify") {
 		const active = resolveActiveProject();

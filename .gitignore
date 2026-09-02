@@ -46,7 +46,9 @@ Thumbs.db
 # VS Code workspace settings (machine-specific paths)
 .vscode/
 
-# Project OS CLI runtime caches (published artifacts + provenance)
+# Project OS CLI runtime caches (published artifacts + provenance + shared bundles)
 artifacts/published/
 artifacts/provenance.json
+artifacts/shared/
+
 
