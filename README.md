@@ -40,6 +40,58 @@ npm test             # compile + node --test "dist/tests/*.test.js"
 Pour lancer : ouvrir le dossier `project-os/` dans VS Code et F5 (extension host) —
 un Launch config `Debug: Extension` est attendu (voir `.vscode/`).
 
+## Getting Started (CLI C++)
+
+Le **CLI C++** (`cli-cpp/`) pilote Project OS sans l'IDE : il délègue toute la logique au bridge
+(`bin/project-os-bridge.mjs`, protocole v2) via `CreateProcessW` (pas de shell).
+
+### 1. Build
+
+```powershell
+# MinGW + CMake requis (C:\msys64\mingw64\bin sur PATH)
+cmake -S cli-cpp -B cli-cpp/cmake-build
+cmake --build cli-cpp/cmake-build          # -> cli-cpp/cmake-build/project-os-cli.exe
+```
+
+### 2. Install (optionnel)
+
+```powershell
+# Build + copie dans ~\.project-os\bin + ajout PATH + completion PowerShell
+powershell -ExecutionPolicy Bypass -File scripts\install.ps1
+# Mise à jour : scripts\update.ps1   |   Signature : scripts\sign.ps1 (si cert)
+```
+
+### 3. Variables d'environnement
+
+| Variable | Rôle |
+|---|---|
+| `PROJECT_OS_REPO` | repo racine (défaut : `C:\Users\<you>\Desktop\dev\projet-os`) |
+| `PROJECT_OS_REGISTRY` | chemin du registre hub (`...\.hub-managed.json`) |
+| `PROJECT_OS_ACTIVE_SLUG` | slug du projet actif |
+| `PROJECT_OS_DAILY_BUDGET` | budget quotidien (alerte `usage summary`) |
+| `PROJECT_OS_PAID_MODE` | politique PAYG (`free`/`pass`/`payg`) |
+
+### 4. Exemples
+
+```powershell
+project-os-cli --format=json status        # état JSON du projet actif
+project-os-cli project list                # projets gérés
+project-os-cli health score                # santé composite (score + grade + signal)
+project-os-cli models                      # modèles LocalAI
+project-os-cli route CODING --alt          # routage adaptatif + alternatives
+project-os-cli cockpit --watch=2           # dashboard live
+project-os-cli git status                  # git du projet actif
+project-os-cli release                     # Release Center (version + feature matrix)
+project-os-cli welcome                     # guide rapide
+project-os-cli st                          # alias -> status   (ls/…/hs/qx/cfg)
+project-os-cli create demo --dry-run       # plan sans mutation (NO MUTATION)
+project-os-cli --trace status              # requestId sur stderr
+```
+
+- **Formats machine** : `--format=json|ndjson|tsv` · **Couleur** : `--color=auto|always|never`, `--theme=light|dark`, `--mono`
+- **Aide** : `--help` catégorisé · **Tests** : `ctest --test-dir cli-cpp/cmake-build` (100% pass) · `npm run typecheck` (0 erreur).
+- **Installation de la completion** : `project-os-cli completion powershell|bash|zsh [--slugs]`.
+
 ## Architecture
 
 ```
