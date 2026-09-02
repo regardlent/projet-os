@@ -136,55 +136,6 @@ static void printJsonKV(const std::string& k, const std::string& v, bool first) 
 }
 
 // --- F37 cmdHelp: local, no bridge. Lists commands + usage. ------------------------
-static int cmdHelpOld() {
-	std::cout << "Project OS CLI v3 — usage\n"
-		<< "  version            build fingerprint (--format=json)\n"
-		<< "  capabilities       negotiation with the bridge\n"
-		<< "  status             active project summary\n"
-		<< "  project list       enumerate managed projects\n"
-		<< "  project use <slug> set active project\n"
-		<< "  project inspect <slug> read-only project view\n"
-		<< "  project watch      live refresh of active project\n"
-		<< "  drift              workspace drift summary\n"
-		<< "  timeline           chronological goal/todo events\n"
-		<< "  snapshot <cmd>     create | list | show\n"
-		<< "  diff <a> <b>       compare two projects\n"
-		<< "  goal proof         goal criteria/evidence\n"
-		<< "  todo board         open/done view\n"
-		<< "  artifact list|show|search|verify <id>|publish <name>|provenance <id>|share <id>|versions <id>|review <id>\n"
-		<< "  addon verify       addon lock/state\n"
-		<< "  config             effective config\n"
-		<< "  doctor             named health checks\n"
-		<< "  diagnostics        redacted diagnostics bundle\n"
-		<< "  preflight          aggregate bridge/LocalAI/GPU check\n"
-		<< "  health [--watch]   periodic read-only health\n"
-		<< "  models             LocalAI model inventory\n"
-		<< "  model show|smoke|benchmark <id>\n"
-		<< "  route <task-class> deterministic model selection\n"
-		<< "  gpu|gpu watch|gpu proof   real nvidia-smi\n"
-		<< 		"  endurance          GPU endurance mode\n"
-		"  benchmark          model performance testing\n"
-		"  release            release / version negotiation\n"
-		"  export             data export\n"
-		"  report             token usage report\n"
-		"  health score       composite health of active project\n"
-		"  health trend       historical snapshot health\n"
-		"  health compare <a> [<b>]   side-by-side health\n"
-		"  budget forecast    token cost / burn prediction\n"
-		"  insights tokens    token intelligence\n"
-		"  diagnose           ranked auto-diagnostic battery\n"
-		"  drift alert        baseline divergence alert\n"
-		"  goal traction      goal evidence / velocity\n"
-		"  autonomy health    plan + handoff health\n"
-		"  risk profile       consolidated risk score\n"
-		"  usage record       record token/cost/perf → generic usage store\n"
-		"  cockpit            live VT dashboard\n"
-		"  completion         shell completions (powershell|bash|zsh)\n"
-		"  bridge             MCP Bridge (status|start|stop|restart|health|tools|test|tunnel) — Phase 23\n"
-		"  --format=json|ndjson|tsv  --color=auto|always|never  --timeout=<ms>\n";
-	return 0;
-}
-
 static int cmdHelp() {
 	const std::string H = "\xE2\x94\x80\xE2\x94\x80";
 	auto sec = [&](const std::string& s) { std::cout << "\n  " << H << " " << s << " " << H << "\n"; };

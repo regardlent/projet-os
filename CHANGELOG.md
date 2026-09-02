@@ -5,6 +5,34 @@ Toutes les modifications notables de **Cline Project OS**.
 Le format s'appuie sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et ce projet suit le
 [versioning sémantique](https://semver.org/lang/fr/).
 
+## [1.0.0] - 2026-09-02
+
+### Résumé
+- **Roadmap CLI C++ 10×10 complétée (100/100)** et tag git **`v1.0`** publié.
+- Le CLI garde l'invariant **« le CLI délègue toute logique métier au bridge »** (jamais de ré-implémentation).
+- Régression verte : typecheck **0 erreur**, cpp `ctest` **100%**, `pos_json_test` **ALL PASS**, node **368/369**
+  (1 échec = test antigravity environnemental pré-existant), soak **100/100**.
+
+### Ajouté
+- **UX** : `--help` catégorisé, cartes `── … ──`, score bar, grade coloré, `--theme`, `--mono`, `--no-emoji`,
+  `--quiet|--verbose`, `cockpit --watch|history|export`, alias (`st/ls/inspect/hs/qx/cfg`), `welcome`.
+- **Intelligence & analyse** : `health score|trend|compare`, `budget forecast`, `insights tokens`, `diagnose`,
+  `drift alert|compare`, `goal traction|cost`, `autonomy health`, `risk profile` (+ `--source`, politique PAYG).
+- **Modèles** : routeur adaptatif (`--alt`), `model qualify|compare|flash|policy|quota|profiles|offload|cache`.
+- **Git** : `git status|log|commit|diff|branch|worktree|stash|ignore|checkpoint|hook|drift|pr`.
+- **Artefacts & MCP** : `artifact publish|versions|review|provenance|share|verify` (+ schéma), MCP tools
+  `artifact_verify|artifact_search`, `/bridge config|audit`, `--tools` tunnel (12 outils MCP).
+- **Robustesse** : `prefer` (précédence config), `redactSecret`, `budgetVerdict` (golden), fuzz/property,
+  perf budget, soak, `--trace` requestId, config file `~/.project-os/config.json`, `custom add|list`.
+- **Release & packaging** : `release` (center/bump/changelog), `schema envelope|exitcodes`, `template list`,
+  `scripts/install.ps1|update.ps1|sign.ps1`, Vsix packaging, job CI `docs` + `cpp-sanitize`.
+
+### Corrigé / Durci
+- Build cassé réparé ; `cmdHelpOld` (code mort) supprimé.
+- Mapping `parseCmdResult` (`goal proof`, `project inspect` todo), contrat exit-code F03, UTF-8 console.
+- `.gitignore` : `.vscode/`, `artifacts/published|shared|provenance`, `_CPack_Packages`.
+- Sanitizers ASan/UBSan (`-DPOS_SANITIZE=ON`) en CI.
+
 ## [Unreleased]
 
 ### Ajouté
