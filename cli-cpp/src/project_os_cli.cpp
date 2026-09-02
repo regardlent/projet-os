@@ -802,6 +802,7 @@ static int cmdCreate(pos::OutputFormat fmt, const std::vector<std::string>& args
 	std::cout << fitLine("  status    : " + r.status) << "\n";
 	if (!r.activeSlug.empty()) std::cout << fitLine("  project   : " + r.activeSlug) << "\n";
 	std::cout << fitLine("  timer     : " + pos::fmtDuration(r.timingMs)) << "\n";
+	for (const auto& s : r.createSteps) std::cout << fitLine("  step " + s.first + " : " + pos::fmtDuration(s.second)) << "\n";
 	for (const auto& a : r.artifacts) std::cout << fitLine("  artifact : " + a) << "\n";
 	std::cout << fitLine("  " + r.message) << "\n";
 	return pos::exitFor(r.ok, r.status);

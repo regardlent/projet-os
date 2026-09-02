@@ -73,6 +73,7 @@ export interface CommandResult {
 	artifacts: string[];
 	next?: string;
 	elapsedMs?: number; // temps d'exécution mesuré (ex. création de projet)
+	steps?: { label: string; ms: number }[]; // chronogramme des étapes (ex. create)
 }
 
 export interface ProjectCreateInput {
@@ -91,6 +92,7 @@ export interface ProjectCreateResult {
 	status: ProjectStatus;
 	message: string;
 	warnings: string[];
+	steps?: { label: string; ms: number }[]; // chronogramme des étapes de création
 }
 
 export const SCHEMA_VERSION = 1;

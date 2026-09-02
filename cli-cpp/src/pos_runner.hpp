@@ -29,6 +29,8 @@ struct CmdResult {
 	std::string raw;
 	std::string requestId; // 10.8 end-to-end trace (bridge envelope requestId)
 	int timingMs = 0; // bridge envelope timingMs (ex. temps de création)
+	// F99 create: chronogramme des étapes (label + ms).
+	std::vector<std::pair<std::string, long long>> createSteps;
 	// F01/F02: capability negotiation fields (bridge "capabilities").
 	int protocol = 0;
 	std::vector<int> protocols;
@@ -178,6 +180,15 @@ inline CmdResult parseCmdResult(const std::string& raw) {
 		if (auto* s = src->get("message")) r.message = s->asString();
 		if (auto* s = root.get("requestId")) r.requestId = s->asString(); // 10.8 end-to-end trace
 		if (auto* t = root.get("timingMs")) r.timingMs = static_cast<int>(t->number); // F99 create timer
+		// F99: chronogramme des étapes de création (result.steps = [{label, ms}]).
+		if (auto* steps = src->get("steps"); steps && steps->kind == JKind::Array) {
+			for (auto& e : steps->arr) if (e.kind == JKind::Object) {
+				std::string lb = ""; long long ms = 0;
+				if (auto* x = e.get("label")) lb = x->asString();
+				if (auto* x = e.get("ms")) ms = (long long)x->number;
+				r.createSteps.emplace_back(lb, ms);
+			}
+		}
 		if (auto* s = src->get("next")) r.next = s->asString();
 		if (auto* a = src->get("warnings"); a && a->kind == JKind::Array) for (auto& e : a->arr) r.warnings.push_back(e.asString());
 		if (auto* a = src->get("actions"); a && a->kind == JKind::Array) for (auto& e : a->arr) r.actions.push_back(e.asString());

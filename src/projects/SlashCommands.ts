@@ -195,16 +195,19 @@ export async function createHandler(parsed: ParsedSlash, ctx: SlashCommandContex
 		git: parsed.flags["git"] !== "false",
 	});
 	const durMs = Date.now() - t0; // fin du timer
-	// Seed a persistent TODO (barré) for the freshly created project.
+	// Seed a persistent TODO (barré) pour le projet fraîchement créé.
 	if (result.ok && result.workspaceRoot) {
+		const tTodo = Date.now();
 		const tracker = new TodoTracker(new FsTodoIO(result.workspaceRoot));
 		tracker.seed(goalf || type);
+		const todoMs = Date.now() - tTodo;
 		return {
 			command: "create",
 			ok: result.ok,
 			projectId: result.projectId,
 			status: result.status,
 			elapsedMs: durMs,
+			steps: [...(result.steps ?? []), { label: "todo", ms: todoMs }],
 			message: result.message + ` | Todo seeded (TODO.md + .project-os/todo.json) | ${(durMs / 1000).toFixed(1)}s`,
 			warnings: result.warnings,
 			actions: result.ok ? ["goal", "addon", "open", "todo"] : [],
@@ -218,6 +221,7 @@ export async function createHandler(parsed: ParsedSlash, ctx: SlashCommandContex
 		projectId: result.projectId,
 		status: result.status,
 		elapsedMs: durMs,
+		steps: result.steps ?? [],
 		message: result.message + ` | ${(durMs / 1000).toFixed(1)}s`,
 		warnings: result.warnings,
 		actions: result.ok ? ["goal", "addon", "open"] : [],

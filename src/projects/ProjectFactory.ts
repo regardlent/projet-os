@@ -58,8 +58,10 @@ export class ProjectFactory {
 		const now = Date.now();
 		const type = resolveProjectType(input.type);
 		const dotProjectOs = path.join(root, ".project-os");
+		const steps: { label: string; ms: number }[] = [];
 
 		// Base structure (v1). Never write secrets — only placeholders.
+		const tScaffold = Date.now();
 		fs.mkdirSync(dotProjectOs, { recursive: true });
 		fs.mkdirSync(path.join(root, ".agents", "rules"), { recursive: true });
 		fs.mkdirSync(path.join(root, "docs"), { recursive: true });
@@ -68,21 +70,26 @@ export class ProjectFactory {
 		fs.writeFileSync(path.join(root, "README.md"), `# ${input.name}\n\nManaged by ${MANAGED_BY}.\n`, "utf8");
 		fs.writeFileSync(path.join(root, ".gitignore"), "node_modules/\ndist/\nbuild/\n.env\n*.log\n", "utf8");
 		fs.writeFileSync(path.join(root, ".env.example"), "# Placeholders only — no real secrets.\n", "utf8");
+		steps.push({ label: "scaffold", ms: Date.now() - tScaffold });
 
 		// Goal (optional at create).
 		let goal: ManagedProjectManifest["goal"] = null;
 		const objective = input.objective ?? input.goal;
 		if (objective) {
+			const tGoal = Date.now();
 			const goalService = new GoalService(root);
 			goal = makeGoal({ projectId, objective });
 			goalService.save(goal);
 			goalService.appendHistory(goal);
+			steps.push({ label: "goal", ms: Date.now() - tGoal });
 		}
 
 		// Workspace-scoped addons (core + stack profile) staged under .agents/.
+		const tAddon = Date.now();
 		const addonMan = new AddonManager(root);
 		const defaultAddons = AddonManager.defaultSet(type);
 		for (const id of defaultAddons) addonMan.install(id);
+		steps.push({ label: "addons", ms: Date.now() - tAddon });
 
 		const manifest: ManagedProjectManifest = {
 			schemaVersion: SCHEMA_VERSION,
@@ -106,6 +113,7 @@ export class ProjectFactory {
 		if (goal) fs.writeFileSync(path.join(dotProjectOs, "goal.json"), JSON.stringify(goal, null, 2), "utf8");
 
 		// Git (default on; failure is non-fatal).
+		const tGit = Date.now();
 		if (input.git !== false) {
 			try {
 				execFileSync("git", ["init"], { cwd: root, stdio: "ignore" });
@@ -114,6 +122,7 @@ export class ProjectFactory {
 				manifest.git.initialized = false;
 			}
 		}
+		steps.push({ label: "git", ms: Date.now() - tGit });
 		fs.writeFileSync(path.join(dotProjectOs, "project.json"), JSON.stringify(manifest, null, 2), "utf8");
 
 		// Transactional commit: only after the manifest is fully valid do we register it.
@@ -138,6 +147,7 @@ export class ProjectFactory {
 			status: "READY",
 			message: "Project created",
 			warnings: manifest.git.initialized ? [] : ["git init failed/absent"],
+			steps,
 		};
 	}
 }
