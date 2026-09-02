@@ -80,7 +80,7 @@
 - [ ] 6.10 Release notes auto.
 
 ## Phase 7 — Artefacts & MCP
-- [ ] 7.1 `artifact publish` depuis le CLI.
+- [x] 7.1 `artifact publish` depuis le CLI.
 - [ ] 7.2 Integration ArtifactStore complète (versions, review).
 - [ ] 7.3 Outils MCP pour artefacts.
 - [ ] 7.4 `bridge tunnel` raffiné.
@@ -89,7 +89,7 @@
 - [ ] 7.7 Partage d'artefacts.
 - [ ] 7.8 Audit de sécurité MCP.
 - [ ] 7.9 Config MCP.
-- [ ] 7.10 `artifact verify` enrichi (schéma).
+- [x] 7.10 `artifact verify` enrichi (schéma).
 
 ## Phase 8 — Tests & robustesse
 - [ ] 8.1 Fuzz/property harness (libFuzzer).

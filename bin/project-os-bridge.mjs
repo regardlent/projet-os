@@ -739,6 +739,17 @@ try {
 			if (st.size <= 0) issues.push("EMPTY");
 			const type = path.extname(id).slice(1);
 			if (!["json", "md"].includes(type)) issues.push("UNEXTYPE");
+			// 7.10: schema deep-check for JSON artifacts (parse + recognizable shape).
+			if (type === "json") {
+				let parsed = null; try { parsed = JSON.parse(fs.readFileSync(full, "utf8")); } catch { parsed = null; }
+				if (!parsed) issues.push("JSON_INVALID");
+				else {
+					const hasVersion = parsed.version !== undefined;
+					const hasCommand = typeof parsed.command === "string";
+					const hasItem = Array.isArray(parsed.items) || Array.isArray(parsed.artifacts);
+					if (!(hasVersion || hasCommand || hasItem)) issues.push("SCHEMA_UNKNOWN");
+				}
+			}
 			// P13: compare SHA256 against the real ArtifactStore record when available.
 			const registryDir = process.env.PROJECT_OS_ARTIFACT_DIR || "";
 			const ref = ((registryDir) => {
@@ -754,6 +765,31 @@ try {
 		}
 		const result = { command: "artifact", ok, status: ok ? "VERIFIED" : "VERIFY_FAIL", id, issues, message: ok ? `verified ${id}` : `verify failed ${id}: ${issues.join(",")}`, warnings: issues, actions: [], artifacts: [id] };
 		emit(result, ok ? 0 : 1); process.exit(ok ? 0 : 1);
+	}
+
+	// F89 artifact publish <name> --type=md|json --title=... --content=...: publish an artifact into the repo artifacts/ area (7.1).
+	if (line.startsWith("artifact publish ")) {
+		let spec = line.slice("artifact publish ".length).trim();
+		let name = "", type = "md", title = "", content = "";
+		const mName = spec.match(/^(\S+)/); if (mName) { name = mName[1]; spec = spec.slice(name.length).trim(); }
+		const pick = (flag) => { const m = spec.match(new RegExp(flag + "=([^ ]+)")); return m ? m[1].trim() : ""; };
+		type = pick("--type") || "md"; title = pick("--title") || name;
+		const cm = spec.match(/--content=(.+)$/); content = cm ? cm[1] : "";
+		if (!name) { emit({ command: "artifact", ok: false, status: "INVALID_USAGE", message: "usage: artifact publish <name> --type=md|json --title=... --content=...", warnings: [], actions: [], artifacts: [] }, 2); process.exit(0); }
+		if (!content) { emit({ command: "artifact", ok: false, status: "NO_CONTENT", message: "artifact publish: --content required", warnings: [], actions: [], artifacts: [] }, 2); process.exit(0); }
+		if (!["md", "json"].includes(type)) { emit({ command: "artifact", ok: false, status: "UNEXTYPE", message: "artifact publish: type must be md|json", warnings: [], actions: [], artifacts: [] }, 2); process.exit(0); }
+		const safe = name.replace(/[^a-zA-Z0-9_.-]/g, "_");
+		const dir = path.join(REPO, "artifacts", "published");
+		let body = content;
+		if (type === "json") { try { JSON.parse(content); } catch { emit({ command: "artifact", ok: false, status: "JSON_INVALID", message: "artifact publish: --content is not valid JSON", warnings: [], actions: [], artifacts: [] }, 2); process.exit(0); } body = JSON.stringify(JSON.parse(content), null, 2); }
+		else { body = "# " + (title || name) + "\n\n" + content + "\n"; }
+		const ext = type === "json" ? ".json" : ".md";
+		const file = safe + ext;
+		const full = path.join(dir, file); let created = false;
+		try { fs.mkdirSync(dir, { recursive: true }); fs.writeFileSync(full, body); created = true; } catch {}
+		const rel = "artifacts/published/" + file;
+		emit({ command: "artifact", ok: created, status: created ? "PUBLISHED" : "PUBLISH_FAIL", id: rel, size: created ? body.length : 0, rows: [{ k: "id", v: rel }, { k: "size", v: created ? String(body.length) : "n/a" }, { k: "type", v: type }], message: created ? `published ${rel} (${body.length} bytes)` : "publish failed", warnings: created ? [] : ["write failed"], actions: created ? ["artifact verify " + rel] : [], artifacts: created ? [rel] : [] }, created ? 0 : 1);
+		process.exit(0);
 	}
 
 	// F27 addon verify: verify enabled addons / lock / missing deps for the active project.

@@ -151,7 +151,7 @@ static int cmdHelpOld() {
 		<< "  diff <a> <b>       compare two projects\n"
 		<< "  goal proof         goal criteria/evidence\n"
 		<< "  todo board         open/done view\n"
-		<< "  artifact list|show|search|verify <id>\n"
+		<< "  artifact list|show|search|verify <id>|publish <name> --type=md|json --content=...\n"
 		<< "  addon verify       addon lock/state\n"
 		<< "  config             effective config\n"
 		<< "  doctor             named health checks\n"
@@ -792,10 +792,26 @@ static int cmdArtifactVerify(const std::string& id, pos::OutputFormat fmt) {
 		for (size_t i = 0; i < r.verifyIssues.size(); ++i) { if (i) std::cout << ","; std::cout << pos::json_quote(r.verifyIssues[i]); }
 		std::cout << "]}\n";
 	} else {
-		if (r.ok) std::cout << "  VERIFIED: " << id << "\n";
-		else { std::cout << "  VERIFY_FAIL: " << id << "\n"; for (const auto& i : r.verifyIssues) std::cout << "    - " << i << "\n"; }
+		if (r.ok) {
+			std::cout << "── artifact verify ✅ VERIFIED ──\n";
+			std::cout << "  id : " << id << "\n";
+			if (!r.verifyIssues.empty()) for (const auto& i : r.verifyIssues) std::cout << "  issue : " << i << "\n";
+		} else {
+			std::cout << "── artifact verify ❌ VERIFY_FAIL ──\n";
+			std::cout << "  id : " << id << "\n";
+			for (const auto& i : r.verifyIssues) std::cout << "  issue : " << i << "\n";
+		}
 	}
 	return r.ok ? 0 : 1;
+}
+
+// --- F89 artifact publish <name> --type=... --content=... ----------------------
+static int cmdArtifactPublish(const std::vector<std::string>& args, pos::OutputFormat fmt) {
+	std::string line = "artifact publish";
+	for (auto& a : args) line += " " + a;
+	pos::CmdResult r = pos::dispatch(pos::bridgePath(), line, g_timeoutMs, &g_cancel);
+	printAnalysis("artifact publish", fmt, r, true);
+	return pos::exitFor(r.ok, r.status);
 }
 
 
@@ -1657,6 +1673,7 @@ int wmain(int argc, wchar_t** wargv) {
 		if (cmd == "artifact" && args.size() >= 2 && args[0] == "show") { return cmdArtifactShow(args[1], fmt); }
 		if (cmd == "artifact" && args.size() >= 2 && args[0] == "search") { return cmdArtifactSearch(args[1], fmt); }
 		if (cmd == "artifact" && args.size() >= 2 && args[0] == "verify") { return cmdArtifactVerify(args[1], fmt); }
+		if (cmd == "artifact" && args.size() >= 2 && args[0] == "publish") { return cmdArtifactPublish(std::vector<std::string>(args.begin() + 1, args.end()), fmt); }
 		if (cmd == "artifact" && args.size() >= 1 && args[0] == "audit-store") { return cmdArtifactAuditStore(fmt); }
 		if (cmd == "parity") { return cmdParity(fmt); }
 			if (cmd == "addon" && args.size() >= 1 && args[0] == "verify") { return cmdAddonVerify(fmt); }
