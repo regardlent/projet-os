@@ -116,9 +116,9 @@
 - [x] 9.10 Onboarding / guide rapide.
 
 ## Phase 10 — Finition & release
-- [ ] 10.1 Release Center.
-- [ ] 10.2 Version bump automatisé.
-- [ ] 10.3 Changelog auto.
+- [x] 10.1 Release Center.
+- [x] 10.2 Version bump automatisé.
+- [x] 10.3 Changelog auto.
 - [ ] 10.4 Docs finales (référence complète).
 - [ ] 10.5 README polish final.
 - [ ] 10.6 Mise à jour de `docs/ARCHITECTURE_DECISION.md`.

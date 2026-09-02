@@ -353,6 +353,51 @@ static int cmdTemplateList() {
 	return 0;
 }
 
+// --- F98 release: Release Center + version bump + changelog (10.1-10.3). ------------------------
+static std::string readVersion() {
+	std::string cm = std::string(pos::repoRoot()) + "\\cli-cpp\\CMakeLists.txt";
+	std::ifstream in(cm); if (!in) return "unknown";
+	std::string line; while (std::getline(in, line)) { auto p = line.find("CPACK_PACKAGE_VERSION"); if (p != std::string::npos) { auto q = line.find('"'); auto r = line.find('"', q + 1); if (q != std::string::npos && r != std::string::npos) return line.substr(q + 1, r - q - 1); } }
+	return "unknown";
+}
+static std::string readMatrixSummary() {
+	std::string f = std::string(pos::repoRoot()) + "\\artifacts\\cli-v3\\CLI_V3_FEATURE_MATRIX.json";
+	std::ifstream in(f, std::ios::binary); if (!in) return "n/a";
+	std::string data((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+	int pass = 0; size_t p = 0; while ((p = data.find("\"status\": \"PASS\"", p)) != std::string::npos) { ++pass; p += 14; }
+	return std::to_string(pass) + " PASS";
+}
+static int cmdRelease(const std::vector<std::string>& args) {
+	const std::string ver = readVersion();
+	if (!args.empty() && args[0] == "version") { std::cout << "  version : " << ver << "\n"; return 0; }
+	if (!args.empty() && args[0] == "bump") {
+		if (args.size() < 2) { std::cout << "  usage: release bump <version>\n"; return 2; }
+		std::string cm = std::string(pos::repoRoot()) + "\\cli-cpp\\CMakeLists.txt";
+		std::ifstream in(cm); std::string all((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>()); in.close();
+		size_t pos = all.find("set(CPACK_PACKAGE_VERSION \"");
+		if (pos == std::string::npos) { std::cout << "  release bump: CPACK_PACKAGE_VERSION not found\n"; return 1; }
+		size_t end = all.find('"', pos + 28); if (end != std::string::npos) all.replace(pos + 27, end - (pos + 27), args[1]);
+		std::ofstream out(cm, std::ios::trunc); out << all; out.close();
+		std::cout << "  bumped to : " << args[1] << " (cli-cpp/CMakeLists.txt)\n"; return 0;
+	}
+	if (!args.empty() && args[0] == "changelog") {
+		std::string rr = std::string(pos::repoRoot());
+		pos::ProcessSpec spec; spec.executable = L"git";
+		{ std::wstring w(rr.begin(), rr.end()); spec.args = { L"-C", w, L"log", L"--oneline", L"-20" }; }
+		spec.timeoutMs = 10000; spec.captureStdout = true; spec.captureStderr = true;
+		pos::ProcessResult pr = pos::runProcess(spec);
+		std::cout << "── changelog (git log -20) ──\n" << (pr.started ? pr.out : ("  (git unavailable: " + pr.osError + ")")) << "\n"; return pr.started ? 0 : 1;
+	}
+	// Release Center (default).
+	std::cout << "── Project OS Release Center ──\n";
+	std::cout << "  version   : " << ver << "\n";
+	std::cout << "  matrix    : " << readMatrixSummary() << "\n";
+	std::cout << "  commands  : release version|bump <ver>|changelog\n";
+	std::cout << "  - release bump <ver>   writes cli-cpp/CMakeLists.txt version\n";
+	std::cout << "  - release changelog    git log -20\n";
+	return 0;
+}
+
 
 static std::string readGpuLine(); // F38 helper (defined below)
 // F66 forward decl (defined later): terminal-width line fitting.
@@ -1872,6 +1917,7 @@ int wmain(int argc, wchar_t** wargv) {
 		if (cmd == "custom" && args.size() >= 1 && args[0] == "list") { return cmdCustomList(); }
 		if (cmd == "custom" && args.size() >= 3 && args[0] == "add") { return cmdCustomAdd(args[1], std::vector<std::string>(args.begin() + 2, args.end())); }
 		if (cmd == "custom" && args.size() >= 2 && args[0] == "add") { return cmdCustomAdd(args[1], std::vector<std::string>(args.begin() + 2, args.end())); }
+		if (cmd == "release") { return cmdRelease(args); }
 		if (cmd == "completion" && args.size() >= 1) { bool slugs = false; for (const auto& a : args) if (a == "--slugs") slugs = true; return cmdCompletion(args[0], slugs); }
 		if (cmd == "cockpit" && args.size() >= 1 && args[0] == "history") { return cmdCockpitHistory(fmt); }
 		if (cmd == "cockpit" && args.size() >= 1 && args[0] == "export") { return cmdCockpitExport(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }
