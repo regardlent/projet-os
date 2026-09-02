@@ -378,6 +378,33 @@ static void cmdCapabilities(pos::OutputFormat fmt) {
 
 // --- Non-interactive command mode (scriptable) ---------------------------
 // project-os-cli <command> [args...]
+// F58: suggest the closest known command on an unknown command (edit distance).
+static const std::vector<std::string>& knownCommands() {
+	static const std::vector<std::string> k = {
+		"help", "version", "capabilities", "status", "project", "drift", "timeline", "snapshot", "diff",
+		"goal", "todo", "artifact", "addon", "config", "doctor", "diagnostics", "preflight", "health",
+		"models", "model", "route", "gpu", "test", "endurance", "benchmark", "report", "release", "export",
+		"protocol", "schema", "exitcodes", "completion", "cockpit", "bridge", "usage",
+	};
+	return k;
+}
+static int editDist(const std::string& a, const std::string& b) {
+	const size_t m = a.size(), n = b.size();
+	std::vector<int> prev(n + 1), cur(n + 1);
+	for (size_t j = 0; j <= n; ++j) prev[j] = (int)j;
+	for (size_t i = 1; i <= m; ++i) {
+		cur[0] = (int)i;
+		for (size_t j = 1; j <= n; ++j) cur[j] = std::min({ prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] == b[j - 1] ? 0 : 1) });
+		prev = cur;
+	}
+	return prev[n];
+}
+static std::string suggestCommand(const std::string& cmd) {
+	int best = 4; std::string sug;
+	for (const auto& k : knownCommands()) { const int d = editDist(cmd, k); if (d < best) { best = d; sug = k; } }
+	return sug.empty() ? "" : (sug + " (dist " + std::to_string(best) + ")");
+}
+
 static int runCommandLine(const std::string& cmd, const std::vector<std::string>& args, bool useColor) {
 	const std::string bridge = pos::bridgePath();
 	std::string slash = "/" + cmd; // slash commands require a leading '/'
@@ -389,6 +416,7 @@ static int runCommandLine(const std::string& cmd, const std::vector<std::string>
 	const char* reset = useColor ? "\x1b[0m" : "";
 	std::cout << "  " << colorTag << okTag << reset << " " << r.command << " " << r.status << "\n";
 	std::cout << r.message << "\n";
+	if (r.status == "UNKNOWN_COMMAND") { const std::string sug = suggestCommand(cmd); if (!sug.empty()) std::cout << "  Did you mean: " << (useColor ? "\x1b[96m" : "") << sug << (useColor ? "\x1b[0m" : "") << "?\n"; }
 	for (const auto& s : r.artifacts) std::cout << "  artifact: " << s << "\n";
 	if (!r.raw.empty() && !r.ok) std::cout << "  raw: " << r.raw << "\n";
 	return pos::exitFor(r.ok, r.status);
