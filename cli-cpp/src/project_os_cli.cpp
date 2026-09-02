@@ -74,10 +74,10 @@ static int cmdStatus(pos::OutputFormat fmt) {
 			<< ",\"todoDone\":" << r.todoDone
 			<< ",\"todoCount\":" << r.todoCount << "}\n";
 	} else {
-		std::cout << "  " << (r.ok ? "OK" : "FAIL") << " status\n";
-		std::cout << "  active   : " << (r.activeSlug.empty() ? "(none)" : r.activeSlug) << "\n";
-		std::cout << "  goal     : " << r.goalStatus << " (" << r.goalProgress << "%)\n";
-		std::cout << "  todo     : " << r.todoDone << "/" << r.todoCount << "\n";
+		std::cout << "\xE2\x94\x80\xE2\x94\x80 status \xE2\x94\x80\xE2\x94\x80 \n";
+		std::cout << "  active : " << (r.activeSlug.empty() ? "(none)" : r.activeSlug) << "\n";
+		std::cout << "  goal   : " << r.goalStatus << " (" << r.goalProgress << "%)\n";
+		std::cout << "  todo   : " << r.todoDone << "/" << r.todoCount << "\n";
 	}
 	// F03 exit contract: a FAIL status must never exit 0.
 	return pos::exitFor(r.ok, r.status);
@@ -355,6 +355,7 @@ static int cmdProjectInspect(const std::string& slug, pos::OutputFormat fmt) {
 			<< ",\"goalProgress\":" << r.goalProgress
 			<< ",\"todoDone\":" << r.todoDone << ",\"todoCount\":" << r.todoCount << "}\n";
 	} else {
+		std::cout << "\xE2\x94\x80\xE2\x94\x80 project inspect " << slug << " \xE2\x94\x80\xE2\x94\x80 \n";
 		std::cout << "  slug      : " << r.activeSlug << "\n";
 		std::cout << "  type      : " << r.projectType << "\n";
 		std::cout << "  status    : " << r.projectStatus << "\n";

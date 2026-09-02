@@ -87,6 +87,28 @@ mode scriptable via la passerelle Node (`bin/project-os-bridge.mjs`). Voir `cli-
   sortie `human|json|ndjson|tsv`, dégradation propre si git/LocalAI/GPU indisponibles.
 - `--format=json|ndjson|tsv`, `--color=auto|always|never`, `--timeout=<ms>`, `--explain/--dry-run`.
 
+## Documentation
+- **`cli-cpp/README.md`** — CLI C++ : build (CMake), menu interactif, mode scriptable, codes de sortie, Intelligence & analyse.
+- **`docs/PROJECT_OS_CLI_V3_REFERENCE.md`** — référence CLI v3 (architecture, 50 features + IA01-IA10, limitations honnêtes).
+- **`docs/SLASH_COMMANDS.md`** — commandes slash `/goal`, `/create`, `/addon`, `/autonomy`, `/docs`.
+- **`artifacts/cli-v3/`** — pack d'évidence CLI (feature matrix, release gate/report, security, soak, research).
+
+## Exemples d'utilisation (CLI)
+```bash
+# Projet actif
+project-os-cli status                  # résumé du projet actif (── status ──)
+project-os-cli health score            # score composite + barre + grade + couleur
+project-os-cli diagnose                # diagnostic classé (CLEAR/WARN/ALERT, exit 1 si issues)
+project-os-cli drift alert             # divergence vs baseline snapshot
+project-os-cli goal traction           # traction du goal (progress + todo + critères)
+project-os-cli risk profile            # risques consolidés + mitigations
+
+# Formats machine (stdout = data, stderr = diagnostics)
+project-os-cli health score --format=json
+project-os-cli risk profile --format=ndjson
+project-os-cli diagnose --format=tsv
+```
+
 ## Roadmap (non implémenté)
 
 Multi-agent/teams, MCP, Task/Testing API, Git/worktree/checkpoints, Release Center,
