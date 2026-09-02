@@ -10,7 +10,7 @@
 - [x] 1.4 Signal coloré (vert/jaune/rouge) géré par `--color` (coulé dans `wmain`).
 - [x] 1.5 Émojis de statut (✅ / ⚠️ / ❌) devant le signal, désactivables via `--no-emoji`.
 - [x] 1.6 `--theme=light|dark|auto` (palette ANSI standard vs bright).
-- [ ] 1.7 Alignement + en-têtes étendus aux commandes `doctor` / `config` / `preflight` / `models`.
+- [x] 1.7 Alignement + en-têtes étendus aux commandes `doctor` / `config` / `preflight` / `models`.
 - [ ] 1.8 Menu interactif raffiné (sections, touches, retours colorés).
 - [ ] 1.9 Suggestions de sous-commandes pour les commandes inconnues.
 - [ ] 1.10 `--quiet` / `--verbose` (bannière + verbosité des diagnostics).

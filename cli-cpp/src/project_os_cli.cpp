@@ -710,6 +710,9 @@ static int cmdAddonVerify(pos::OutputFormat fmt) {
 }
 
 // --- F28 config explain / list ----------------------------------------------
+// Compact card header: ── <title> ── (UTF-8; renders correctly on a console with CP65001).
+static void card(const std::string& t) { std::cout << "\xE2\x94\x80\xE2\x94\x80 " << t << " \xE2\x94\x80\xE2\x94\x80 \n"; }
+
 static int cmdConfig(pos::OutputFormat fmt) {
 	pos::CmdResult r = pos::dispatch(pos::bridgePath(), "config list", g_timeoutMs, &g_cancel);
 	if (!r.ok) { std::cout << "  FAIL config: " << r.status << " — " << r.message << "\n"; return 1; }
@@ -720,6 +723,7 @@ static int cmdConfig(pos::OutputFormat fmt) {
 	} else if (fmt == pos::OutputFormat::TsV) {
 		for (auto& [k, v] : r.configKv) pos::emitScalar(pos::OutputFormat::TsV, k, v);
 	} else {
+		card("config");
 		for (auto& [k, v] : r.configKv) std::cout << "  " << k << " = " << v << "\n";
 	}
 	return 0;
@@ -743,6 +747,7 @@ static int cmdDoctor(pos::OutputFormat fmt) {
 		for (size_t i = 0; i < checks.size(); ++i) { if (i) std::cout << ","; std::cout << "{\"name\":" << pos::json_quote(checks[i].name) << ",\"status\":" << pos::json_quote(checks[i].status) << ",\"reason\":" << pos::json_quote(checks[i].reason) << "}"; }
 		std::cout << "]}\n";
 	} else {
+		card("doctor");
 		for (const auto& c : checks) std::cout << "  " << c.status << "  " << c.name << " — " << c.reason << "\n";
 	}
 	return 0;
@@ -780,6 +785,7 @@ static int cmdPreflight(pos::OutputFormat fmt) {
 			<< ",\"gpu\":" << (r.pfGpu ? "true" : "false") << ",\"workspace\":" << (r.pfWorkspace ? "true" : "false")
 			<< ",\"security\":" << (r.pfSecurity ? "true" : "false") << "}\n";
 	} else {
+		card("preflight");
 		std::cout << "  bridge    : " << (r.ok ? "PASS" : "FAIL") << "\n";
 		std::cout << "  localAI   : " << (r.pfLocalAI ? "PASS" : "FAIL") << "\n";
 		std::cout << "  gpu       : " << (r.pfGpu ? "PASS" : "FAIL") << "\n";
@@ -818,6 +824,7 @@ static int cmdModels(pos::OutputFormat fmt) {
 			} else if (fmt == pos::OutputFormat::TsV) {
 		for (const auto& m : r.modelList) pos::emitScalar(pos::OutputFormat::TsV, m.id, m.type);
 			} else {
+			card("models");
 			std::cout << "  models: " << r.modelList.size() << "\n";
 		for (const auto& m : r.modelList) std::cout << "  " << m.id << "  [" << m.type << "]\n";
 	}
