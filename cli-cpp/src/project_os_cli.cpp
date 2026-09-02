@@ -249,29 +249,44 @@ static int cmdHelp() {
 	return 0;
 }
 
-// --- F49 completion powershell|bash|zsh: emit a shell completion script. --------------
-static int cmdCompletion(const std::string& shell) {
+// --- F49 completion powershell|bash|zsh: emit a shell completion script (9.4 dynamic). -----------
+static int cmdCompletion(const std::string& shell, bool withProjects) {
+	// 9.4: query the bridge for live project slugs to bake into the completion (dynamic).
+	std::vector<std::string> slugs;
+	if (withProjects) {
+		pos::CmdResult r = pos::dispatch(pos::bridgePath(), "project list", g_timeoutMs, &g_cancel);
+		for (const auto& p : r.projects) slugs.push_back(p.slug);
+	}
+	auto join = [](const std::vector<std::string>& v, bool appendSlugs) {
+		std::string s = "version capabilities status project drift timeline snapshot diff goal todo artifact addon config doctor diagnostics preflight health model route gpu test endurance benchmark release export report completion cockpit bridge git usage welcome help";
+		if (appendSlugs && !v.empty()) { s += " "; for (size_t i = 0; i < v.size(); ++i) { if (i) s += " "; s += v[i]; } }
+		return s;
+	};
 	if (shell == "powershell") {
 		std::cout << "# Project OS CLI completion (PowerShell)\n"
 			<< "Register-ArgumentCompleter -Native -CommandName project-os-cli -ScriptBlock {\n"
 			<< "  param($wordToComplete, $commandAst, $cursorPosition)\n"
-					<< "  $commands = @(\"version\",\"capabilities\",\"status\",\"project\",\"drift\",\"timeline\",\"snapshot\",\"diff\",\"goal\",\"todo\",\"artifact\",\"addon\",\"config\",\"doctor\",\"diagnostics\",\"preflight\",\"health\",\"models\",\"model\",\"route\",\"gpu\",\"test\",\"endurance\",\"benchmark\",\"release\",\"export\",\"report\",\"completion\",\"cockpit\",\"bridge\",\"help\")\n"
+			<< "  $commands = @(\"" << join(slugs, withProjects) << "\" -split ' ')\n"
+			<< "  $sub = @(\"project list\",\"project inspect\",\"project use\",\"health score\",\"health trend\",\"health compare\",\"artifact list\",\"artifact search\",\"artifact verify\",\"git status\",\"git log\",\"usage list\",\"usage summary\",\"model show\",\"model smoke\",\"model benchmark\",\"gpu status\",\"gpu watch\",\"bridge status\",\"bridge tools\",\"bridge config\")\n"
 			<< "  foreach ($c in $commands) { if ($c -like \"$wordToComplete*\") { [System.Management.Automation.CompletionResult]::new($c, $c, [System.Management.Automation.CompletionResultType]::ParameterValue, $c) } }\n"
+			<< "  foreach ($c in $sub) { if ($c -like \"$wordToComplete*\") { [System.Management.Automation.CompletionResult]::new($c, $c, [System.Management.Automation.CompletionResultType]::ParameterValue, $c) } }\n"
 			<< "}\n";
 	} else if (shell == "bash") {
 		std::cout << "# Project OS CLI completion (bash)\n"
 			<< "_project_os_cli() {\n"
 			<< "  local cur=\"${COMP_WORDS[COMP_CWORD]}\"\n"
-					<< "  local commands=\"version capabilities status project drift timeline snapshot diff goal todo artifact addon config doctor diagnostics preflight health models model route gpu test endurance benchmark release export report completion cockpit bridge help\"\n"
-			<< "  COMPREPLY=( $(compgen -W \"$commands\" -- \"$cur\") )\n"
+			<< "  local commands=\"" << join(slugs, withProjects) << "\"\n"
+			<< "  local sub=\"project list project inspect project use health score health trend health compare artifact list artifact search artifact verify git status git log usage list usage summary model show model smoke model benchmark gpu status gpu watch bridge status bridge tools bridge config\"\n"
+			<< "  COMPREPLY=( $(compgen -W \"$commands $sub\" -- \"$cur\") )\n"
 			<< "}\n"
 			<< "complete -F _project_os_cli project-os-cli\n";
 	} else if (shell == "zsh") {
 		std::cout << "#compdef project-os-cli\n"
 			<< "_project_os_cli() {\n"
-			<< "  local -a commands\n"
-					<< "  commands=(version capabilities status project drift timeline snapshot diff goal todo artifact addon config doctor diagnostics preflight health models model route gpu test endurance benchmark release export report completion cockpit bridge help)\n"
-			<< "  _describe 'command' commands\n"
+			<< "  local -a commands sub\n"
+			<< "  commands=(" << join(slugs, withProjects) << ")\n"
+			<< "  sub=(project:list project:inspect project:use health:score health:trend artifact:list artifact:verify git:status usage:list model:show gpu:status bridge:status)\n"
+			<< "  _describe 'command' commands sub\n"
 			<< "}\n"
 			<< "compdef _project_os_cli project-os-cli\n";
 	} else {
@@ -1756,7 +1771,7 @@ int wmain(int argc, wchar_t** wargv) {
 		if (cmd == "welcome") { return cmdWelcome(); }
 		if (cmd == "config" && args.size() >= 1 && args[0] == "path") { std::cout << "── config path ──\n  path : " << projectOsConfigPath() << "\n"; return 0; }
 		if (cmd == "config" && args.size() >= 1 && args[0] == "env") { return cmdConfigEnv(); }
-		if (cmd == "completion" && args.size() >= 1) { return cmdCompletion(args[0]); }
+		if (cmd == "completion" && args.size() >= 1) { bool slugs = false; for (const auto& a : args) if (a == "--slugs") slugs = true; return cmdCompletion(args[0], slugs); }
 		if (cmd == "cockpit" && args.size() >= 1 && args[0] == "history") { return cmdCockpitHistory(fmt); }
 		if (cmd == "cockpit" && args.size() >= 1 && args[0] == "export") { return cmdCockpitExport(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }
 		if (cmd == "cockpit") { return cmdCockpit(fmt, args, colorOn); }
