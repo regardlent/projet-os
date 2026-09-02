@@ -68,6 +68,9 @@ inline std::atomic<int> g_width(0);
 // Phase 1.26/1.30: --check (exit-code only, no output) + --time (elapsed ms on stderr).
 inline std::atomic<bool> g_check(false);
 inline std::atomic<bool> g_timing(false);
+// Phase 1.38/1.39: --yes/--no (skips confirmation) + --force (overwrite).
+inline std::atomic<bool> g_yes(false);
+inline std::atomic<bool> g_force(false);
 
 // --- Helpers -------------------------------------------------------------
 // Phase 1.32: unhandled exception => clean message + exit 70 (never a silent crash / 0).
@@ -208,7 +211,7 @@ static int cmdHelp() {
 	std::cout << "  schema machine         machine-consumer contract\n";
 	sec("Bridge MCP");
 	std::cout << "  bridge status|start|stop|restart|health|tools|test|tunnel\n";
-	std::cout << "\n  Global flags: --format=json|ndjson|tsv  --color=auto|always|never  --theme=light|dark  --mono  --timeout=<ms>  --no-emoji  --quiet|--verbose  --cockpit  --explain/--dry-run  --trace\n";
+	std::cout << "\n  Global flags: --format=json|ndjson|tsv  --json  --color=auto|always|never  --theme=light|dark  --mono  --timeout=<ms>  --no-emoji  --quiet|--verbose  --cockpit  --explain/--dry-run  --trace  --silent/--check  --time  --width=<n>  --yes/--force\n";
 	return 0;
 }
 
@@ -1806,6 +1809,9 @@ int wmain(int argc, wchar_t** wargv) {
 		}
 	}
 
+	// Phase 1.36: CI detection — under GitHub Actions / CI env, force non-interactive (no color, no prompts).
+	if (const char* ci = std::getenv("CI"); ci && *ci) isTty = false;
+
 	if (argc > 1) {
 		std::vector<std::string> args;
 		// F04: global --format=<human|json|ndjson|tsv>. stdout=data, stderr=diagnostics.
@@ -1827,6 +1833,9 @@ int wmain(int argc, wchar_t** wargv) {
 			if (a == "--silent") { g_silent.store(true); return true; }
 			if (a == "--check") { g_check.store(true); g_silent.store(true); return true; }
 			if (a == "--time") { g_timing.store(true); return true; }
+			if (a == "--yes") { g_yes.store(true); return true; }
+			if (a == "--no") { g_yes.store(false); return true; }
+			if (a == "--force") { g_force.store(true); return true; }
 			if (a.rfind("--width=", 0) == 0) { g_width.store(std::atoi(a.substr(8).c_str())); return true; }
 			if (a.rfind("--color=", 0) == 0) { wrapColor = pos::parseColor(a.substr(8)); return true; }
 			if (a.rfind("--theme=", 0) == 0) { const std::string t = a.substr(8); if (t == "light") g_theme.store(0); else if (t == "dark") g_theme.store(1); return true; }
