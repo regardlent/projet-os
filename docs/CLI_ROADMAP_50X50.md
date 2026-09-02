@@ -8,7 +8,7 @@ ré-implémentation. Légende : `[x]` fini · `[ ]` à faire.
 
 ## Phase 1 — Fondations UX (50 étapes)
 - [ ] 1.1 Ajouter fondations ux en mode human.
-- [ ] 1.2 Améliorer fondations ux --format=json.
+- [x] 1.2 Améliorer fondations ux --format=json.
 - [ ] 1.3 Refactorer fondations ux --format=ndjson.
 - [ ] 1.4 Tester fondations ux --format=tsv.
 - [ ] 1.5 Documenter fondations ux --quiet.

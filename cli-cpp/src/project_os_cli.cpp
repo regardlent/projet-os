@@ -61,6 +61,9 @@ inline std::atomic<int> g_theme(1);
 // F57: output verbosity. --quiet suppresses card headers; --verbose adds detail.
 inline std::atomic<bool> g_quiet(false);
 inline std::atomic<bool> g_verbose(false);
+// F58 (plan 50×50, Phase 1.27/1.29): --silent (exit-code only) + --width=<n> override.
+inline std::atomic<bool> g_silent(false);
+inline std::atomic<int> g_width(0);
 
 // --- Helpers -------------------------------------------------------------
 static int readChoice(int max) {
@@ -951,10 +954,14 @@ static void card(const std::string& t) { if (g_quiet.load()) return; std::cout <
 // F66 terminal-width helpers: adapt/truncate lines to avoid wrapping/overflow (small terminal, console only).
 static int termCols() { CONSOLE_SCREEN_BUFFER_INFO cbi; if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cbi)) return cbi.dwSize.X; return 80; }
 static std::string fitLine(const std::string& s) {
-	HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
-	CONSOLE_SCREEN_BUFFER_INFO cbi;
-	if (!h || h == INVALID_HANDLE_VALUE || !GetConsoleScreenBufferInfo(h, &cbi)) return s; // not a console: no truncation
-	const int w = cbi.dwSize.X - 1;
+	// F58 (Phase 1.29): --width=<n> forces the wrap width; otherwise use the console columns.
+	int w = g_width.load();
+	if (w <= 0) {
+		HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+		CONSOLE_SCREEN_BUFFER_INFO cbi;
+		if (!h || h == INVALID_HANDLE_VALUE || !GetConsoleScreenBufferInfo(h, &cbi)) return s; // not a console: no truncation
+		w = cbi.dwSize.X - 1;
+	}
 	if (w <= 0 || (int)s.size() <= w) return s;
 	return s.substr(0, (size_t)w) + "\xE2\x80\xA6";
 }
@@ -1803,6 +1810,11 @@ int wmain(int argc, wchar_t** wargv) {
 		// Unified global-flag handler (refactor: single source of truth, used by both loops).
 		auto applyGlobalFlag = [&](const std::string& a) -> bool {
 			if (a.rfind("--format=", 0) == 0) { fmt = pos::parseFormat(a.substr(9)); return true; }
+			if (a == "--json") { fmt = pos::OutputFormat::Json; return true; }
+			if (a == "--ndjson") { fmt = pos::OutputFormat::Ndjson; return true; }
+			if (a == "--tsv") { fmt = pos::OutputFormat::TsV; return true; }
+			if (a == "--silent") { g_silent.store(true); return true; }
+			if (a.rfind("--width=", 0) == 0) { g_width.store(std::atoi(a.substr(8).c_str())); return true; }
 			if (a.rfind("--color=", 0) == 0) { wrapColor = pos::parseColor(a.substr(8)); return true; }
 			if (a.rfind("--theme=", 0) == 0) { const std::string t = a.substr(8); if (t == "light") g_theme.store(0); else if (t == "dark") g_theme.store(1); return true; }
 			if (a.rfind("--timeout=", 0) == 0) { g_timeoutMs.store(std::atoll(a.substr(10).c_str())); if (g_timeoutMs.load() <= 0) g_timeoutMs.store(60000); return true; }
@@ -1828,6 +1840,8 @@ int wmain(int argc, wchar_t** wargv) {
 		}
 		color = pos::applyNoColor(wrapColor, noColorEnv);
 		bool colorOn = pos::colorEnabled(color, isTty);
+		// F58 (Phase 1.27): --silent => exit-code only, suppress stdout (diagnostics stay on stderr).
+		if (g_silent.load()) { std::freopen("NUL", "w", stdout); }
 		// F67: --cockpit global shortcut launches the dashboard directly.
 		if (cockpitShortcut) { return cmdCockpit(fmt, args, colorOn); }
 		const std::string cmd0 = (start < (size_t)argc) ? argvS[start] : std::string("help");
