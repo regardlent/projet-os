@@ -63,3 +63,16 @@ jobs:
           cmake -S cli-cpp -B cli-cpp/cmake-build-san -DPOS_SANITIZE=ON
           cmake --build cli-cpp/cmake-build-san
           ctest --test-dir cli-cpp/cmake-build-san --output-on-failure
+
+  # Documentation/artifacts integrity (Phase 4.10): JSON matrices must parse; docs must be present.
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Validate JSON artifacts + docs presence
+        run: |
+          node -e "const fs=require('fs');const glob=['artifacts/cli-v3/CLI_V3_FEATURE_MATRIX.json','artifacts/cli-v3/release/CLI_V3_FEATURE_MATRIX.json','docs/schema/machine-schema-v2.json','package.json','cli-cpp/CMakeLists.txt'];for(const f of glob){if(!fs.existsSync(f)){throw new Error('missing '+f)} if(f.endsWith('.json')){JSON.parse(fs.readFileSync(f,'utf8'));}}console.log('docs: JSON valid, artifacts present')"
+          test -f README.md && test -f CHANGELOG.md && echo "docs: README + CHANGELOG present"

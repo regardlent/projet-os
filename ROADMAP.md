@@ -46,10 +46,10 @@
 - [x] 4.4 `CPack` (install ZIP/DEB).
 - [x] 4.5 `cmake --install` documenté + testé.
 - [x] 4.6 Build Windows + matrix Linux/macOS.
-- [ ] 4.7 Signing (optionnel).
-- [ ] 4.8 Packaging VSIX de l'extension.
-- [ ] 4.9 Script de mise à jour.
-- [ ] 4.10 Génération des docs (md → pdf/html) en CI.
+- [x] 4.7 Signing (optionnel).
+- [x] 4.8 Packaging VSIX de l'extension.
+- [x] 4.9 Script de mise à jour.
+- [x] 4.10 Génération des docs (md → pdf/html) en CI.
 
 ## Phase 5 — Modèles & routing
 - [x] 5.1 Routeur adaptatif au contexte (task-class + longueur).

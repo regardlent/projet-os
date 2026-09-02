@@ -283,6 +283,7 @@
     "typecheck": "tsc -p ./ --noEmit",
     "test": "npm run compile && node --test \"dist/tests/*.test.js\"",
     "package": "vsce package",
+    "package:vsix": "node scripts/package-vsix.mjs",
     "bridge:local": "node scripts/bridge-local.mjs",
     "bridge:local:once": "node scripts/bridge-local.mjs once",
     "tunnel:init": "node scripts/tunnel-init.mjs"
