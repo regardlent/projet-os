@@ -96,7 +96,7 @@
 - [x] 8.2 Sanitizers (ASan/UBSan) en CI.
 - [x] 8.3 Tests de précédence de config.
 - [x] 8.4 Golden tests Unicode.
-- [ ] 8.5 Drift compare enrichi.
+- [x] 8.5 Drift compare enrichi.
 - [ ] 8.6 Golden budget.
 - [x] 8.7 Golden redaction.
 - [ ] 8.8 Budget de perf (mémoire/temps).

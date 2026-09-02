@@ -1422,6 +1422,42 @@ try {
 		emit({ command: "drift", ok: diverge.length === 0, status: diverge.length ? "DRIFT_ALERT" : "DRIFT_CLEAR", score: 0, grade: "", signal, rows: [{ k: "baseline", v: baseline.name || baseline.slug || "snapshot" }, { k: "divergences", v: String(diverge.length) }], details: diverge, message: `drift alert: ${diverge.length} divergences (${signal})`, warnings: [], actions: [], artifacts: [] }, diverge.length ? 1 : 0); process.exit(0);
 	}
 
+	// 5b. drift compare <baseline|slug>: side-by-side current vs a named baseline snapshot (8.5).
+	if (line.startsWith("drift compare ")) {
+		const a = resolveActiveProject();
+		if (!a) { emit({ command: "drift", ok: false, status: "NO_ACTIVE_PROJECT", score: 0, grade: "", signal: "NO_PROJECT", rows: [], details: ["no active project"], message: "drift compare: no active project", warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
+		const want = line.slice("drift compare ".length).trim().toLowerCase();
+		const ws = a.workspaceRoot;
+		let baseline = null, baselineName = "";
+		try {
+			const snapsDir = path.join(ws, ".project-os", "snapshots");
+			const snaps = fs.readdirSync(snapsDir).filter((e) => e.endsWith(".json")).sort();
+			let found = "";
+			if (want) { found = snaps.find((e) => e.toLowerCase().includes(want)) || snaps[snaps.length - 1]; }
+			else { found = snaps[snaps.length - 1]; }
+			if (found) { baseline = JSON.parse(fs.readFileSync(path.join(snapsDir, found), "utf8")); baselineName = found.replace(/\.json$/, ""); }
+		} catch {}
+		if (!baseline) { emit({ command: "drift", ok: false, status: "NO_BASELINE", score: 0, grade: "", signal: "NO_BASELINE", rows: [{ k: "baseline", v: want || "last" }], details: ["no baseline snapshot - run snapshot save"], message: "drift compare: no baseline", warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
+		const g = gatherSignals(ws);
+		const bd = (baseline.todo?.tasks ?? []).filter((x) => x.state === "done").length;
+		const cd = (g.todo?.tasks ?? []).filter((x) => x.state === "done").length;
+		const goalSame = (baseline.goal?.objective || "") === (g.goal?.objective || "");
+		const rows = [
+			{ k: "baseline", v: baselineName },
+			{ k: "goal", v: goalSame ? "same" : "changed" },
+			{ k: "todo", v: `${bd}->${cd}` },
+			{ k: "gitDirty", v: String(g.gitDirty) },
+			{ k: "snapshots", v: String(g.snapshots.length) },
+		];
+		const diverge = [];
+		if (!goalSame) diverge.push("goal changed");
+		if (bd !== cd) diverge.push(`todo progress ${bd}->${cd}`);
+		if (g.gitDirty > 0) diverge.push("uncommitted changes");
+		const ok = diverge.length === 0;
+		emit({ command: "drift", ok, status: ok ? "DRIFT_CLEAR" : "DRIFT_ALERT", score: 0, grade: "", signal: ok ? "CLEAR" : "ALERT", rows, details: diverge, message: `drift compare: ${diverge.length} divergences (${ok ? "CLEAR" : "ALERT"})`, warnings: [], actions: [], artifacts: [] }, ok ? 0 : 1);
+		process.exit(0);
+	}
+
 	// 6. health trend: historical scores across snapshots.
 	if (line === "health trend") {
 		const a = resolveActiveProject();
