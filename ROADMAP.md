@@ -32,10 +32,10 @@
 - [x] 3.2 Refresh live multi-sources.
 - [x] 3.3 Historisation (snapshot des tuiles).
 - [x] 3.4 Export du cockpit (JSON/PNG).
-- [ ] 3.5 Navigation clavier (flèches/onglets).
+- [x] 3.5 Navigation clavier (flèches/onglets).
 - [x] 3.6 Minimum-width + repli si terminal étroit.
 - [x] 3.7 Accessibilité (monochrome, gros contraste).
-- [ ] 3.8 Log en bas d'écran.
+- [x] 3.8 Log en bas d'écran.
 - [x] 3.9 Raccourci global `--cockpit`.
 - [x] 3.10 Meilleures pratiques de rendu VT (pas de débordement).
 

@@ -21,6 +21,9 @@
 #include "pos_terminal.hpp"
 #include "pos_health.hpp"
 #include <windows.h>
+#if defined(_WIN32)
+#include <conio.h> // _kbhit/_getch for cockpit keyboard navigation (Phase 3.5)
+#endif
 
 namespace pos {
 inline const char* repoRoot() { return getenv("PROJECT_OS_REPO") ? getenv("PROJECT_OS_REPO") : "C:\\Users\\eiden\\Desktop\\dev\\projet-os"; }
@@ -302,14 +305,16 @@ static int cmdCockpit(pos::OutputFormat fmt, const std::vector<std::string>& arg
 			return 0;
 		}
 		if (live) std::cout << "\x1b[2J\x1b[H"; // clear screen
-		std::cout << fitLine("\xE2\x94\x80\xE2\x94\x80 PROJECT OS COCKPIT \xE2\x94\x80\xE2\x94\x80  " + std::string(live ? "live (Ctrl+C to stop)" : "")) << "\n";
+		const auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+		std::cout << fitLine("\xE2\x94\x80\xE2\x94\x80 PROJECT OS COCKPIT \xE2\x94\x80\xE2\x94\x80  " + std::string(live ? "live [q]=quit Ctrl+C (or any key)" : "")) << "\n";
 		std::cout << fitLine("  [Status]  active=" + (st.activeSlug.empty() ? "(none)" : st.activeSlug) + "  goal=" + st.goalStatus + " (" + std::to_string(st.goalProgress) + "%)  todo=" + std::to_string(st.todoDone) + "/" + std::to_string(st.todoCount)) << "\n";
 		std::cout << fitLine("  [Health]  " + std::to_string(hs.score) + "/100 " + (hs.grade.empty() ? "" : "[" + hs.grade + "] ") + "(" + hs.signal + ")  " + hs.message) << "\n";
 		std::cout << fitLine("  [Usage]   " + (usTotal.empty() ? "(no usage)" : usTotal)) << "\n";
 		std::cout << fitLine("  [GPU]     " + (gpuLine.empty() ? "(nvidia-smi unavailable)" : gpuLine)) << "\n";
+		// F68 footer log line (bottom of dashboard).
+		std::cout << fitLine("  \xE2\x94\x80 log: " + std::to_string((long long)now) + "  [" + hs.signal + "]") << "\n";
 		if (live) {
 			// F64 historisation: append a frame (JSONL) to artifacts/usage/cockpit-history.jsonl.
-			const auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 			std::string frame = "{\"at\":" + std::to_string((long long)now) + ",\"active\":" + pos::json_quote(st.activeSlug)
 				+ ",\"goalStatus\":" + pos::json_quote(st.goalStatus) + ",\"goalProgress\":" + std::to_string(st.goalProgress)
 				+ ",\"todoDone\":" + std::to_string(st.todoDone) + ",\"todoCount\":" + std::to_string(st.todoCount)
@@ -318,6 +323,8 @@ static int cmdCockpit(pos::OutputFormat fmt, const std::vector<std::string>& arg
 			try { std::ofstream of(std::string(pos::repoRoot()) + "\\artifacts\\usage\\cockpit-history.jsonl", std::ios::app); of << frame << "\n"; } catch (...) {}
 		}
 		if (!live || g_cancel.load()) break;
+		// Phase 3.5 keyboard navigation: any key / 'q' / ESC quits.
+		if (live && _kbhit()) { int c = _getch(); if (c == 'q' || c == 27 || c != 0) break; }
 		for (int i = 0; i < 20 && !g_cancel.load(); ++i) std::this_thread::sleep_for(std::chrono::milliseconds(watchSec * 1000 / 20));
 	} while (live && !g_cancel.load());
 	if (live) { std::cout << "\x1b[?25h"; }
