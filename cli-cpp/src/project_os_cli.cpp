@@ -126,7 +126,7 @@ static void printJsonKV(const std::string& k, const std::string& v, bool first) 
 }
 
 // --- F37 cmdHelp: local, no bridge. Lists commands + usage. ------------------------
-static int cmdHelp() {
+static int cmdHelpOld() {
 	std::cout << "Project OS CLI v3 — usage\n"
 		<< "  version            build fingerprint (--format=json)\n"
 		<< "  capabilities       negotiation with the bridge\n"
@@ -172,6 +172,68 @@ static int cmdHelp() {
 		"  completion         shell completions (powershell|bash|zsh)\n"
 		"  bridge             MCP Bridge (status|start|stop|restart|health|tools|test|tunnel) — Phase 23\n"
 		"  --format=json|ndjson|tsv  --color=auto|always|never  --timeout=<ms>\n";
+	return 0;
+}
+
+static int cmdHelp() {
+	const std::string H = "\xE2\x94\x80\xE2\x94\x80";
+	auto sec = [&](const std::string& s) { std::cout << "\n  " << H << " " << s << " " << H << "\n"; };
+	std::cout << "Project OS CLI v3 — usage (categorized)\n";
+	sec("Général");
+	std::cout << "  version                build fingerprint (--format=json)\n";
+	std::cout << "  capabilities           negotiation with the bridge\n";
+	std::cout << "  completion <shell>     shell completions (powershell|bash|zsh)\n";
+	std::cout << "  exitcodes              exit-code taxonomy\n";
+	std::cout << "  health [--watch]       periodic read-only health\n";
+	std::cout << "  cockpit                live VT dashboard\n";
+	sec("Projet");
+	std::cout << "  status                 active project summary\n";
+	std::cout << "  project list           enumerate managed projects\n";
+	std::cout << "  project use <slug>     set active project\n";
+	std::cout << "  project inspect <slug> read-only project view\n";
+	std::cout << "  project watch          live refresh of active project\n";
+	std::cout << "  drift                  workspace drift summary\n";
+	std::cout << "  timeline               chronological goal/todo events\n";
+	std::cout << "  snapshot <cmd>         create | list | show\n";
+	std::cout << "  diff <a> <b>           compare two projects\n";
+	std::cout << "  goal proof             goal criteria/evidence\n";
+	std::cout << "  todo board             open/done view\n";
+	sec("Intelligence & analyse");
+	std::cout << "  health score           composite health of active project\n";
+	std::cout << "  health trend           historical snapshot health\n";
+	std::cout << "  health compare <a> [b] side-by-side health\n";
+	std::cout << "  budget forecast        token cost / burn prediction\n";
+	std::cout << "  insights tokens        token intelligence\n";
+	std::cout << "  diagnose               ranked auto-diagnostic battery\n";
+	std::cout << "  drift alert            baseline divergence alert\n";
+	std::cout << "  goal traction          goal evidence / velocity\n";
+	std::cout << "  autonomy health        plan + handoff health\n";
+	std::cout << "  risk profile           consolidated risk score\n";
+	std::cout << "  usage record           record token/cost/perf -> usage store\n";
+	sec("Artefact & config");
+	std::cout << "  artifact list|show|search|verify <id>\n";
+	std::cout << "  addon verify           addon lock/state\n";
+	std::cout << "  config                 effective config\n";
+	std::cout << "  doctor                 named health checks\n";
+	std::cout << "  diagnostics            redacted diagnostics bundle\n";
+	sec("Modèle & GPU");
+	std::cout << "  preflight              aggregate bridge/LocalAI/GPU check\n";
+	std::cout << "  models                 LocalAI model inventory\n";
+	std::cout << "  model show|smoke|benchmark <id>\n";
+	std::cout << "  route <task-class>     deterministic model selection\n";
+	std::cout << "  gpu|gpu watch|gpu proof  real nvidia-smi\n";
+	std::cout << "  benchmark              model performance testing\n";
+	sec("Qualité & release");
+	std::cout << "  test list|matrix       test suites / matrix\n";
+	std::cout << "  endurance              GPU endurance mode\n";
+	std::cout << "  report                 token usage report\n";
+	std::cout << "  release gate           release / version negotiation\n";
+	std::cout << "  export sarif           SARIF data export\n";
+	std::cout << "  protocol negotiate|test  protocol negotiation\n";
+	std::cout << "  schema machine         machine-consumer contract\n";
+	sec("Bridge MCP");
+	std::cout << "  bridge status|start|stop|restart|health|tools|test|tunnel\n";
+	std::cout << "\n  Global flags: --format=json|ndjson|tsv  --color=auto|always|never  --timeout=<ms>  --explain/--dry-run\n";
 	return 0;
 }
 

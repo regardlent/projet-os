@@ -8,6 +8,9 @@ Le format s'appuie sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) 
 ## [Unreleased]
 
 ### Ajouté
+- **`--help` catégorisé** : regroupement par thème (Général / Projet / Intelligence & analyse /
+  Artefact & config / Modèle & GPU / Qualité & release / Bridge MCP) avec en-têtes `── … ──` et
+  colonnes alignées.
 - **`usage record`** : pipeline d'usage **générique** — enregistre une observation tokens/coût/perf
   (`--job --input --output --model --ttft --tps --cost`) dans `artifacts/usage/USAGE_REPORT.json`
   (agrégé + historique), lue par `report`, `insights tokens` et `budget forecast`. Restaure `tokens`
