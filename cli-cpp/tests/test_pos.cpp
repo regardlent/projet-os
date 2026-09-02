@@ -515,6 +515,25 @@ static void testPerfBudget() {
 	std::cout << "  perf  : 50k-array parse in " << (long long)ms << " ms\n";
 }
 
+static void testFormatting() {
+	// 2.8 duration
+	CHECK(pos::fmtDuration(500) == "500ms");
+	CHECK(pos::fmtDuration(1500) == "1.5s");
+	CHECK(pos::fmtDuration(90000) == "1m30s");
+	CHECK(pos::fmtDuration(3660000) == "1h01m");
+	// 2.9 bytes
+	CHECK(pos::fmtBytes(0) == "0 B");
+	CHECK(pos::fmtBytes(512) == "512 B");
+	CHECK(pos::fmtBytes(1024) == "1.0K");
+	CHECK(pos::fmtBytes(1048576) == "1.0M");
+	CHECK(pos::fmtBytes(5 * 1024 * 1024 * 1024LL) == "5.0G");
+	// 2.6 sparkline
+	CHECK(pos::sparkline({}) == "");
+	CHECK(pos::sparkline({5, 5, 5}) == "\xE2\x96\x85\xE2\x96\x85\xE2\x96\x85"); // all mid
+	CHECK(pos::sparkline({0, 100}).size() == 6); // 2 blocks x 3 bytes
+	CHECK(pos::sparkline({0}).size() == 3);
+}
+
 static void testFuzzSecurity() {
 	// Uses escaped std::string for every hostile input to avoid any raw-delimiter ambiguity.
 	const std::string plusN = "{\"x\":+}";
@@ -595,6 +614,7 @@ int main() {
 	testGoldenUnicode();
 	testGoldenBudget();
 	testPerfBudget();
+	testFormatting();
 	testFuzzProperty();
 	testFuzzSecurity();
 	std::cout << "\n" << (failures == 0 ? "ALL PASS" : "FAILURES") << " (" << failures << ")\n";

@@ -463,4 +463,38 @@ inline std::string budgetVerdict(long long usedTokens, long long dailyBudget) {
         return "BLOWN";
 }
 
+// Phase 2 [2.8]: human-readable duration from milliseconds.
+inline std::string fmtDuration(long long ms) {
+        if (ms < 1000) return std::to_string(ms) + "ms";
+        if (ms < 60000) { double s = ms / 1000.0; char b[32]; snprintf(b, sizeof(b), "%.1fs", s); return b; }
+        long long m = ms / 60000; long long s = (ms % 60000) / 1000;
+        if (m >= 60) { long long h = m / 60; m %= 60; char b[32]; snprintf(b, sizeof(b), "%lldh%02lldm", h, m); return b; }
+        char b[32]; snprintf(b, sizeof(b), "%lldm%02llds", m, s); return b;
+}
+
+// Phase 2 [2.9]: human-readable byte size.
+inline std::string fmtBytes(long long n) {
+        if (n < 1024) return std::to_string(n) + " B";
+        if (n < 1024LL * 1024) { char b[32]; snprintf(b, sizeof(b), "%.1fK", n / 1024.0); return b; }
+        if (n < 1024LL * 1024 * 1024) { char b[32]; snprintf(b, sizeof(b), "%.1fM", n / (1024.0 * 1024.0)); return b; }
+        char b[32]; snprintf(b, sizeof(b), "%.1fG", n / (1024.0 * 1024.0 * 1024.0)); return b;
+}
+
+// Phase 2 [2.6]: unicode sparkline (scaled to min..max), returns a string of block chars.
+inline std::string sparkline(const std::vector<int>& values) {
+        static const char* blocks = "\xE2\x96\x81\xE2\x96\x82\xE2\x96\x83\xE2\x96\x84\xE2\x96\x85\xE2\x96\x86\xE2\x96\x87\xE2\x96\x88"; // ▁▂▃▄▅▆▇█
+        if (values.empty()) return "";
+        int mn = values[0], mx = values[0];
+        for (int v : values) { if (v < mn) mn = v; if (v > mx) mx = v; }
+        std::string out;
+        for (int v : values) {
+                int idx;
+                if (mx == mn) idx = 4;
+                else idx = (int)((long long)(v - mn) * 7 / (mx - mn));
+                if (idx < 0) idx = 0; if (idx > 7) idx = 7;
+                out += std::string(blocks + idx * 3, 3);
+        }
+        return out;
+}
+
 } // namespace pos
