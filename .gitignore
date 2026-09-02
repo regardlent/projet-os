@@ -15,8 +15,13 @@ cli-cpp/Testing/
 .b-evid*/
 .bridge-e2e-evidence*/
 .project-os-cli/
-artifacts/
 scratch/
+
+# Artifacts: version the CLI evidence pack; keep environment-specific run data out.
+artifacts/*
+!artifacts/cli-v3/
+!artifacts/cli-v3/**
+artifacts/cli-v3/diagnostics/
 
 # Env / secrets (never commit real secrets)
 .env

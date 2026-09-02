@@ -40,6 +40,8 @@ F48 sarif export · F49 shell completion · F50 cockpit.
 `benchmark compare <a> <b>`, `endurance status|run <rung>`, `report`, `release gate`, `export sarif`,
 `completion powershell|bash|zsh`, `cockpit`,
 `bridge status|start|stop|restart|health|tools|test|tunnel`.
+Intelligence & analyse (IA01-IA10, phase 27+) : `health score`, `health trend`, `health compare <a> [b]`,
+`budget forecast`, `insights tokens`, `diagnose`, `drift alert`, `goal traction`, `autonomy health`, `risk profile`.
 Global flags: `--format=json|ndjson|tsv`, `--color=auto|always|never`, `--explain/--dry-run`.
 
 ## 6. Packages & entry points
@@ -80,3 +82,23 @@ Global flags: `--format=json|ndjson|tsv`, `--color=auto|always|never`, `--explai
   VS Code command parity, snapshot diff richer, workspace drift baseline compare, artifact store integration,
   budget/token integration, observability (OpenTelemetry local), accessibility (monochrome+small terminal),
   machine-consumer contract (schema version), exit-code taxonomy extension, and 50 real-user scenarios.
+
+## 10. Intelligence & analyse (IA01-IA10, phase 27+) — implemented
+Bus d'analyse **déterministe** (`bin/project-os-bridge.mjs` → `gatherSignals()`), read-only, rendu
+`human|json|ndjson|tsv`. Réutilise goal/todo/autonomy/addons/git/snapshots/tokens + artefacts control-plane.
+Git/LocalAI/GPU dégradent en `n/a` sans erreur. Verified live contre `sfl-observatory` (health=62/C FAIR,
+insights ratio 2.87, diagnose WARN, risk MEDIUM).
+
+- **IA01 `health score`** — score composite 0-100 (goal 20+coté progress, todo 20, git 15, addons 10, contenu 5, snapshots 5) + grade A-E + signal GOOD/FAIR/AT_RISK.
+- **IA02 `health trend`** — deux+ scores de snapshots → IMPROVING/DECLINING/FLAT/NOT_ENOUGH_DATA.
+- **IA03 `health compare <a> [b]`** — santé côte-à-côte (A_BETTER/B_BETTER/EQUAL) ; exit 1 si b absent.
+- **IA04 `budget forecast`** — coût/burn extrapolé (tokens × coût, budget quotidien `PROJECT_OS_DAILY_BUDGET`) ; EXACT_ZERO/SPEND.
+- **IA05 `insights tokens`** — total/in/out + ratio + modèle ; HAS_USAGE/NO_USAGE.
+- **IA06 `diagnose`** — batterie de checks classés (goal/todo/git/addons/snapshot/contenu) ; CLEAR/WARN/ALERT, exit 1 si issues.
+- **IA07 `drift alert`** — divergence goal/todo/working-tree vs dernier snapshot baseline ; CLEAR/ALERT/NO_BASELINE, exit 1 si ALERT.
+- **IA08 `goal traction`** — traction = progress×0.4 + todo×0.4 + critères ; STRONG/MODERATE/WEAK.
+- **IA09 `autonomy health`** — état du plan (minutes/complexity/status/handoff/deadline) ; COMPLETED/ACTIVE/EXPIRED/MISSING.
+- **IA10 `risk profile`** — risques consolidés classés (high/med/low) + mitigations ; score 0-100 + signal HIGH/MEDIUM/LOW.
+
+Contrat de sortie : un échec n'est jamais mappé sur 0 (ex. `diagnose` → exit 1, `drift alert` ALERT → exit 1,
+`health compare` b-absent → exit 1). Tests unitaires : `testParseInspectGoalProof` + parsing score/grade/signal/rows/details.

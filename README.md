@@ -59,6 +59,21 @@ ClineCore (@cline/sdk)  ──>  ClineRuntimeAdapter  ──>  RuntimeEventNorma
 - Politiques de permissions.
 - Registre + persistance + récupération de corruption.
 
+## CLI C++ (cli-cpp)
+
+En complément de l'extension, un **CLI C++/CMake** (`cli-cpp/`) pilote Project OS par menus ou en
+mode scriptable via la passerelle Node (`bin/project-os-bridge.mjs`). Voir `cli-cpp/README.md`.
+
+- Surface : `help`, `version`, `status`, `project list|use|inspect|watch`, `drift`, `timeline`,
+  `snapshot`, `diff`, `goal proof`, `todo board`, `artifact *`, `addon verify`, `config`, `doctor`,
+  `diagnostics`, `preflight`, `models`, `model *`, `route`, `gpu`, `test list|matrix`, `report`,
+  `release gate`, `export sarif`, `cockpit`, `completion`, `bridge status|start|stop|…`.
+- **Intelligence & analyse (10 features, phase 27+)** : `health score`, `health trend`,
+  `health compare <a> [b]`, `budget forecast`, `insights tokens`, `diagnose`, `drift alert`,
+  `goal traction`, `autonomy health`, `risk profile`. Bus d'analyse déterministe (read-only),
+  sortie `human|json|ndjson|tsv`, dégradation propre si git/LocalAI/GPU indisponibles.
+- `--format=json|ndjson|tsv`, `--color=auto|always|never`, `--timeout=<ms>`, `--explain/--dry-run`.
+
 ## Roadmap (non implémenté)
 
 Multi-agent/teams, MCP, Task/Testing API, Git/worktree/checkpoints, Release Center,
