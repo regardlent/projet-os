@@ -773,6 +773,49 @@ try {
 		process.exit(0);
 	}
 
+	// F70 model compare <a> <b>: A/B benchmark with multiple metrics (5.3).
+	if (line.startsWith("model compare ")) {
+		const parts = line.slice("model compare ".length).trim().split(/\s+/);
+		const a = parts[0], b = parts[1];
+		if (!a || !b) { emit({ command: "models", ok: false, status: "INVALID_USAGE", score: 0, grade: "", signal: "FAIL", rows: [], details: ["usage: model compare <a> <b>"], message: "model compare: expected <a> <b>", warnings: [], actions: [], artifacts: [] }, 2); process.exit(0); }
+		const runOne = async (id) => {
+			try {
+				const t0 = Date.now();
+				const r = await fetch(baseUrl + "/chat/completions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: id, messages: [{ role: "user", content: "What is 2+2? Answer with the number only." }], max_tokens: 200, temperature: 0, stream: false }) });
+				const dt = Date.now() - t0;
+				const body = await r.json();
+				const content = (body.choices?.[0]?.message?.content ?? "").trim();
+				const tokens = body.usage?.total_tokens ?? 0;
+				return { id, ok: r.ok, http: r.status, ttftMs: dt, tokens, tps: dt > 0 ? Math.round(tokens / (dt / 1000)) : 0, content: content.slice(0, 60) };
+			} catch (e) { return { id, ok: false, http: 0, ttftMs: 0, tokens: 0, tps: 0, content: "ERROR " + e.message }; }
+		};
+		const ra = await runOne(a), rb = await runOne(b);
+		const rows = [
+			{ k: a, v: `http=${ra.http} ttft=${ra.ttftMs}ms tps=${ra.tps} tokens=${ra.tokens}` },
+			{ k: b, v: `http=${rb.http} ttft=${rb.ttftMs}ms tps=${rb.tps} tokens=${rb.tokens}` },
+			{ k: "tps winner", v: ra.tps > rb.tps ? a : (rb.tps > ra.tps ? b : "tie") },
+			{ k: "ttft winner", v: ra.ttftMs < rb.ttftMs ? a : (rb.ttftMs < ra.ttftMs ? b : "tie") },
+		];
+		const verdict = ra.tps === rb.tps ? "A_EQUAL" : (ra.tps > rb.tps ? "A_BETTER" : "B_BETTER");
+		emit({ command: "models", ok: true, status: "COMPARE", score: 0, grade: "", signal: verdict, rows, details: [`a: ${ra.content}`, `b: ${rb.content}`], message: `model compare: ${a} tps=${ra.tps} vs ${b} tps=${rb.tps} -> ${verdict}`, warnings: [], actions: [], artifacts: [] }, 0);
+		process.exit(0);
+	}
+
+	// F71 model flash <id>: flash-eligibility heuristic (5.9).
+	if (line.startsWith("model flash ")) {
+		const id = line.slice("model flash ".length).trim();
+		const l = id.toLowerCase();
+		const reasons = [];
+		if (l.includes("flash")) reasons.push("name:flash");
+		if (l.includes("small") || l.includes("3b") || l.includes("0.5b") || l.includes("2b")) reasons.push("size:small");
+		if (l.includes("function") || l.includes("instruct")) reasons.push("capability:function/instruct");
+		const eligible = reasons.length >= 1;
+		const rows = reasons.map((r) => ({ k: "hint", v: r }));
+		rows.push({ k: "eligible", v: eligible ? "yes" : "no" });
+		emit({ command: "models", ok: true, status: "FLASH", model: id, score: 0, grade: "", signal: eligible ? "PASS" : "FAIL", rows, details: [], message: `model flash: ${id} eligible=${eligible} (${reasons.join(", ") || "no hints"})`, warnings: [], actions: [], artifacts: [] }, 0);
+		process.exit(0);
+	}
+
 	// F37 model benchmark <id>: 1 warmup + 3 measured real inferences -> TTFT/tokens-per-sec.
 	if (line.startsWith("model benchmark ")) {
 		const id = line.slice("model benchmark ".length).trim();
