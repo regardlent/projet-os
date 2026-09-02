@@ -110,8 +110,8 @@
 - [ ] 9.4 Completion dynamique (slugs + sous-commandes).
 - [x] 9.5 `--dry-run` enrichi.
 - [x] 9.6 Alias de commandes.
-- [ ] 9.7 Fichier de config (`~/.project-os/config`).
-- [ ] 9.8 Doc env (`PROJECT_OS_*`) enrichie.
+- [x] 9.7 Fichier de config (`~/.project-os/config`).
+- [x] 9.8 Doc env (`PROJECT_OS_*`) enrichie.
 - [ ] 9.9 Script d'installation.
 - [x] 9.10 Onboarding / guide rapide.
 

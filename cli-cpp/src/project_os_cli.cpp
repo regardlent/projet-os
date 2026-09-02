@@ -1625,12 +1625,50 @@ static int cmdUsageRecord(pos::OutputFormat fmt, const std::vector<std::string>&
 static int cmdUsageList(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "usage list", g_timeoutMs, &g_cancel); printAnalysis("usage list", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
 static int cmdUsageSummary(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "usage summary", g_timeoutMs, &g_cancel); printAnalysis("usage summary", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
 static int cmdUsageExport(pos::OutputFormat fmt, const std::vector<std::string>& args, bool colorOn) { std::string line = "usage export"; for (auto& a : args) line += " " + a; pos::CmdResult r = pos::dispatch(pos::bridgePath(), line, g_timeoutMs, &g_cancel); printAnalysis("usage export", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
+
+// 9.7 config file (~/.project-os/config.json): apply theme/emoji/timeout defaults before argv.
+static std::string projectOsConfigPath() {
+	const char* home = std::getenv("USERPROFILE");
+	if (!home) home = std::getenv("HOME");
+	if (!home) return ".project-os/config.json";
+	return std::string(home) + "\\.project-os\\config.json";
+}
+static void loadProjectOsConfig() {
+	const std::string p = projectOsConfigPath();
+	FILE* f = std::fopen(p.c_str(), "rb");
+	if (!f) return;
+	std::string data; { char buf[4096]; size_t n; while ((n = std::fread(buf, 1, sizeof(buf), f)) > 0) data.append(buf, n); } std::fclose(f);
+	try {
+		auto v = pos::parseJson(data);
+		if (auto* t = v.get("theme"); t && t->kind == pos::JKind::String) { if (t->str == "light") g_theme.store(0); else if (t->str == "dark") g_theme.store(1); }
+		if (auto* e = v.get("emoji"); e && e->kind == pos::JKind::Bool) g_emoji.store(e->boolean);
+		if (auto* to = v.get("timeoutMs"); to && to->kind == pos::JKind::Number && to->number > 0) g_timeoutMs.store((int)to->number);
+	} catch (...) {}
+}
+
+// 9.8 documented PROJECT_OS_* env vars.
+static int cmdConfigEnv() {
+	std::cout << "── config env ──\n";
+	std::cout << "  PROJECT_OS_REPO         repo racine (defaut: CWD)\n";
+	std::cout << "  PROJECT_OS_REGISTRY     chemin du registre hub (managed-projects.json)\n";
+	std::cout << "  PROJECT_OS_ACTIVE_SLUG  slug du projet actif\n";
+	std::cout << "  PROJECT_OS_ARTIFACT_DIR dossier ArtifactStore (index.json + blobs)\n";
+	std::cout << "  PROJECT_OS_ORIGINATOR   origine des artefacts publies\n";
+	std::cout << "  PROJECT_OS_NODE         exe node explicite\n";
+	std::cout << "  PROJECT_OS_DAILY_BUDGET budget tokens quotidien (alerte usage)\n";
+	std::cout << "  PROJECT_OS_PAID_MODE    politique PAYG (free/pass/payg)\n";
+	return 0;
+}
+
 int wmain(int argc, wchar_t** wargv) {
 	// F09: cooperative Ctrl+C (never kills an external/user process).
 	std::signal(SIGINT, onSigInt);
 	// F06: preserve Unicode argv via wmain (code page ANSI would corrupt names).
 	std::vector<std::string> argvS;
 	for (int i = 0; i < argc; ++i) { std::string u; if (pos::utf16ToUtf8((unsigned short*)wargv[i], u)) argvS.push_back(u); else argvS.push_back(std::string(wargv[i], wargv[i] + wcslen(wargv[i]))); }
+
+	// 9.7: apply ~/.project-os/config.json defaults (argv overrides later).
+	loadProjectOsConfig();
 
 	// F05: terminal detection (GetConsoleMode on STDOUT). VT + TTY.
 	bool isTty = false;
@@ -1716,6 +1754,8 @@ int wmain(int argc, wchar_t** wargv) {
 		if (explain) { return cmdExplain(cmd, args); }
 		if (cmd == "help" || cmd == "--help" || cmd == "-h") { return cmdHelp(); }
 		if (cmd == "welcome") { return cmdWelcome(); }
+		if (cmd == "config" && args.size() >= 1 && args[0] == "path") { std::cout << "── config path ──\n  path : " << projectOsConfigPath() << "\n"; return 0; }
+		if (cmd == "config" && args.size() >= 1 && args[0] == "env") { return cmdConfigEnv(); }
 		if (cmd == "completion" && args.size() >= 1) { return cmdCompletion(args[0]); }
 		if (cmd == "cockpit" && args.size() >= 1 && args[0] == "history") { return cmdCockpitHistory(fmt); }
 		if (cmd == "cockpit" && args.size() >= 1 && args[0] == "export") { return cmdCockpitExport(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }
