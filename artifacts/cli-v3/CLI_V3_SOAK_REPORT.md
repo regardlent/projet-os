@@ -10,7 +10,7 @@ Status: PASS (13 real-world CLI scenarios validated end-to-end).
 | 3 | `version --format=json` parses | PASS |
 | 4 | unknown command → exit **2** (not 0) | PASS |
 | 5 | `capabilities --format=json` clean (starts `{`, no ANSI) | PASS |
-| 6 | `docs 'swiss football league'` | PASS |
+| 6 | `docs 'ligue'` | PASS |
 | 7 | `gpu` read-only (nvidia-smi) | PASS |
 | 8 | `endurance status` (real ladder) | PASS |
 | 9 | `report` (real tokens/cost) | PASS |

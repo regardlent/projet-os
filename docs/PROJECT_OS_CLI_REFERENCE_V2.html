@@ -78,7 +78,7 @@ Il lit aussi directement certains JSON de métadonnées (<code>.project-os/proje
 0. Quit</pre>
 <h3>4.2 Mode non-interactif (scriptable) — ajout récent</h3>
 <pre>project-os-cli &lt;command&gt; [args...]     # préfixe "/" ajouté automatiquement
-project-os-cli docs "swiss football league"
+project-os-cli docs "ligue"
 project-os-cli project &lt;slug&gt;
 project-os-cli goal "Objective"
 project-os-cli todo list
@@ -94,7 +94,7 @@ project-os-cli bogus        # -> FAIL UNKNOWN_COMMAND</pre>
 <tr><td><code>/todo</code></td><td><code>list</code> <code>add &lt;label&gt;</code> <code>done &lt;key&gt;</code></td><td>Liste (barré), ajoute, marque fait. Persisté (todo.json + TODO.md).</td></tr>
 <tr><td><code>/addon</code></td><td><code>list</code> <code>recommended</code> <code>add &lt;id&gt;</code> <code>remove</code> <code>disable</code> <code>enable</code></td><td>Gère les addons workspace (core, cpp, web, node, python...).</td></tr>
 <tr><td><code>/autonomy</code></td><td><code>plan --minutes=&lt;n&gt;</code> <code>run</code> <code>summary</code> <code>--write</code></td><td>Plan autonomie (budget minutes par complexité), exécution agent, résumé, write-lane gated.</td></tr>
-<tr><td><code>/docs</code></td><td><code>&lt;domain&gt;</code> <code>--category=&lt;c&gt;</code></td><td>Navigation doc officielle en ligne pour un domaine (SFL, C++, Win32...).</td></tr>
+<tr><td><code>/docs</code></td><td><code>&lt;domain&gt;</code> <code>--category=&lt;c&gt;</code></td><td>Navigation doc officielle en ligne pour un domaine (cpp, Win32...).</td></tr>
 <tr><td><code>/project</code></td><td><code>&lt;slug&gt;</code> <code>--project=&lt;slug&gt;</code></td><td>Résumé d'un projet géré (type, statut, goal, progress).</td></tr>
 <tr><td><code>/report</code></td><td><code>--job=&lt;id&gt;</code> <code>--model=&lt;id&gt;</code></td><td>Rapport tokens + coût + perf d'un job (export programmatique).</td></tr>
 </table>
@@ -131,7 +131,7 @@ project-os-cli bogus        # -> FAIL UNKNOWN_COMMAND</pre>
 <table>
 <tr><td>Build</td><td><code>cmake --build cmake-build</code> → exit 0 (project-os-cli + pos_json_test)</td><td class="ok">PASS</td></tr>
 <tr><td>ctest</td><td>pos_json_test 1/1</td><td class="ok">PASS</td></tr>
-<tr><td>Mode non-interactif docs</td><td><code>project-os-cli docs "swiss football league"</code> → OK docs NAV (SFL)</td><td class="ok">PASS</td></tr>
+<tr><td>Mode non-interactif docs</td><td><code>project-os-cli docs "ligue"</code> → OK docs NAV (ligue)</td><td class="ok">PASS</td></tr>
 <tr><td>Gestion erreur</td><td><code>project-os-cli bogus</code> → FAIL UNKNOWN_COMMAND</td><td class="ok">PASS</td></tr>
 <tr><td>Typecheck (repo)</td><td><code>tsc -p ./ --noEmit</code> → 0 erreur</td><td class="ok">PASS</td></tr>
 </table>

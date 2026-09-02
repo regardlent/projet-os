@@ -42,25 +42,25 @@ li{margin:3px 0}
 <table>
 <tr><th>Commande</th><th>Description</th><th>Exemple</th></tr>
 <tr><td><code>/create</code></td><td>Crée un projet neuf (scaffold).</td><td><code>/create myproject type=cpp</code></td></tr>
-<tr><td><code>/goal</code></td><td>Définit l'objectif (critères mesurables).</td><td><code>/goal "Observe Swiss Super League" showStandings showScorers</code></td></tr>
+<tr><td><code>/goal</code></td><td>Définit l'objectif (critères mesurables).</td><td><code>/goal "Observe Swiss ligue" showStandings showScorers</code></td></tr>
 <tr><td><code>/todo</code></td><td>Liste (barré) / ajoute / marque une tâche.</td><td><code>/todo list</code>, <code>/todo done impl</code></td></tr>
 <tr><td><code>/addon</code></td><td>Gère les addons (core, cpp, web, node).</td><td><code>/addon add project-os-cpp</code></td></tr>
 <tr><td><code>/autonomy</code></td><td>Lance un run autonome (analyse/enrichissement).</td><td><code>/autonomy plan --minutes=60</code>, <code>/autonomy run</code></td></tr>
-<tr><td><code>/docs</code></td><td>Navigation des sources officielles en ligne.</td><td><code>/docs swiss football league</code></td></tr>
-<tr><td><code>/project</code></td><td>Résumé d'un projet géré.</td><td><code>/project sfl-observatory</code></td></tr>
+<tr><td><code>/docs</code></td><td>Navigation des sources officielles en ligne.</td><td><code>/docs ligue</code></td></tr>
+<tr><td><code>/project</code></td><td>Résumé d'un projet géré.</td><td><code>/project projet-gere</code></td></tr>
 <tr><td><code>/report</code></td><td>Rapport tokens/cost/perf d'un job.</td><td><code>/report --job=run-60min</code></td></tr>
 </table>
 
-<h2>3. Créer &amp; piloter un projet (exemple réel SFL)</h2>
+<h2>3. Créer &amp; piloter un projet (exemple réel)</h2>
 <pre>cd C:\Users\eiden\Desktop\dev\projects
-/create sfl-observatory type=cpp
-/goal "Observe Swiss Super League" showStandings showScorers
+/create projet-gere type=cpp
+/goal "Observe Swiss ligue" showStandings showScorers
 /todo add "Implement standings/scorers"
 /todo done scaffold
 /autonomy plan --minutes=60
 /autonomy run            # Project OS analyse et enrichit (write-lane)
-/docs swiss football league      # navigation sources en ligne
-/project sfl-observatory         # état du projet
+/docs ligue      # navigation sources en ligne
+/project projet-gere         # état du projet
 /report --job=run-60min          # tokens + coût + perf</pre>
 <h2>4. Anatomie d'un projet géré</h2>
 <pre>&lt;slug&gt;
@@ -113,11 +113,11 @@ ctest --test-dir build --output-on-failure</pre>
 <tr><th>Symptôme</th><th>Cause</th><th>Action</th></tr>
 <tr><td><code>BLOCKED_GPU_EXTERNAL_VRAM</code></td><td>&lt;3 Go free</td><td>Fermer navigateur/IDE GPU-accéléré, débrancher écran 2 sur le dGPU</td></tr>
 <tr><td>OOM à ctx long</td><td>Contexte géant (131072)</td><td>Réduire <code>context_size</code> à 8192 (2,8 Go vs 7,9 Go)</td></tr>
-<tr><td>sfl.ch 404 / football-data 403</td><td>Chemin/clé requise</td><td>Corriger le chemin ou fournir la clé API</td></tr>
+<tr><td>source 404 / football-data 403</td><td>Chemin/clé requise</td><td>Corriger le chemin ou fournir la clé API</td></tr>
 </table>
 
 <h2>10. Télémétrie des jobs</h2>
-<p>Chaque run écrit son rapport : <code>artifacts\endurance\*.json</code> / <code>artifacts\sfl\AUTONOMY_USAGE_REPORT.json</code> — tokens (input/output/total), coût (LocalAI = <code>EXACT_ZERO</code>), perf (TTFT, tokens/s, VRAM).</p>
+<p>Chaque run écrit son rapport : <code>artifacts\endurance\*.json</code> / <code>artifacts\usage\USAGE_REPORT.json</code> — tokens (input/output/total), coût (LocalAI = <code>EXACT_ZERO</code>), perf (TTFT, tokens/s, VRAM).</p>
 
 <hr>
 <p style="text-align:center;color:#888;font-size:11px">Généré par Project OS — guide d'utilisation v0.1.0 (Phase 23).</p>

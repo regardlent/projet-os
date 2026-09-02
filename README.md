@@ -1,6 +1,6 @@
 # Cline Project OS
 
-Une extension VS Code qui branche un **Control Center / Artifact System** autour du **vrai SDK Cline** (`@cline/sdk`). Construite comme chantier greenfield séparé du code Python `prob-reddit`.
+Une extension VS Code qui branche un **Control Center / Artifact System** autour du **vrai SDK Cline** (`@cline/sdk`). Construite comme chantier greenfield **autonome** (sans dépendance à un autre projet).
 
 > ⚠️ État : **Phase 2 — migration faite**. Typecheck (0 erreur) et **43/43 tests** passent (25 de
 > base + 18 Phase 2). Le **cycle de vie ClineCore** (create/start/subscribe/sessionId/usage/stop/

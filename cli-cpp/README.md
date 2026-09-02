@@ -29,7 +29,7 @@ project-os-cli <command> [args...]
 ```
 Equivalent à une slash-commande réelle (préfixe `/` ajouté automatiquement). Sortie structurée `OK/FAIL status message`.
 ```
-project-os-cli docs "swiss football league"   # navigation doc officielle
+project-os-cli docs "ligue"   # navigation doc officielle
 project-os-cli project <slug>                  # statut d'un projet géré
 project-os-cli goal "Objective"                # définit le goal du projet actif
 project-os-cli todo list                       # TODO barré

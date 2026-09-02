@@ -7,9 +7,9 @@ Handoff document for ChatGPT web to plan the next 50 development phases of the C
 - **Binary**: `cli-cpp/cmake-build/project-os-cli.exe`
 - **Build**: CMakePresets (Ninja): `debug`, `release`, `test`, `workflow ci`; installable (`cmake --install ... --prefix`)
 - **Node bridge**: `bin/project-os-bridge.mjs` (protocol v2)
-- **LocalAI**: `http://127.0.0.1:8080/v1` (loopback, 15 models)
+- **LocalAI**: `http://127.0.0.1:8080/v1` (loopback, models)
 - **Toolchain**: MinGW `C:\msys64\mingw64\bin`, CMake 4.3.3, g++ 16.1.0
-- **GPU**: NVIDIA RTX 5060 Laptop, 8 GB, driver 616.56
+- **GPU**: NVIDIA GPU Laptop, 8 GB, driver 616.56
 
 ## 2. Architecture (hub-spoke)
 - CLI (C++) parses/UX/terminal → runner (CreateProcessW, no shell) → Node bridge → SlashCommandRegistry → Project OS TS domain.
@@ -86,7 +86,7 @@ Global flags: `--format=json|ndjson|tsv`, `--color=auto|always|never`, `--explai
 ## 10. Intelligence & analyse (IA01-IA10, phase 27+) — implemented
 Bus d'analyse **déterministe** (`bin/project-os-bridge.mjs` → `gatherSignals()`), read-only, rendu
 `human|json|ndjson|tsv`. Réutilise goal/todo/autonomy/addons/git/snapshots/tokens + artefacts control-plane.
-Git/LocalAI/GPU dégradent en `n/a` sans erreur. Verified live contre `sfl-observatory` (health=62/C FAIR,
+Git/LocalAI/GPU dégradent en `n/a` sans erreur. Verified live contre `projet-gere` (health=62/C FAIR,
 insights ratio 2.87, diagnose WARN, risk MEDIUM).
 
 - **IA01 `health score`** — score composite 0-100 (goal 20+coté progress, todo 20, git 15, addons 10, contenu 5, snapshots 5) + grade A-E + signal GOOD/FAIR/AT_RISK.

@@ -69,7 +69,7 @@ li{margin:2px 0}
 <tr><td><code>/todo</code></td><td><code>list</code> <code>add &lt;label&gt;</code> <code>done &lt;key&gt;</code></td><td>Liste (items <b>barrés</b> si faits), ajoute, marque fait. Persisté (todo.json + TODO.md).</td></tr>
 <tr><td><code>/addon</code></td><td><code>list</code> <code>recommended</code> <code>add &lt;id&gt;</code> <code>remove</code> <code>disable</code> <code>enable</code></td><td>Gère les addons workspace (core, cpp, web, node, python...).</td></tr>
 <tr><td><code>/autonomy</code></td><td><code>plan --minutes=&lt;n&gt;</code> <code>run</code> <code>summary</code> <code>--write</code></td><td>Plan d'autonomie (budget minutes par complexité), exécution agent, résumé. <code>--write</code> = write-lane borné + gated.</td></tr>
-<tr><td><code>/docs</code></td><td><code>&lt;domain&gt;</code> <code>--category=&lt;c&gt;</code></td><td>Navigation des sources officielles en ligne pour un domaine (SFL, C++, Win32...).</td></tr>
+<tr><td><code>/docs</code></td><td><code>&lt;domain&gt;</code> <code>--category=&lt;c&gt;</code></td><td>Navigation des sources officielles en ligne pour un domaine (cpp, Win32...).</td></tr>
 <tr><td><code>/project</code></td><td><code>&lt;slug&gt;</code> <code>--project=&lt;slug&gt;</code></td><td>Résumé d'un projet géré (type, statut, goal, progress).</td></tr>
 <tr><td><code>/report</code></td><td><code>--job=&lt;id&gt;</code> <code>--model=&lt;id&gt;</code></td><td>Rapport tokens + coût + perf d'un job (vrai total, jamais inventé).</td></tr>
 </table>
@@ -242,7 +242,7 @@ li{margin:2px 0}
 <p>Domaines couverts : slash commands, autonomy, autonomy routing, todo, docs, write-lane, writeLaneGuard, staticPostGen, dashboard, liveDashboard, textOutput, provider preflight/profile, routing budget, artifacts (registry/stateMachine), permissions, approvalBridge, antigravity guards, workspace, streamingBuffer, outputChannel, tokenIntelligence, usageReport, toolCallDiagnostic, projectFactory, managedProjectRegistry.</p>
 
 <h2>16. Artefacts livrés (phases 13-23)</h2>
-<p><code>artifacts/</code> : <code>antigravity-restarts</code>, <code>endurance</code> (PROJECT_CREATION_ENDURANCE, GPU_LEDGER, BUG_LEDGER, ENDURANCE_GATE_PROOF, FLEET_QUALIFICATION, ENDURANCE_ORCHESTRATOR_REPORT, ENDURANCE_ROUTER_PROOF, ENDURANCE_LAB_REPORT, GPU_CONSUMER_INVENTORY, GPU_CONFIG_TUNING, FLEET_QUALIFICATION), <code>model-security</code>, <code>phase17/18/19/20/21/22/23</code>, <code>sfl</code> (SFL_USAGE_REPORT, AUTONOMY_USAGE_REPORT, dashboard, GOAL_REACHED), <code>FLASH_FLEET_MANIFEST.json</code>.</p>
+<p><code>artifacts/</code> : <code>antigravity-restarts</code>, <code>endurance</code> (PROJECT_CREATION_ENDURANCE, GPU_LEDGER, BUG_LEDGER, ENDURANCE_GATE_PROOF, FLEET_QUALIFICATION, ENDURANCE_ORCHESTRATOR_REPORT, ENDURANCE_ROUTER_PROOF, ENDURANCE_LAB_REPORT, GPU_CONSUMER_INVENTORY, GPU_CONFIG_TUNING, FLEET_QUALIFICATION), <code>model-security</code>, <code>phase17/18/19/20/21/22/23</code>, <code>usage</code> (USAGE_REPORT, USAGE_REPORT, dashboard, GOAL_REACHED), <code>FLASH_FLEET_MANIFEST.json</code>.</p>
 
 <h2>17. Chemins &amp; prérequis</h2>
 <table>

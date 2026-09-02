@@ -633,7 +633,7 @@
       "regression": "PLANNED",
       "evidence": "PASS",
       "status": "PASS",
-      "note": "gpu: real nvidia-smi read-only via ProcessRunner (no kill); proven RTX 5060 8151/7420/480/13%"
+      "note": "gpu: real nvidia-smi read-only via ProcessRunner (no kill); proven GPU 8151/7420/480/13%"
     },
     "F39_gpu_watch": {
       "phase": 21,
@@ -648,7 +648,7 @@
       "regression": "PASS",
       "evidence": "PASS",
       "status": "PASS",
-      "note": "gpu watch: live nvidia-smi refresh (human+json, tick), Ctrl+C/stop; reads real GPU, no ANSI in JSON. Proven 3 ticks RTX 5060.",
+      "note": "gpu watch: live nvidia-smi refresh (human+json, tick), Ctrl+C/stop; reads real GPU, no ANSI in JSON. Proven 3 ticks GPU.",
       "unitStamped": true
     },
     "F40_gpu_proof": {
@@ -814,7 +814,7 @@
       "regression": "PASS",
       "evidence": "PASS",
       "status": "PASS",
-      "note": "cockpit: inline VT dashboard (no external dep), read-only live refresh; proven endurance=[5,10,20] offload=PASS gpu=RTX 5060 480 MiB"
+      "note": "cockpit: inline VT dashboard (no external dep), read-only live refresh; proven endurance=[5,10,20] offload=PASS gpu=GPU 480 MiB"
     }
   }
 }

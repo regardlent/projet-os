@@ -642,7 +642,7 @@
       "regression": "PLANNED",
       "evidence": "PASS",
       "status": "PASS",
-      "note": "gpu: real nvidia-smi read-only via ProcessRunner (no kill); proven RTX 5060 8151/7420/480/13%"
+      "note": "gpu: real nvidia-smi read-only via ProcessRunner (no kill); proven GPU 8151/7420/480/13%"
     },
     "F39_gpu_watch": {
       "phase": 21,
@@ -657,7 +657,7 @@
       "regression": "PASS",
       "evidence": "PASS",
       "status": "PASS",
-      "note": "gpu watch: live nvidia-smi refresh (human+json, tick), Ctrl+C/stop; reads real GPU, no ANSI in JSON. Proven 3 ticks RTX 5060.",
+      "note": "gpu watch: live nvidia-smi refresh (human+json, tick), Ctrl+C/stop; reads real GPU, no ANSI in JSON. Proven 3 ticks GPU.",
       "unitStamped": true
     },
     "F40_gpu_proof": {
@@ -823,7 +823,7 @@
       "regression": "PASS",
       "evidence": "PASS",
       "status": "PASS",
-      "note": "cockpit: inline VT dashboard (no external dep), read-only live refresh; proven endurance=[5,10,20] offload=PASS gpu=RTX 5060 480 MiB"
+      "note": "cockpit: inline VT dashboard (no external dep), read-only live refresh; proven endurance=[5,10,20] offload=PASS gpu=GPU 480 MiB"
     },
     "F39_gpu_watch": { "status": "PASS", "phase": 21, "evidence": "live 3 ticks nvidia-smi (json+human), intervalle parametrable, stop propre via Ctrl+C" },
     "F40_gpu_proof": { "status": "PASS", "phase": 21, "improved_phase": 22, "evidence": "live: gpu proof [model-id] parametrable + human/json; json+model: HTTP 200 (1008ms, content=7) exit 0", "fix": "L2: flags globaux (--format/--color/--explain) acceptes AVANT la commande" },
@@ -831,7 +831,7 @@
     "F08_timeout": { "status": "PASS", "phase": 5, "improved_phase": 22, "evidence": "--timeout=<ms> global (avant/apres la commande), 42 dispatch sites migres, fallback 60000 si <=0; live: --timeout=30000 gpu proof OK, capabilities OK exit 0, bogus exit 2" },
     "F04_formats_full": { "status": "PASS", "phase": 22, "improves": ["models(F33)", "test list(F41)", "artifact list(F23)"], "evidence": "ndjson/tsv reels sur les 3 listings; tsv verifie par octets (HAS_TAB=true); ndjson 1-objet/ligne; human/json inchanges; ctest 1/1; Node 293/293" },
     "F23_registry_backed": { "status": "PASS", "phase": 22, "improves": ["artifact list(F23)", "artifact verify(F26)"], "evidence": "source=registry via PROJECT_OS_ARTIFACT_DIR (id/type/status/version/sha256) sinon scan fallback (source=scan); verify compare SHA256 -> SHA_MISMATCH entraine VERIFY_FAIL exit 1; matching -> VERIFIED exit 0" },
-    "IA01_health_score": { "status": "PASS", "phase": 27, "evidence": "health score: composite score+grade+signal (goal/todo/git/addons/content/snapshots/tokens); live sfl 62/C FAIR; json/ndjson/tsv" },
+    "IA01_health_score": { "status": "PASS", "phase": 27, "evidence": "health score: composite score+grade+signal (goal/todo/git/addons/content/snapshots/tokens); live 62/C FAIR; json/ndjson/tsv" },
     "IA02_health_trend": { "status": "PASS", "phase": 27, "evidence": "health trend: snapshot scores -> IMPROVING/DECLINING/FLAT/NOT_ENOUGH_DATA; live NOT_ENOUGH_DATA (0 snapshot)" },
     "IA03_health_compare": { "status": "PASS", "phase": 27, "evidence": "health compare <a> [b]: A_BETTER/B_BETTER/EQUAL; exit 1 si b absent (NOT_FOUND); live A_BETTER 62 C" },
     "IA04_budget_forecast": { "status": "PASS", "phase": 27, "evidence": "budget forecast: tokens x cost + PROJECT_OS_DAILY_BUDGET -> EXACT_ZERO/SPEND; live EXACT_ZERO (LocalAI) tokens=74732" },

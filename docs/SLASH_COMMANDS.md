@@ -8,7 +8,7 @@
 Définit/met à jour le goal du projet actif (ou `--project=<slug>`).
 ```text
 /goal Créer un IDE C++ Windows rapide, stable et portable.
-/goal --project=vulnforge-next --accept=compiles,fast "Build a fast C++ IDE"
+/goal --project=projet-demo --accept=compiles,fast "Build a fast C++ IDE"
 ```
 Écrit `.project-os/goal.json` + history `.project-os/goal-history.jsonl` (append-only), met à jour le
 registry hub. N'entraîne aucun codage automatique (définition d'intention).
@@ -16,7 +16,7 @@ registry hub. N'entraîne aucun codage automatique (définition d'intention).
 ## /create <name> [--type=<t>] [--goal="..."] [--git=false]
 Crée un projet géré sous `PROJECTS_ROOT` (défaut `C:\Users\eiden\Desktop\dev\projects\<slug>`).
 ```text
-/create vulnforge-next --type=typescript --goal="Lab sécurité local-only"
+/create projet-demo --type=typescript --goal="Lab sécurité local-only"
 ```
 Pipeline : VALIDATE → ID → dirs → manifest → goal → base files → git → registry → READY.
 - `PROJECT_ALREADY_EXISTS` / `PATH_TRAVERSAL_BLOCKED` si invalide.

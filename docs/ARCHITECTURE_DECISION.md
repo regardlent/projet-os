@@ -6,7 +6,7 @@ Statut : `PASS` (décision documentée et appliquée). Cible : une extension VS 
 ## 1. Contexte
 
 La mission décrit une « Cline Project OS / Workspace OS / Artifact Agent Control Center ».
-Le workspace ouvert (`prob-reddit`) est une application **Python** sans infra extension ni SDK
+Le workspace ouvert est une application **Python** sans infra extension ni SDK
 Cline. Décision utilisateur : construire l'extension **séparément** (`project-os/`) en
 TypeScript, en la branchant sur un **vrai `@cline/sdk`** audité, et en respectant
 `SOURCE-FIRST` / `INSTALLED TYPES WIN` / `NO FAKE API`.

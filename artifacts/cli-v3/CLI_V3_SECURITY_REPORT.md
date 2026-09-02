@@ -18,7 +18,7 @@ Status: PASS (parser hardened against hostile input).
 ## Validation
 - `pos_json_test.exe` → **ALL PASS (0)** (incl. `threw`, `a && b && c`).
 - `ctest` → **1/1 PASS** (5.22s).
-- Regression: `docs 'swiss football league'` → OK.
+- Regression: `docs 'ligue'` → OK.
 - typecheck (Node repo) → 0 errors (unchanged, C++ only).
 
 ## Notes
