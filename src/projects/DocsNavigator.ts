@@ -1,6 +1,6 @@
 /**
  * DocsNavigator (Phase 23, W-docsnav). Navigation to collect ONLINE info for a given project
- * type/domain. For a sport/football observatory (SFL) it lists authoritative online sources
+ * type/domain. For a sport/football observatory it lists authoritative online sources
  * (league, standings, results, stats) so the project can gather real data. Pure + testable;
  * a live fetch adapter is separate. Extends the "official docs" idea to data sources.
  */
@@ -23,14 +23,14 @@ export interface DomainInfo {
 
 const SOURCES: Record<ProjectDomain, OnlineSource[]> = {
 	football: [
-		{ id: "sfl-official", label: "Swiss Football League (official)", url: "https://www.sfl.ch/en/", category: "OFFICIAL_DOCS", authority: "official", purpose: "Calendrier, resultats, classement officiel de la Super League." },
-		{ id: "sfl-standings", label: "SFL — Classement Super League", url: "https://www.sfl.ch/en/super-league/table/", category: "STANDINGS", authority: "official", purpose: "Classement (pts, J, diff) a recolter." },
-		{ id: "sfl-results", label: "SFL — Resultats", url: "https://www.sfl.ch/en/super-league/matches/", category: "RESULTS", authority: "official", purpose: "Resultats par journee (domicile, ext., score)." },
-		{ id: "sfl-stats", label: "SFL — Stats joueurs", url: "https://www.sfl.ch/en/super-league/stats/", category: "STATS", authority: "official", purpose: "Buteurs, passes, stats joueurs." },
-		{ id: "football-data", label: "football-data.org (API)", url: "https://www.football-data.org/", category: "STATS", authority: "vendor", purpose: "API clubs/matchs (Super League Suisse)." },
+		{ id: "league", label: "Ligue (officielle)", url: "https://football.example.com/", category: "OFFICIAL_DOCS", authority: "official", purpose: "Calendrier, resultats, classement officiel de la ligue." },
+		{ id: "standings", label: "Ligue — Classement", url: "https://football.example.com/standings", category: "STANDINGS", authority: "official", purpose: "Classement (pts, J, diff) a recolter." },
+		{ id: "results", label: "Ligue — Resultats", url: "https://football.example.com/matches", category: "RESULTS", authority: "official", purpose: "Resultats par journee (domicile, ext., score)." },
+		{ id: "stats", label: "Ligue — Stats joueurs", url: "https://football.example.com/stats", category: "STATS", authority: "official", purpose: "Buteurs, passes, stats joueurs." },
+		{ id: "football-data", label: "football-data.org (API)", url: "https://www.football-data.org/", category: "STATS", authority: "vendor", purpose: "API clubs/matchs de ligue." },
 	],
 	sports: [
-		{ id: "generic-sports", label: "Sources sportives officielles", url: "https://www.sfl.ch/en/", category: "OFFICIAL_DOCS", authority: "official", purpose: "Source de reference pour leagues sportives." },
+		{ id: "generic-sports", label: "Sources sportives officielles", url: "https://sports.example.com/", category: "OFFICIAL_DOCS", authority: "official", purpose: "Source de reference pour leagues sportives." },
 	],
 	cpp: [
 		{ id: "cppref", label: "cppreference", url: "https://en.cppreference.com/w/", category: "OFFICIAL_DOCS", authority: "official", purpose: "API C++ standard." },
@@ -47,7 +47,7 @@ const SOURCES: Record<ProjectDomain, OnlineSource[]> = {
 
 function detectDomain(task: string): ProjectDomain {
 	const j = task.toLowerCase();
-	if (/super league|sfl|football|ligue|soccer|fifa|fut/.test(j)) return "football";
+	if (/super league|football|ligue|soccer|fifa|fut/.test(j)) return "football";
 	if (/cpp|win32|cmake|c\+\+/.test(j)) return "cpp";
 	if (/react|web|html|css|jsx|frontend/.test(j)) return "web";
 	if (/sport|match|equipe|joueur/.test(j)) return "sports";

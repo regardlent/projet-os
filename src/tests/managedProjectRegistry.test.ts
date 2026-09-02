@@ -24,11 +24,11 @@ test("registry: remove deletes a managed project and persists", () => {
 	const dir = fs.mkdtempSync(path.join(os.tmpdir(), "reg-"));
 	const file = path.join(dir, "hub.json");
 	const reg = new ManagedProjectRegistry(file);
-	reg.add(manifest("futtable", "p-abc"));
-	assert.equal(reg.has("futtable"), true);
-	assert.equal(reg.remove("futtable"), true);
-	assert.equal(reg.has("futtable"), false);
-	assert.equal(reg.remove("futtable"), false);
+	reg.add(manifest("demo", "p-abc"));
+	assert.equal(reg.has("demo"), true);
+	assert.equal(reg.remove("demo"), true);
+	assert.equal(reg.has("demo"), false);
+	assert.equal(reg.remove("demo"), false);
 	const reg2 = new ManagedProjectRegistry(file);
-	assert.equal(reg2.has("futtable"), false); // persisted removal
+	assert.equal(reg2.has("demo"), false); // persisted removal
 });

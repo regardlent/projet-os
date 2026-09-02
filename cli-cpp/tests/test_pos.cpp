@@ -35,10 +35,10 @@ static void testJsonStringEscapes() {
 }
 
 static void testParseRegistry() {
-	std::string json = R"({"projects":[{"slug":"sfl","name":"SFL","projectId":"p1","projectType":"cpp","status":"READY","workspaceRoot":"C:\\ws","goal":{"objective":"Observe","status":"ACTIVE","progress":90}}]})";
+	std::string json = R"({"projects":[{"slug":"demo","name":"Demo","projectId":"p1","projectType":"cpp","status":"READY","workspaceRoot":"C:\\ws","goal":{"objective":"Observe","status":"ACTIVE","progress":90}}]})";
 	auto list = pos::parseRegistry(json);
 	CHECK(list.size() == 1);
-	CHECK(list[0].slug == "sfl");
+	CHECK(list[0].slug == "demo");
 	CHECK(list[0].projectType == "cpp");
 	CHECK(list[0].goalProgress == 90);
 	CHECK(list[0].goalObjective == "Observe");

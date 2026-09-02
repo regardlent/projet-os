@@ -197,7 +197,7 @@ export function registerCommands(ctx: vscode.ExtensionContext, deps: CommandDeps
 				}));
 				const { observations } = importHistoricalSessions(
 					workspaceRegistry,
-					"prob-reddit-project-os",
+					"legacy-project-os",
 					hist,
 				);
 				for (const o of observations) tokenLedger.record(o);

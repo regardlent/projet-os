@@ -15,7 +15,7 @@ import { formatTokens, formatNumber } from "../tokens/numberFormat.js";
 import { estimateTokens } from "../tokens/tokenEstimate.js";
 import { CANONICAL_PROJECT_ROOT } from "../workspace/WorkspaceTopology.js";
 
-const OLD_ROOT = "C:\\Users\\eiden\\Desktop\\dev\\prob-reddit\\project-os";
+const OLD_ROOT = "C:\\Users\\eiden\\Desktop\\dev\\legacy\\project-os";
 
 function obs(partial: Partial<UsageObservation> & { observationId: string }): UsageObservation {
 	return {

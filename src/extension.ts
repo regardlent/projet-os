@@ -79,8 +79,8 @@ export function activate(context: vscode.ExtensionContext): void {
 	const workspaceRegistry = new WorkspaceRegistry();
 	const rootPath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? context.globalStorageUri.fsPath;
 	// Canonical project + historical path alias => SAME projectId.
-	workspaceRegistry.ensureAlias("prob-reddit-project-os", "C:\\Users\\eiden\\Desktop\\dev\\prob-reddit\\project-os");
-	workspaceRegistry.ensureAlias("prob-reddit-project-os", rootPath);
+	workspaceRegistry.ensureAlias("legacy-project-os", "C:\\Users\\eiden\\Desktop\\dev\\legacy\\project-os");
+	workspaceRegistry.ensureAlias("legacy-project-os", rootPath);
 	if (tokenLoad.error) log.warn(`Token ledger load issue: ${tokenLoad.error}`);
 
 	const tokenStatus = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 49);
@@ -106,7 +106,7 @@ export function activate(context: vscode.ExtensionContext): void {
 	routingPerf = new ModelPerformanceRegistry();
 	const rcfg = vscode.workspace.getConfiguration("clineProjectOS");
 	budgetGovernor = new ProjectBudgetGovernor({
-		projectId: "prob-reddit-project-os",
+		projectId: "legacy-project-os",
 		dailyPaidBudget: rcfg.get<number>("dailyPaidBudget", 0),
 		currency: rcfg.get<string>("budgetCurrency", "USD"),
 		paidInferenceMode: rcfg.get<"OFF" | "ASK_EVERY_TIME" | "AUTO_WITHIN_PROJECT_BUDGET">("paidInferenceMode", "OFF"),

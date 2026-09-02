@@ -26,7 +26,7 @@ test("localai profile uses openai-compatible provider and canonical cwd", () => 
 
 test("non-canonical cwd is rejected as invalid local cwd", () => {
 	assert.equal(isValidLocalAICwd(CANONICAL_PROJECT_ROOT), true);
-	assert.equal(isValidLocalAICwd("C:\\Users\\eiden\\Desktop\\dev\\prob-reddit\\project-os"), false);
+	assert.equal(isValidLocalAICwd("C:\\Users\\eiden\\Desktop\\dev\\legacy\\project-os"), false);
 });
 
 test("error text is never treated as inference", () => {

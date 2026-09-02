@@ -2,7 +2,7 @@
  * UsageReport (Phase 23, W-usage). Consolidated token + cost + performance telemetry for a
  * "job" (a generation run / project-creation run / autonomy run). Given the token and cost
  * observations captured for a jobId, it produces the honest TOTAL tokens and TOTAL cost that
- * the futtable-style runs were missing, plus throughput metrics from measured inference runs.
+ * the usage-report runs were missing, plus throughput metrics from measured inference runs.
  * Pure + testable; LocalAI marginal cost is EXACT_ZERO (never a fake price).
  */
 import type { UsageObservation } from "./UsageObservation.js";

@@ -5,7 +5,7 @@ import type { UsageObservation } from "../tokens/UsageObservation.js";
 
 function obs(over: Partial<UsageObservation> = {}): UsageObservation {
 	return {
-		observationId: "o", projectId: "futtable", workspaceId: "w", workspacePath: "p",
+		observationId: "o", projectId: "demo", workspaceId: "w", workspacePath: "p",
 		providerId: "openai-compatible", modelId: "granite-4.2-3b-flash", inputTokens: 100, outputTokens: 50,
 		totalTokens: 150, cacheReadTokens: 0, cacheWriteTokens: 0, source: "LOCALAI_REQUEST_USAGE",
 		quality: "EXACT", scope: "PROJECT_OS", timestamp: Date.now(), ...over,
@@ -19,8 +19,8 @@ test("sumTokens totals input/output/total", () => {
 
 test("sumCost: LocalAI EXACT_ZERO counts as free, never fake pricing", () => {
 	const c = sumCost([
-		{ costId: "c1", projectId: "futtable", workspaceId: "w", providerId: "openai-compatible", modelId: "granite-4.2-3b-flash", billingClass: "LOCAL_FREE", coveredBySubscription: false, source: "LOCALAI", quality: "EXACT_ZERO", timestamp: 1 },
-		{ costId: "c2", projectId: "futtable", workspaceId: "w", providerId: "openai-compatible", modelId: "gpt-x", billingClass: "PAY_AS_YOU_GO", actualCost: 1.25, coveredBySubscription: false, source: "SDK_BILLED", quality: "EXACT_BILLED", timestamp: 1 },
+		{ costId: "c1", projectId: "demo", workspaceId: "w", providerId: "openai-compatible", modelId: "granite-4.2-3b-flash", billingClass: "LOCAL_FREE", coveredBySubscription: false, source: "LOCALAI", quality: "EXACT_ZERO", timestamp: 1 },
+		{ costId: "c2", projectId: "demo", workspaceId: "w", providerId: "openai-compatible", modelId: "gpt-x", billingClass: "PAY_AS_YOU_GO", actualCost: 1.25, coveredBySubscription: false, source: "SDK_BILLED", quality: "EXACT_BILLED", timestamp: 1 },
 	]);
 	assert.equal(c.free, 1);
 	assert.equal(c.paygActual, 1.25);
@@ -42,7 +42,7 @@ test("throughputOf computes mean TTFT, tps, correctness, stability", () => {
 });
 
 test("reportUsage consolidates job totals", () => {
-	const rep = reportUsage({ jobId: "run-5min", projectId: "futtable", runId: "project-os-endurance-1", tokenObservations: [obs(), obs({ inputTokens: 400, outputTokens: 200, totalTokens: 600 })], costObservations: [{ costId: "c", projectId: "futtable", workspaceId: "w", providerId: "openai-compatible", modelId: "granite-4.2-3b-flash", billingClass: "LOCAL_FREE", coveredBySubscription: false, source: "LOCALAI", quality: "EXACT_ZERO", timestamp: 1 }], measuredRuns: [{ firstTokenMs: 339, tokens: 24, durationMs: 339, correct: true }] });
+	const rep = reportUsage({ jobId: "run-5min", projectId: "demo", runId: "project-os-endurance-1", tokenObservations: [obs(), obs({ inputTokens: 400, outputTokens: 200, totalTokens: 600 })], costObservations: [{ costId: "c", projectId: "demo", workspaceId: "w", providerId: "openai-compatible", modelId: "granite-4.2-3b-flash", billingClass: "LOCAL_FREE", coveredBySubscription: false, source: "LOCALAI", quality: "EXACT_ZERO", timestamp: 1 }], measuredRuns: [{ firstTokenMs: 339, tokens: 24, durationMs: 339, correct: true }] });
 	assert.equal(rep.tokens.total, 750);
 	assert.equal(rep.jobId, "run-5min");
 	assert.equal(rep.cost.free, 1);

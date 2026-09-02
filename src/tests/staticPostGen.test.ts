@@ -10,7 +10,7 @@ test("postgen: flags an under-specified Win32 CreateWindowEx (blocking)", () => 
 });
 
 test("postgen: a well-formed CMake target_link_libraries is conformant", () => {
-	const code = "target_link_libraries(futtable PRIVATE user32 gdi32 comctl32);";
+	const code = "target_link_libraries(demo PRIVATE user32 gdi32 comctl32);";
 	const r = postGenCheck(code, ["cmake"]);
 	assert.ok(r.findings.some((f) => f.api === "target_link_libraries"));
 });

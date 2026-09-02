@@ -2,7 +2,7 @@
  * WriteLaneGuard (Phase 23, W-writeguard). Wraps a Project OS write-lane so each written file is
  * post-gen checked (StaticPostGen official-signature conformance) and anti-regression guarded
  * (a required symbol set that must still exist after the write; else the write is refused).
- * This stops the write-lane from producing a destructive rewrite (the SFL regression observed).
+ * This stops the write-lane from producing a destructive rewrite (a regression observed).
  * Pure module; the write handler is injected so it is unit-testable.
  */
 import { postGenCheck } from "./StaticPostGen.js";
@@ -41,7 +41,7 @@ export function guardWrite(handler: (path: string, content: string) => { ok: boo
 	};
 }
 
-/** Precompute the required symbol set for a known SFL codebase (anti-regression). */
-export function sflRequiredSymbols(): string[] {
-	return ["namespace sfl", "struct Team", "struct League", "topScorer", "leader", "standings", "seasonTotals", "formOf"];
+/** Precompute the required symbol set for a reference codebase (anti-regression). */
+export function demoRequiredSymbols(): string[] {
+	return ["namespace demo", "struct Model", "struct Config", "render", "load", "save", "validate", "main"];
 }

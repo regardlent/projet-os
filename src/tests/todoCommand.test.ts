@@ -16,7 +16,7 @@ test("todoHandler: /create seeds TODO, /todo list shows it, done strikes it", as
 	slash.register("todo", todoHandler);
 	const ctx: SlashCommandContext = { factory, registry, resolveActiveProject: () => { const l = registry.list(); return l.length ? { slug: l[l.length - 1].slug, projectId: l[l.length - 1].projectId, workspaceRoot: l[l.length - 1].workspaceRoot } : null; } };
 
-	const c = await slash.dispatch(`/create demo-project --type=empty --git=false --goal="Build something"`, ctx);
+	const c = await slash.dispatch(`/create demo --type=empty --git=false --goal="Build something"`, ctx);
 	assert.equal(c.ok, true);
 	assert.ok(c.artifacts?.includes(".project-os/todo.json"));
 

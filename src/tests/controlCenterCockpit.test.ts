@@ -4,14 +4,14 @@ import { cockpitView } from "../projects/ControlCenterCockpit.js";
 
 test("cockpit view summarizes real signals", () => {
 	const view = cockpitView({
-		activeProject: { slug: "sfl-observatory", status: "READY", projectType: "cpp" },
+		activeProject: { slug: "demo", status: "READY", projectType: "cpp" },
 		goal: { objective: "Observe league", proof: { goalId: "g", criteria: [], allSatisfied: false, goalReached: false, unsatisfied: ["Show scorers"] } },
 		todoProgress: { done: 3, total: 5 },
 		localAiModels: ["qwen3-4b", "granite-4.2-3b-flash"],
 		gpu: null,
 		budget: { dailyPaidBudget: 2, actualPaidSpend: 0.5, mode: "AUTO_WITHIN_PROJECT_BUDGET" },
 	});
-	assert.equal(view.activeProject, "sfl-observatory (READY)");
+	assert.equal(view.activeProject, "demo (READY)");
 	assert.equal(view.goalStatus, "IN_PROGRESS");
 	assert.deepEqual(view.goalUnsatisfied, ["Show scorers"]);
 	assert.equal(view.todoProgress, "3/5");

@@ -3,7 +3,7 @@
  *
  * Gives a stable `projectId` to an OS project and a stable `workspaceId` to each
  * workspace path, with a path-alias registry. The same OS project may have been
- * developed under several paths (e.g. OLD `...\prob-reddit\project-os` and NEW
+ * developed under several paths (e.g. OLD `...\ancien\project-os` and NEW
  * `...\projet-os`); both resolve to the same `projectId`, so lifetime counters
  * survive a path migration.
  *

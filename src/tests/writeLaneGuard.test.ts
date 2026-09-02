@@ -1,10 +1,10 @@
 import test from "node:test";
 import assert from "node:assert";
-import { guardWrite, sflRequiredSymbols } from "../projects/WriteLaneGuard.js";
+import { guardWrite, demoRequiredSymbols } from "../projects/WriteLaneGuard.js";
 
 test("WriteLaneGuard: refuses a destructive rewrite that removes required symbols", () => {
 	const ok = guardWrite(() => ({ ok: true }));
-	const r = ok({ path: "src/sfl_model.hpp", content: "class SFLModel { };", requiredSymbols: sflRequiredSymbols() });
+	const r = ok({ path: "src/demo_model.hpp", content: "class DemoModel { };", requiredSymbols: demoRequiredSymbols() });
 	assert.equal(r.allow, false);
 	assert.match(r.reason ?? "", /REGRESSION_MISSING_SYMBOLS/);
 });
@@ -19,13 +19,13 @@ test("WriteLaneGuard: refuses a post-gen non-conforming Win32 write", () => {
 test("WriteLaneGuard: allows a conformant write that keeps required symbols", () => {
 	let written = false;
 	const ok = guardWrite((/* path */ _p, /* content */ _c) => { written = true; return { ok: true }; });
-	const content = "namespace sfl { struct Team{}; struct League{}; int topScorer(){return 0;} int leader(){return 0;} int standings(){return 0;} int seasonTotals(){return 0;} int formOf(){return 0;} }";
-	const r = ok({ path: "src/sfl_model.hpp", content, requiredSymbols: sflRequiredSymbols() });
+	const content = "namespace demo { struct Model{}; struct Config{}; int render(){return 0;} int load(){return 0;} int save(){return 0;} int validate(){return 0;} int main(){return 0;} }";
+	const r = ok({ path: "src/demo_model.hpp", content, requiredSymbols: demoRequiredSymbols() });
 	assert.equal(r.allow, true);
 	assert.equal(written, true);
 });
 
-test("sflRequiredSymbols covers the core API", () => {
-	const s = sflRequiredSymbols();
-	assert.ok(s.includes("topScorer") && s.includes("seasonTotals") && s.includes("formOf"));
+test("demoRequiredSymbols covers the core API", () => {
+	const s = demoRequiredSymbols();
+	assert.ok(s.includes("render") && s.includes("validate") && s.includes("main"));
 });

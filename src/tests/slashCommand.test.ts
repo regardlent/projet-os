@@ -29,10 +29,10 @@ function makeCtx(): { ctx: SlashCommandContext; factory: ProjectFactory; registr
 }
 
 test("parseSlash handles args, quotes and --flags", () => {
-	const p = parseSlash(`/goal --project=vulnforge "Build a fast C++ IDE" --accept=compiles,fast --priority=high`);
+	const p = parseSlash(`/goal --project=demo "Build a fast C++ IDE" --accept=compiles,fast --priority=high`);
 	assert.equal(p?.name, "goal");
 	assert.equal(p?.args.join(" "), "Build a fast C++ IDE");
-	assert.equal(p?.flags["project"], "vulnforge");
+	assert.equal(p?.flags["project"], "demo");
 	assert.equal(p?.flags["accept"], "compiles,fast");
 	assert.equal(p?.flags["priority"], "high");
 	assert.equal(parseSlash("not a slash"), null);
@@ -45,7 +45,7 @@ test("dispatch: /create then /goal works against active managed project", async 
 	reg.register("create", createHandler);
 	reg.register("addon", addonHandler);
 
-	const created = await reg.dispatch(`/create vulnforge-next --type=typescript --git=false`, ctx);
+	const created = await reg.dispatch(`/create demo --type=typescript --git=false`, ctx);
 	assert.equal(created.ok, true);
 	assert.equal(created.status, "READY");
 

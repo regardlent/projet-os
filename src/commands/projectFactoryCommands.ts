@@ -108,7 +108,7 @@ export function registerProjectFactoryCommands(ctx: vscode.ExtensionContext, log
 			await showResult(`/goal ${l}`);
 		}),
 		vscode.commands.registerCommand("clineProjectOS.create", async (line?: string) => {
-			const l = typeof line === "string" && line ? line : await vscode.window.showInputBox({ prompt: "Project name (e.g. vulnforge)" });
+			const l = typeof line === "string" && line ? line : await vscode.window.showInputBox({ prompt: "Project name (e.g. demo)" });
 			if (!l) return;
 			await showResult(`/create ${l}`);
 			projectsTree.refresh();

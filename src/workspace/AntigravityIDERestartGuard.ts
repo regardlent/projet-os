@@ -9,7 +9,7 @@
 export type IdeKind = "ANTIGRAVITY_IDE" | "ANTIGRAVITY_2_0" | "UNRELATED" | "UNKNOWN";
 
 export const CANONICAL_WORKSPACE = "C:\\Users\\eiden\\Desktop\\dev\\projet-os";
-export const OLD_WORKSPACE_ALIAS = "C:\\Users\\eiden\\Desktop\\dev\\prob-reddit\\project-os";
+export const OLD_WORKSPACE_ALIAS = "C:\\Users\\eiden\\Desktop\\dev\\legacy\\project-os";
 
 /** Windows/system-destructive commands that must NEVER appear in the restart broker. */
 export const FORBIDDEN_WINDOWS_COMMANDS: readonly string[] = [

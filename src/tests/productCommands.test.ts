@@ -3,14 +3,14 @@ import assert from "node:assert/strict";
 import { docsHandler, projectHandler } from "../projects/ProductCommands.js";
 
 test("docsHandler returns navigation sources for a domain", () => {
-	const r = docsHandler({ args: ["", "swiss football league"], flags: {} }, { activeProject: { slug: "sfl", projectId: "p1", workspaceRoot: "w" } });
+	const r = docsHandler({ args: ["", "swiss football league"], flags: {} }, { activeProject: { slug: "demo", projectId: "p1", workspaceRoot: "w" } });
 	assert.equal(r.ok, true);
 	assert.equal(r.command, "docs");
-	assert.ok(r.message.includes("sfl.ch"));
+	assert.ok(r.message.includes("football.example.com"));
 });
 
 test("docsHandler honors --category filter", () => {
-	const r = docsHandler({ args: ["", "sfl"], flags: { category: "STANDINGS" } }, { activeProject: null });
+	const r = docsHandler({ args: ["", "football"], flags: { category: "STANDINGS" } }, { activeProject: null });
 	assert.equal(r.ok, true);
 	assert.ok(r.message.toLowerCase().includes("standings"));
 });
@@ -22,8 +22,8 @@ test("projectHandler returns NOT_FOUND for unknown slug", () => {
 });
 
 test("projectHandler returns project status summary", () => {
-	const m = { slug: "sfl", projectType: "cpp", status: "READY", goal: { status: "ACTIVE", progress: 90, objective: "Observe Swiss Super League" } } as never;
-	const r = projectHandler({ args: ["sfl"], flags: {} }, { activeProject: { slug: "sfl", projectId: "p1", workspaceRoot: "w" }, registry: { get: () => m } });
+	const m = { slug: "demo", projectType: "cpp", status: "READY", goal: { status: "ACTIVE", progress: 90, objective: "Observe a league" } } as never;
+	const r = projectHandler({ args: ["demo"], flags: {} }, { activeProject: { slug: "demo", projectId: "p1", workspaceRoot: "w" }, registry: { get: () => m } });
 	assert.equal(r.ok, true);
 	assert.ok(r.message.includes("cpp"));
 	assert.ok(r.message.includes("progress=90"));

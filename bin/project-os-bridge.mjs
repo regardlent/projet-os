@@ -180,7 +180,7 @@ try {
 	// F46 report: consolidate real usage reports (tokens/cost/perf) from disk.
 	if (line === "report") {
 		const read = (f) => { try { return JSON.parse(fs.readFileSync(path.join(REPO, f), "utf8")); } catch { return null; } };
-		const files = ["artifacts/sfl/SFL_USAGE_REPORT.json", "artifacts/sfl/AUTONOMY_USAGE_REPORT.json", "artifacts/endurance/FUTTABLE_USAGE_REPORT.json", "artifacts/endurance/GPU_BENCHMARK.json"];
+		const files = ["artifacts/usage/USAGE_REPORT.json", "artifacts/endurance/USAGE_REPORT.json", "artifacts/endurance/GPU_BENCHMARK.json"];
 		const reports = files.map((f) => read(f)).filter(Boolean);
 		const sumTokens = reports.reduce((acc, r) => acc + (r.tokens?.total ?? 0), 0);
 		const sumInput = reports.reduce((acc, r) => acc + (r.tokens?.input ?? 0), 0);
@@ -703,7 +703,7 @@ try {
 		let snapshots = [];
 		try { for (const e of fs.readdirSync(path.join(ws, ".project-os", "snapshots"))) snapshots.push(e); } catch {}
 		let tokens = { input: 0, output: 0, total: 0 };
-		for (const f of ["artifacts/sfl/SFL_USAGE_REPORT.json", "artifacts/sfl/AUTONOMY_USAGE_REPORT.json", "artifacts/endurance/FUTTABLE_USAGE_REPORT.json"]) {
+		for (const f of ["artifacts/usage/USAGE_REPORT.json", "artifacts/endurance/USAGE_REPORT.json"]) {
 			try { const r = JSON.parse(fs.readFileSync(path.join(REPO, f), "utf8")); if (r) { tokens.input += r.tokens?.input ?? 0; tokens.output += r.tokens?.output ?? 0; tokens.total += r.tokens?.total ?? 0; } } catch {}
 		}
 		const hasContent = fs.existsSync(path.join(ws, "src")) && fs.existsSync(path.join(ws, "tests"));

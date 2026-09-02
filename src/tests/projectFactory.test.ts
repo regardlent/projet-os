@@ -13,9 +13,9 @@ function tmp(): string {
 }
 
 test("slugify normalizes and isSafeSlug", () => {
-	assert.equal(slugify("VulnForge Next"), "vulnforge-next");
+	assert.equal(slugify("Demo"), "demo");
 	assert.equal(slugify("  My__Project  "), "my__project");
-	assert.equal(isSafeSlug("vulnforge-next"), true);
+	assert.equal(isSafeSlug("demo"), true);
 	assert.equal(isSafeSlug("../etc"), false);
 	assert.equal(isSafeSlug("a/b"), false);
 });
@@ -93,14 +93,14 @@ test("ProjectFactory creates managed project and blocks duplicate/traversal", as
 	const root = tmp();
 	const file = path.join(tmp(), "reg.json");
 	const factory = new ProjectFactory({ projectsRoot: root, controlPlaneRoot: "C:/h" }, new ManagedProjectRegistry(file));
-	const r = await factory.createProject({ name: "VulnForge Next", type: "typescript", git: false });
+	const r = await factory.createProject({ name: "Demo", type: "typescript", git: false });
 	assert.equal(r.ok, true);
 	assert.equal(r.status, "READY");
 	assert.ok(r.workspaceRoot);
 	assert.ok(fs.existsSync(path.join(r.workspaceRoot!, ".project-os", "project.json")));
 	assert.ok(fs.existsSync(path.join(r.workspaceRoot!, ".agents", "rules")));
 	// duplicate
-	const dup = await factory.createProject({ name: "VulnForge Next", type: "typescript", git: false });
+	const dup = await factory.createProject({ name: "Demo", type: "typescript", git: false });
 	assert.equal(dup.ok, false);
 	assert.equal(dup.status, "BLOCKED");
 	// traversal via name that slugifies to a traversal is not possible (slugify strips), but a crafted safe slug that is 'con'
