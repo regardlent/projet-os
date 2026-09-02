@@ -167,6 +167,7 @@ static int cmdHelp() {
 		"  goal traction      goal evidence / velocity\n"
 		"  autonomy health    plan + handoff health\n"
 		"  risk profile       consolidated risk score\n"
+		"  usage record       record token/cost/perf → generic usage store\n"
 		"  cockpit            live VT dashboard\n"
 		"  completion         shell completions (powershell|bash|zsh)\n"
 		"  bridge             MCP Bridge (status|start|stop|restart|health|tools|test|tunnel) — Phase 23\n"
@@ -1315,6 +1316,7 @@ static int cmdGoalTraction(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult
 static int cmdAutonomyHealth(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "autonomy health", g_timeoutMs, &g_cancel); printAnalysis("autonomy health", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
 static int cmdHealthCompare(pos::OutputFormat fmt, const std::vector<std::string>& args, bool colorOn) { std::string line = "health compare"; for (auto& a : args) line += " " + a; pos::CmdResult r = pos::dispatch(pos::bridgePath(), line, g_timeoutMs, &g_cancel); printAnalysis("health compare", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
 static int cmdRiskProfile(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "risk profile", g_timeoutMs, &g_cancel); printAnalysis("risk profile", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
+static int cmdUsageRecord(pos::OutputFormat fmt, const std::vector<std::string>& args, bool colorOn) { std::string line = "usage record"; for (auto& a : args) line += " " + a; pos::CmdResult r = pos::dispatch(pos::bridgePath(), line, g_timeoutMs, &g_cancel); printAnalysis("usage record", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
 int wmain(int argc, wchar_t** wargv) {
 	// F09: cooperative Ctrl+C (never kills an external/user process).
 	std::signal(SIGINT, onSigInt);
@@ -1403,6 +1405,7 @@ int wmain(int argc, wchar_t** wargv) {
 		if (cmd == "goal" && args.size() >= 1 && args[0] == "traction") { return cmdGoalTraction(fmt, colorOn); }
 		if (cmd == "autonomy" && args.size() >= 1 && args[0] == "health") { return cmdAutonomyHealth(fmt, colorOn); }
 		if (cmd == "risk" && args.size() >= 1 && args[0] == "profile") { return cmdRiskProfile(fmt, colorOn); }
+		if (cmd == "usage" && args.size() >= 1 && args[0] == "record") { return cmdUsageRecord(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }
 	// --- F66 bridge command --------------------------------------------------------------
 	if (cmd == "bridge" && args.size() >= 1) {
 		if (args[0] == "status") { return cmdBridgeStatus(fmt); }

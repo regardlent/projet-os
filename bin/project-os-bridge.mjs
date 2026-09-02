@@ -177,6 +177,37 @@ try {
 		emit(result, 0); process.exit(0);
 	}
 
+	// F54 usage record: append a token/cost/perf observation to the generic usage store.
+	if (line.startsWith("usage record")) {
+		const rest = line.slice("usage record".length).trim();
+		const flags = {};
+		for (const m of rest.matchAll(/(--[a-z-]+)=("([^"]*)"|[^ ]+)/g)) flags[m[1]] = m[3] ?? m[2];
+		const job = flags["--job"] || "job";
+		const tokensIn = parseInt(flags["--input"] ?? flags["--in"] ?? "0", 10) || 0;
+		const tokensOut = parseInt(flags["--output"] ?? flags["--out"] ?? "0", 10) || 0;
+		const total = parseInt(flags["--total"] ?? String(tokensIn + tokensOut), 10) || (tokensIn + tokensOut);
+		const model = flags["--model"] || modelId;
+		const ttft = parseInt(flags["--ttft"] ?? "0", 10) || 0;
+		const tps = parseInt(flags["--tokens-per-sec"] ?? flags["--tps"] ?? "0", 10) || 0;
+		const payg = parseFloat(flags["--cost"] ?? "0") || 0;
+		const file = path.join(REPO, "artifacts", "usage", "USAGE_REPORT.json");
+		let store = { reports: [] };
+		try { store = JSON.parse(fs.readFileSync(file, "utf8")); } catch {}
+		if (!Array.isArray(store.reports)) store.reports = [];
+		const rec = { job, model, tokens: { input: tokensIn, output: tokensOut, total }, cost: { free: 0, payg, localAI: payg === 0 ? "EXACT_ZERO" : "PAYG" }, throughput: { ttftMs: ttft, tokensPerSec: tps }, at: Date.now() };
+		store.reports.push(rec);
+		const agg = store.reports.reduce((a, r) => { a.input += r.tokens.input; a.output += r.tokens.output; a.total += r.tokens.total; a.free += (r.cost.free ?? 0); a.payg += (r.cost.payg ?? 0); return a; }, { input: 0, output: 0, total: 0, free: 0, payg: 0 });
+		store.tokens = { input: agg.input, output: agg.output, total: agg.total };
+		store.cost = { free: agg.free, payg: agg.payg, localAI: agg.payg === 0 ? "EXACT_ZERO" : "PAYG" };
+		store.throughput = store.reports[store.reports.length - 1].throughput;
+		store.modelId = model;
+		store.updatedAt = Date.now();
+		fs.mkdirSync(path.dirname(file), { recursive: true });
+		fs.writeFileSync(file, JSON.stringify(store, null, 2), "utf8");
+		emit({ command: "usage", ok: true, status: "USAGE_RECORDED", job, model, tokens: store.tokens, cost: store.cost, rows: [{ k: "job", v: job }, { k: "model", v: model }, { k: "tokensTotal", v: String(store.tokens.total) }, { k: "tokensIn", v: String(store.tokens.input) }, { k: "tokensOut", v: String(store.tokens.output) }, { k: "cost", v: store.cost.localAI + " payg=$" + agg.payg }, { k: "ttftMs", v: String(ttft) }, { k: "tokensPerSec", v: String(tps) }], details: [], message: `usage record: job=${job} model=${model} tokens=${store.tokens.total} cost=${store.cost.localAI} payg=$${agg.payg}`, warnings: [], actions: [], artifacts: ["artifacts/usage/USAGE_REPORT.json"] }, 0);
+		process.exit(0);
+	}
+
 	// F46 report: consolidate real usage reports (tokens/cost/perf) from disk.
 	if (line === "report") {
 		const read = (f) => { try { return JSON.parse(fs.readFileSync(path.join(REPO, f), "utf8")); } catch { return null; } };

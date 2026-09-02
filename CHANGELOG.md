@@ -8,6 +8,10 @@ Le format s'appuie sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) 
 ## [Unreleased]
 
 ### Ajouté
+- **`usage record`** : pipeline d'usage **générique** — enregistre une observation tokens/coût/perf
+  (`--job --input --output --model --ttft --tps --cost`) dans `artifacts/usage/USAGE_REPORT.json`
+  (agrégé + historique), lue par `report`, `insights tokens` et `budget forecast`. Restaure `tokens`
+  après le retrait des rapports de projets de test.
 - **CLI C++ — Intelligence & analyse (10 features, read-only)** :
   `health score`, `health trend`, `health compare <a> [b]`, `budget forecast`, `insights tokens`,
   `diagnose`, `drift alert`, `goal traction`, `autonomy health`, `risk profile`.
