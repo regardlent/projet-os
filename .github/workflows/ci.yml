@@ -7,8 +7,24 @@ on:
     branches: [ "main" ]
 
 jobs:
-  # Node/TS gate: typecheck (always green) + unit/integration tests (green on a clean runner).
+  # Cross-platform typecheck gate (Windows / Linux / macOS). Always green.
   check:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install deps
+        run: npm ci
+      - name: Typecheck (multiplateforme)
+        run: npm run typecheck
+
+  # Full node unit/integration tests (green on a clean runner; env-dependent antigravity tests skip).
+  tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,9 +33,7 @@ jobs:
           node-version: 20
       - name: Install deps
         run: npm ci
-      - name: Typecheck
-        run: npm run typecheck
-      - name: Unit tests
+      - name: Unit + integration tests
         run: npm test
 
   # C++ CLI build + ctest (Windows-native toolchain via MinGW).

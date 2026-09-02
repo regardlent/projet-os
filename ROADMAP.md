@@ -45,7 +45,7 @@
 - [x] 4.3 Badges de CI réels dans le README.
 - [x] 4.4 `CPack` (install ZIP/DEB).
 - [x] 4.5 `cmake --install` documenté + testé.
-- [ ] 4.6 Build Windows + matrix Linux/macOS.
+- [x] 4.6 Build Windows + matrix Linux/macOS.
 - [ ] 4.7 Signing (optionnel).
 - [ ] 4.8 Packaging VSIX de l'extension.
 - [ ] 4.9 Script de mise à jour.
