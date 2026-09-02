@@ -1,5 +1,6 @@
 // test_pos.cpp — unit tests for the Project OS CLI JSON parser + model helpers.
 #include <cassert>
+#include <chrono>
 #include <iostream>
 #include <string>
 #include "pos_model.hpp"
@@ -470,6 +471,33 @@ static void testGoldenUnicode() {
 	std::wstring back; CHECK(pos::utf8ToUtf16(o8, back)); CHECK(back.size() == 1 && back[0] == 0x2705);
 }
 
+static void testGoldenBudget() {
+	// Deterministic golden thresholds of the budget model.
+	CHECK(pos::budgetVerdict(0, 1000) == "FREE");
+	CHECK(pos::budgetVerdict(0, 0) == "EXACT_ZERO");
+	CHECK(pos::budgetVerdict(100, 0) == "EXACT_ZERO");
+	CHECK(pos::budgetVerdict(100, 1000) == "OK");        // 0.10 < 0.5
+	CHECK(pos::budgetVerdict(499, 1000) == "OK");        // 0.499 < 0.5
+	CHECK(pos::budgetVerdict(500, 1000) == "WARN");      // 0.50 -> WARN
+	CHECK(pos::budgetVerdict(899, 1000) == "WARN");      // 0.899 < 0.9
+	CHECK(pos::budgetVerdict(900, 1000) == "BLOWN");     // 0.90 -> BLOWN
+	CHECK(pos::budgetVerdict(1000, 1000) == "BLOWN");
+}
+
+static void testPerfBudget() {
+	// Golden perf budget: big-array JSON parse completes fast and correctly (no OOM).
+	std::string big = "[";
+	for (int i = 0; i < 50000; ++i) { if (i) big += ","; big += std::to_string(i); }
+	big += "]";
+	const auto t0 = std::chrono::steady_clock::now();
+	auto v = pos::parseJson(big);
+	const auto t1 = std::chrono::steady_clock::now();
+	double ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
+	CHECK(v.kind == JKind::Array && v.arr.size() == 50000);
+	CHECK(ms < 2000.0);                    // generous wall-budget (avoid CI flake)
+	std::cout << "  perf  : 50k-array parse in " << (long long)ms << " ms\n";
+}
+
 static void testFuzzSecurity() {
 	// Uses escaped std::string for every hostile input to avoid any raw-delimiter ambiguity.
 	const std::string plusN = "{\"x\":+}";
@@ -548,6 +576,8 @@ int main() {
 	testConfigPrecedence();
 	testRedaction();
 	testGoldenUnicode();
+	testGoldenBudget();
+	testPerfBudget();
 	testFuzzSecurity();
 	std::cout << "\n" << (failures == 0 ? "ALL PASS" : "FAILURES") << " (" << failures << ")\n";
 	return failures == 0 ? 0 : 1;

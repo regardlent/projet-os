@@ -443,4 +443,15 @@ inline std::string redactSecret(std::string s) {
         return s;
 }
 
+// Golden budget model (8.6): deterministic verdict from used tokens vs a daily budget.
+// Ratios: < 0.5 OK, < 0.9 WARN, >= 0.9 BLOWN. Pure + unit-testable.
+inline std::string budgetVerdict(long long usedTokens, long long dailyBudget) {
+        if (dailyBudget <= 0) return "EXACT_ZERO";
+        if (usedTokens <= 0) return "FREE";
+        double ratio = static_cast<double>(usedTokens) / static_cast<double>(dailyBudget);
+        if (ratio < 0.5) return "OK";
+        if (ratio < 0.9) return "WARN";
+        return "BLOWN";
+}
+
 } // namespace pos
