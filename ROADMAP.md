@@ -55,7 +55,7 @@
 - [x] 5.1 Routeur adaptatif au contexte (task-class + longueur).
 - [ ] 5.2 Cache sémantique (prompt/réponse).
 - [ ] 5.3 A/B benchmark (comparateur multi-mesures).
-- [ ] 5.4 Gating de qualité (sortie validée).
+- [x] 5.4 Gating de qualité (sortie validée).
 - [ ] 5.5 Quota multi-modèles.
 - [ ] 5.6 GPU offload (éligibilité + bascule).
 - [ ] 5.7 Profils de modèles (par type de projet).

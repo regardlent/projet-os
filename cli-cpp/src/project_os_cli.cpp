@@ -230,7 +230,7 @@ static int cmdHelp() {
 	sec("Modèle & GPU");
 	std::cout << "  preflight              aggregate bridge/LocalAI/GPU check\n";
 	std::cout << "  models                 LocalAI model inventory\n";
-	std::cout << "  model show|smoke|benchmark <id>\n";
+	std::cout << "  model show|smoke|benchmark|qualify <id>\n";
 	std::cout << "  route <task-class> [--alt]  adaptive model selection (ranked alternatives)\n";
 	std::cout << "  gpu|gpu watch|gpu proof  real nvidia-smi\n";
 	std::cout << "  benchmark              model performance testing\n";
@@ -284,6 +284,8 @@ static int cmdCompletion(const std::string& shell) {
 static std::string readGpuLine(); // F38 helper (defined below)
 // F66 forward decl (defined later): terminal-width line fitting.
 static std::string fitLine(const std::string& s);
+// Forward decl (defined later): intelligence/analysis result printer.
+static int printAnalysis(const std::string& title, pos::OutputFormat fmt, pos::CmdResult& r, bool colorOn);
 static int cmdCockpit(pos::OutputFormat fmt, const std::vector<std::string>& args, bool colorOn) {
 	int watchSec = 0;
 	for (auto& a : args) if (a.rfind("--watch=", 0) == 0) watchSec = std::max(0, std::atoi(a.substr(8).c_str()));
@@ -1333,6 +1335,13 @@ static int cmdRoute(pos::OutputFormat fmt, const std::vector<std::string>& args)
 	return 0;
 }
 
+// F69 model qualify <id>: quality gate on a real inference (5.4).
+static int cmdModelQualify(pos::OutputFormat fmt, const std::string& id, bool colorOn) {
+	pos::CmdResult r = pos::dispatch(pos::bridgePath(), "model qualify " + id, g_timeoutMs, &g_cancel);
+	printAnalysis("model qualify", fmt, r, colorOn);
+	return pos::exitFor(r.ok, r.status);
+}
+
 // --- F36 model smoke <id> -----------------------------------------------------
 static int cmdModelSmoke(const std::string& id, const std::string& reasoningMode, pos::OutputFormat fmt) {
 	pos::CmdResult r = pos::dispatch(pos::bridgePath(), "model smoke " + id, g_timeoutMs, &g_cancel);
@@ -1677,6 +1686,7 @@ int wmain(int argc, wchar_t** wargv) {
 		if (cmd == "trace" && args.size() >= 1) { return cmdTrace(args[0], fmt); }
 		if (cmd == "replay" && args.size() >= 1) { return cmdReplay(args, fmt); }
 		if (cmd == "benchmark" && args.size() >= 1 && args[0] == "compare" && args.size() >= 3) { return cmdBenchmarkCompare(args[1], args[2], fmt); }
+		if (cmd == "model" && args.size() >= 2 && args[0] == "qualify") { return cmdModelQualify(fmt, args[1], colorOn); }
 		if (cmd == "model" && args.size() >= 2 && args[0] == "show") { return cmdModelShow(args[1], fmt); }
 		if (cmd == "model" && args.size() >= 2 && args[0] == "stream") { return cmdModelStream(args[1], fmt); }
 		if (cmd == "model" && args.size() >= 2 && args[0] == "smoke") { std::string rmode = "hide"; for (auto& a : args) if (a.rfind("--reasoning=", 0) == 0) rmode = a.substr(12); return cmdModelSmoke(args[1], rmode, fmt); }

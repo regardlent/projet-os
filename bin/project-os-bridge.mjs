@@ -748,6 +748,31 @@ try {
 		} catch (e) { emit({ command: "models", ok: false, status: "SMOKE_FAIL", model: id, message: `smoke error: ${e.message}`, warnings: [], actions: [], artifacts: [] }, 1); }
 	}
 
+	// F69 model qualify <id>: quality gate on a real inference run (5.4).
+	if (line.startsWith("model qualify ")) {
+		const id = line.slice("model qualify ".length).trim();
+		try {
+			const t0 = Date.now();
+			const r = await fetch(baseUrl + "/chat/completions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: id, messages: [{ role: "user", content: "Reply with the number 7 only. Do not add text." }], max_tokens: 200, temperature: 0, stream: false }) });
+			const dt = Date.now() - t0;
+			const body = await r.json();
+			const content = (body.choices?.[0]?.message?.content ?? "").trim();
+			const tokens = body.usage?.total_tokens ?? 0;
+			const checks = [
+				{ name: "http_200", pass: r.ok },
+				{ name: "non_empty", pass: content.length > 0 },
+				{ name: "length_sane", pass: content.length > 0 && content.length <= 500 },
+				{ name: "tokens_used", pass: tokens > 0 },
+				{ name: "instruction_match", pass: content.includes("7") },
+			];
+			const pass = checks.every((c) => c.pass);
+			const score = Math.round(checks.filter((c) => c.pass).length / checks.length * 100);
+			const rows = checks.map((c) => ({ k: c.name, v: (c.pass ? "OK " : "FAIL ") + (c.name === "tokens_used" ? String(tokens) : c.name === "http_200" ? String(r.status) : String(content.length)) }));
+			emit({ command: "models", ok: pass, status: pass ? "QUALIFY_PASS" : "QUALIFY_FAIL", model: id, score, grade: "", signal: pass ? "PASS" : "FAIL", rows, details: content.slice(0, 80), message: `qualify ${id}: ${pass ? "PASS" : "FAIL"} score=${score}/100 ${dt}ms`, warnings: [], actions: [], artifacts: [] }, pass ? 0 : 1);
+		} catch (e) { emit({ command: "models", ok: false, status: "QUALIFY_ERROR", model: id, score: 0, grade: "", signal: "FAIL", rows: [], details: [e.message], message: `qualify error: ${e.message}`, warnings: [], actions: [], artifacts: [] }, 1); }
+		process.exit(0);
+	}
+
 	// F37 model benchmark <id>: 1 warmup + 3 measured real inferences -> TTFT/tokens-per-sec.
 	if (line.startsWith("model benchmark ")) {
 		const id = line.slice("model benchmark ".length).trim();
