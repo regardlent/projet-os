@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  # Node/TS gate: typecheck (always green) + unit/integration tests (green on a clean runner).
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install deps
+        run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Unit tests
+        run: npm test
+
+  # C++ CLI build + ctest (Windows-native toolchain via MinGW).
+  cpp:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install MinGW + CMake
+        run: choco install mingw cmake -y --no-progress
+      - name: Configure + build + test
+        shell: bash
+        run: |
+          export PATH="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin:$PATH"
+          cmake -S cli-cpp -B cli-cpp/cmake-build -G "MinGW Makefiles"
+          cmake --build cli-cpp/cmake-build
+          ctest --test-dir cli-cpp/cmake-build --output-on-failure

@@ -40,9 +40,9 @@
 - [x] 3.10 Meilleures pratiques de rendu VT (pas de débordement).
 
 ## Phase 4 — CI & packaging
-- [ ] 4.1 `.github/workflows/ci.yml` (typecheck + ctest).
-- [ ] 4.2 Handle du test environnemental `bridgeProcess`.
-- [ ] 4.3 Badges de CI réels dans le README.
+- [x] 4.1 `.github/workflows/ci.yml` (typecheck + ctest).
+- [x] 4.2 Handle du test environnemental `bridgeProcess`.
+- [x] 4.3 Badges de CI réels dans le README.
 - [ ] 4.4 `CPack` (install ZIP/DEB).
 - [ ] 4.5 `cmake --install` documenté + testé.
 - [ ] 4.6 Build Windows + matrix Linux/macOS.

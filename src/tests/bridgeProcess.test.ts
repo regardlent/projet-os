@@ -41,9 +41,11 @@ test("antigravity: buildAntigravityArgs never contains dangerous flag", () => {
 	assert.ok(!safe.join(" ").includes("dangerously"));
 });
 
-test("antigravity: not detected returns clean result", async () => {
+test("antigravity: not detected returns clean result", async (t) => {
 	const a = new AntigravityCliAdapter(null);
-	assert.equal(a.detect().detected, false);
+	const det = a.detect();
+	if (det.detected) { t.skip("antigravity present in this env — 'not detected' case not applicable"); return; }
+	assert.equal(det.detected, false);
 	const r = await a.run({ prompt: "hi", cwd: process.cwd(), readOnly: true });
 	assert.equal(r.ran, false);
 	assert.ok(String(r.error).includes("not detected"));
