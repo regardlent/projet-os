@@ -682,16 +682,40 @@ static int cmdDiff(const std::string& a, const std::string& b, pos::OutputFormat
 static int cmdExplain(const std::string& cmd, const std::vector<std::string>& args) {
 	std::string slash = "/" + cmd;
 	for (const auto& a : args) slash += " " + a;
-	std::cout << "  EXPLAIN (dry-run — no mutation)\n";
+	std::cout << "  EXPLAIN / DRY-RUN — plan only, NO MUTATION\n";
 	std::cout << "  slash command : " << slash << "\n";
 	std::cout << "  target        : " << (pos::activeSlugEnv().empty() ? "(none)" : pos::activeSlugEnv()) << "\n";
+	std::cout << "  class         : " << (cmd == "create" || cmd == "goal" || cmd == "todo" || cmd == "addon" || cmd == "autonomy" || cmd == "git commit" || cmd == "artifact publish" ? "WRITE" : "READ") << "\n";
 	if (cmd == "create") std::cout << "  effect        : new managed project workspace created\n";
 	else if (cmd == "goal") std::cout << "  effect        : sets/updates goal.json + goal-history\n";
 	else if (cmd == "todo") std::cout << "  effect        : updates todo.json + TODO.md\n";
 	else if (cmd == "addon") std::cout << "  effect        : installs/disables addon under .agents\n";
 	else if (cmd == "autonomy") std::cout << "  effect        : writes .project-os/autonomy.json + handoff\n";
-	else std::cout << "  effect        : dispatched to bridge (read-only view) — see --explain on mutating cmds\n";
+	else if (cmd == "git") std::cout << "  effect        : git operation on the active project workspace\n";
+	else if (cmd == "artifact") std::cout << "  effect        : artifact file + provenance/share manifest write\n";
+	else std::cout << "  effect        : dispatched to bridge (read-only view)\n";
 	std::cout << "  approval      : required (explicit) before mutation\n";
+	std::cout << "  NO MUTATION   : this invocation intentionally did nothing\n";
+	return 0;
+}
+
+// --- F95 welcome / onboarding guide (9.10) -------------------------------------
+static int cmdWelcome() {
+	std::cout << "── Project OS CLI — bienvenue ──\n";
+	std::cout << "  C++ front-end vers le bridge Project OS (LocalAI + GPU + artifacts).\n";
+	std::cout << "  Commandes utiles :\n";
+	std::cout << "    status                 état du projet actif\n";
+	std::cout << "    project list           projets gérés\n";
+	std::cout << "    project inspect <slug> vue en lecture seule\n";
+	std::cout << "    health score           santé composite\n";
+	std::cout << "    models / route CODING  modèles & routage\n";
+	std::cout << "    git status             état git du projet actif\n";
+	std::cout << "    help                   aide complète\n";
+	std::cout << "  Astuces :\n";
+	std::cout << "    --format=json|ndjson|tsv   sortie machine\n";
+	std::cout << "    --dry-run                 plan sans mutation\n";
+	std::cout << "    st | ls | inspect | hs     alias (9.6)\n";
+	std::cout << "  Env : PROJECT_OS_REPO, PROJECT_OS_REGISTRY, PROJECT_OS_ACTIVE_SLUG\n";
 	return 0;
 }
 
@@ -1669,10 +1693,29 @@ int wmain(int argc, wchar_t** wargv) {
 		bool colorOn = pos::colorEnabled(color, isTty);
 		// F67: --cockpit global shortcut launches the dashboard directly.
 		if (cockpitShortcut) { return cmdCockpit(fmt, args, colorOn); }
-		const std::string cmd = (start < (size_t)argc) ? argvS[start] : std::string("help");
+		const std::string cmd0 = (start < (size_t)argc) ? argvS[start] : std::string("help");
+		std::string cmd = cmd0;
+		// 9.6 command aliases (shortcuts) — expand to a canonical command line before dispatch.
+		{
+			static const std::map<std::string, std::string> aliases = {
+				{ "st", "status" }, { "ls", "project list" }, { "inspect", "project inspect" },
+				{ "hs", "health score" }, { "qx", "usage summary" }, { "cfg", "config list" },
+			};
+			auto it = aliases.find(cmd);
+			if (it != aliases.end()) {
+				std::istringstream ss(it->second);
+				std::vector<std::string> expanded; std::string tok;
+				while (ss >> tok) expanded.push_back(tok);
+				std::vector<std::string> merged = expanded;
+				for (const auto& a : args) merged.push_back(a);
+				cmd = merged.front();
+				{ std::vector<std::string> rest(merged.begin() + 1, merged.end()); args = rest; }
+			}
+		}
 		// F20: --explain / --dry-run => show plan, never mutate.
 		if (explain) { return cmdExplain(cmd, args); }
 		if (cmd == "help" || cmd == "--help" || cmd == "-h") { return cmdHelp(); }
+		if (cmd == "welcome") { return cmdWelcome(); }
 		if (cmd == "completion" && args.size() >= 1) { return cmdCompletion(args[0]); }
 		if (cmd == "cockpit" && args.size() >= 1 && args[0] == "history") { return cmdCockpitHistory(fmt); }
 		if (cmd == "cockpit" && args.size() >= 1 && args[0] == "export") { return cmdCockpitExport(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }
