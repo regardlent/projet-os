@@ -3,7 +3,7 @@
   "displayName": "Cline Project OS",
   "description": "Project OS + Workspace OS + Artifact Agent Control Center around the Cline SDK",
   "version": "0.1.0",
-  "publisher": "prob-reddit",
+  "publisher": "regardlent",
   "license": "Apache-2.0",
   "type": "module",
   "engines": {
