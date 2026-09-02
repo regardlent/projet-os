@@ -1,6 +1,19 @@
 # Cline Project OS
 
+<p align="center">
+  <img alt="license" src="https://img.shields.io/badge/license-Apache--2.0-blue.svg">
+  <img alt="lang" src="https://img.shields.io/badge/language-C%2B%2B%20%2B%20TypeScript-blue.svg">
+  <img alt="platform" src="https://img.shields.io/badge/platform-Windows-blue.svg">
+  <img alt="vscode" src="https://img.shields.io/badge/vscode-%E2%89%A51.90-blue.svg">
+</p>
+
 Une extension VS Code qui branche un **Control Center / Artifact System** autour du **vrai SDK Cline** (`@cline/sdk`). Construite comme chantier greenfield **autonome** (sans dépendance à un autre projet).
+
+**✨ Fonctionnalités clés**
+- **Extension VS Code** : Control Center sécurisé (webview CSP + nonce), Artifact System (state machine + versions + review), ProjectDNA, vues Projects/Artifacts.
+- **CLI C++** (`cli-cpp/`) : pilotage par menus ou scriptable via `bin/project-os-bridge.mjs` ; `--format=json|ndjson|tsv`, `--color=auto|always|never`, `--timeout=<ms>`, `--explain/--dry-run`.
+- **Intelligence & analyse** (10 features, read-only) : `health score`, `health trend`, `health compare <a> [b]`, `budget forecast`, `insights tokens`, `diagnose`, `drift alert`, `goal traction`, `autonomy health`, `risk profile`.
+- **Runtime réel** : LocalAI loopback, GPU (`nvidia-smi`), models, route, endurance, report, release gate, export sarif, test matrix.
 
 > ⚠️ État : **Phase 2 — migration faite**. Typecheck (0 erreur) et **43/43 tests** passent (25 de
 > base + 18 Phase 2). Le **cycle de vie ClineCore** (create/start/subscribe/sessionId/usage/stop/

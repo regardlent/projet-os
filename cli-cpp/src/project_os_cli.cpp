@@ -1254,7 +1254,28 @@ static int cmdModelBenchmark(const std::string& id, pos::OutputFormat fmt) {
 
 
 // --- INTELLIGENCE & ANALYSIS (10 features) --------------------------------
-static int printAnalysis(const std::string& title, pos::OutputFormat fmt, pos::CmdResult& r) {
+// ANSI color helpers (respect --color / NO_COLOR via colorOn).
+static const char* cB(bool on) { return on ? "\x1b[1m" : ""; }  // bold
+static const char* cX(bool on) { return on ? "\x1b[0m" : ""; }  // reset
+static const char* cG(bool on) { return on ? "\x1b[92m" : ""; } // bright green
+static const char* cY(bool on) { return on ? "\x1b[93m" : ""; } // bright yellow
+static const char* cR(bool on) { return on ? "\x1b[91m" : ""; } // bright red
+static const char* cC(bool on) { return on ? "\x1b[96m" : ""; } // bright cyan
+
+// Signal color: green=good, yellow=caution, red=alert.
+static const char* signalColor(bool on, const std::string& s) {
+	std::string u = s; for (auto& c : u) if (c >= 'a' && c <= 'z') c = c - 'a' + 'A';
+	if (u.find("GOOD") != std::string::npos || u.find("CLEAR") != std::string::npos || u.find("STRONG") != std::string::npos
+		|| u.find("PASS") != std::string::npos || u.find("IMPROVING") != std::string::npos || u.find("HAS_") != std::string::npos
+		|| u.find("EXACT_ZERO") != std::string::npos || u.find("EQUAL") != std::string::npos) return cG(on);
+	if (u.find("AT_RISK") != std::string::npos || u.find("ALERT") != std::string::npos || u.find("HIGH") != std::string::npos
+		|| u.find("DECLINING") != std::string::npos || u.find("EXPIRED") != std::string::npos || u.find("FAIL") != std::string::npos) return cR(on);
+	return cY(on);
+}
+static const char* gradeColor(bool on, const std::string& g) { if (g == "A" || g == "B") return cG(on); if (g == "D" || g == "E") return cR(on); return cY(on); }
+static std::string scoreBar(int score) { const int f = (score < 0 ? 0 : (score > 100 ? 100 : score)) / 10; std::string s = "["; for (int i = 0; i < 10; ++i) s += (i < f ? "#" : "-"); s += "]"; return s; }
+
+static int printAnalysis(const std::string& title, pos::OutputFormat fmt, pos::CmdResult& r, bool colorOn) {
 	const std::string sig = r.signal.empty() ? r.status : r.signal;
 	if (fmt == pos::OutputFormat::Json) {
 		std::cout << "{\"ok\":" << (r.ok ? "true" : "false") << ",\"status\":" << pos::json_quote(r.status)
@@ -1270,24 +1291,29 @@ static int printAnalysis(const std::string& title, pos::OutputFormat fmt, pos::C
 	} else if (fmt == pos::OutputFormat::TsV) {
 		for (auto& kv : r.analysisKv) pos::emitScalar(pos::OutputFormat::TsV, kv.first, kv.second);
 	} else {
-		std::cout << "  " << title << " : " << sig;
-		if (r.score > 0) std::cout << "  score=" << r.score << (r.grade.empty() ? "" : " (" + r.grade + ")");
+		std::cout << cB(colorOn) << "\xE2\x94\x80\xE2\x94\x80 " << title << " " << signalColor(colorOn, sig) << sig << cX(colorOn)
+			<< cB(colorOn) << " \xE2\x94\x80\xE2\x94\x80" << cX(colorOn) << "\n";
+		if (r.score > 0) {
+			std::cout << "  score    : " << scoreBar(r.score) << " " << r.score << "/100"
+				<< (r.grade.empty() ? "" : "  " + std::string(gradeColor(colorOn, r.grade)) + "[" + r.grade + "]" + std::string(cX(colorOn))) << "\n";
+		}
+		size_t w = 0; for (auto& kv : r.analysisKv) w = std::max(w, kv.first.size());
+		for (auto& kv : r.analysisKv) std::cout << "  " << std::string(w - kv.first.size(), ' ') << kv.first << " : " << kv.second << "\n";
+		for (auto& d : r.details) std::cout << "    \xC2\xB7 " << d << "\n";
 		std::cout << "\n";
-		for (auto& kv : r.analysisKv) std::cout << "    " << kv.first << " : " << kv.second << "\n";
-		for (auto& d : r.details) std::cout << "    - " << d << "\n";
 	}
 	return 0;
 }
-static int cmdHealthScore(pos::OutputFormat fmt) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "health score", g_timeoutMs, &g_cancel); printAnalysis("health score", fmt, r); return pos::exitFor(r.ok, r.status); }
-static int cmdBudgetForecast(pos::OutputFormat fmt) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "budget forecast", g_timeoutMs, &g_cancel); printAnalysis("budget forecast", fmt, r); return pos::exitFor(r.ok, r.status); }
-static int cmdInsightsTokens(pos::OutputFormat fmt) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "insights tokens", g_timeoutMs, &g_cancel); printAnalysis("insights tokens", fmt, r); return pos::exitFor(r.ok, r.status); }
-static int cmdDiagnose(pos::OutputFormat fmt) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "diagnose", g_timeoutMs, &g_cancel); printAnalysis("diagnose", fmt, r); return pos::exitFor(r.ok, r.status); }
-static int cmdDriftAlert(pos::OutputFormat fmt) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "drift alert", g_timeoutMs, &g_cancel); printAnalysis("drift alert", fmt, r); return pos::exitFor(r.ok, r.status); }
-static int cmdHealthTrend(pos::OutputFormat fmt) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "health trend", g_timeoutMs, &g_cancel); printAnalysis("health trend", fmt, r); return pos::exitFor(r.ok, r.status); }
-static int cmdGoalTraction(pos::OutputFormat fmt) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "goal traction", g_timeoutMs, &g_cancel); printAnalysis("goal traction", fmt, r); return pos::exitFor(r.ok, r.status); }
-static int cmdAutonomyHealth(pos::OutputFormat fmt) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "autonomy health", g_timeoutMs, &g_cancel); printAnalysis("autonomy health", fmt, r); return pos::exitFor(r.ok, r.status); }
-static int cmdHealthCompare(pos::OutputFormat fmt, const std::vector<std::string>& args) { std::string line = "health compare"; for (auto& a : args) line += " " + a; pos::CmdResult r = pos::dispatch(pos::bridgePath(), line, g_timeoutMs, &g_cancel); printAnalysis("health compare", fmt, r); return pos::exitFor(r.ok, r.status); }
-static int cmdRiskProfile(pos::OutputFormat fmt) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "risk profile", g_timeoutMs, &g_cancel); printAnalysis("risk profile", fmt, r); return pos::exitFor(r.ok, r.status); }
+static int cmdHealthScore(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "health score", g_timeoutMs, &g_cancel); printAnalysis("health score", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
+static int cmdBudgetForecast(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "budget forecast", g_timeoutMs, &g_cancel); printAnalysis("budget forecast", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
+static int cmdInsightsTokens(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "insights tokens", g_timeoutMs, &g_cancel); printAnalysis("insights tokens", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
+static int cmdDiagnose(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "diagnose", g_timeoutMs, &g_cancel); printAnalysis("diagnose", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
+static int cmdDriftAlert(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "drift alert", g_timeoutMs, &g_cancel); printAnalysis("drift alert", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
+static int cmdHealthTrend(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "health trend", g_timeoutMs, &g_cancel); printAnalysis("health trend", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
+static int cmdGoalTraction(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "goal traction", g_timeoutMs, &g_cancel); printAnalysis("goal traction", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
+static int cmdAutonomyHealth(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "autonomy health", g_timeoutMs, &g_cancel); printAnalysis("autonomy health", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
+static int cmdHealthCompare(pos::OutputFormat fmt, const std::vector<std::string>& args, bool colorOn) { std::string line = "health compare"; for (auto& a : args) line += " " + a; pos::CmdResult r = pos::dispatch(pos::bridgePath(), line, g_timeoutMs, &g_cancel); printAnalysis("health compare", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
+static int cmdRiskProfile(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "risk profile", g_timeoutMs, &g_cancel); printAnalysis("risk profile", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
 int wmain(int argc, wchar_t** wargv) {
 	// F09: cooperative Ctrl+C (never kills an external/user process).
 	std::signal(SIGINT, onSigInt);
@@ -1366,16 +1392,16 @@ int wmain(int argc, wchar_t** wargv) {
 		if (cmd == "artifact" && args.size() >= 1 && args[0] == "audit-store") { return cmdArtifactAuditStore(fmt); }
 		if (cmd == "parity") { return cmdParity(fmt); }
 			if (cmd == "addon" && args.size() >= 1 && args[0] == "verify") { return cmdAddonVerify(fmt); }
-		if (cmd == "health" && args.size() >= 1 && args[0] == "score") { return cmdHealthScore(fmt); }
-		if (cmd == "health" && args.size() >= 1 && args[0] == "trend") { return cmdHealthTrend(fmt); }
-		if (cmd == "health" && args.size() >= 2 && args[0] == "compare") { return cmdHealthCompare(fmt, std::vector<std::string>(args.begin() + 1, args.end())); }
-		if (cmd == "budget" && args.size() >= 1 && args[0] == "forecast") { return cmdBudgetForecast(fmt); }
-		if (cmd == "insights" && args.size() >= 1 && args[0] == "tokens") { return cmdInsightsTokens(fmt); }
-		if (cmd == "diagnose") { return cmdDiagnose(fmt); }
-		if (cmd == "drift" && args.size() >= 1 && args[0] == "alert") { return cmdDriftAlert(fmt); }
-		if (cmd == "goal" && args.size() >= 1 && args[0] == "traction") { return cmdGoalTraction(fmt); }
-		if (cmd == "autonomy" && args.size() >= 1 && args[0] == "health") { return cmdAutonomyHealth(fmt); }
-		if (cmd == "risk" && args.size() >= 1 && args[0] == "profile") { return cmdRiskProfile(fmt); }
+		if (cmd == "health" && args.size() >= 1 && args[0] == "score") { return cmdHealthScore(fmt, colorOn); }
+		if (cmd == "health" && args.size() >= 1 && args[0] == "trend") { return cmdHealthTrend(fmt, colorOn); }
+		if (cmd == "health" && args.size() >= 2 && args[0] == "compare") { return cmdHealthCompare(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }
+		if (cmd == "budget" && args.size() >= 1 && args[0] == "forecast") { return cmdBudgetForecast(fmt, colorOn); }
+		if (cmd == "insights" && args.size() >= 1 && args[0] == "tokens") { return cmdInsightsTokens(fmt, colorOn); }
+		if (cmd == "diagnose") { return cmdDiagnose(fmt, colorOn); }
+		if (cmd == "drift" && args.size() >= 1 && args[0] == "alert") { return cmdDriftAlert(fmt, colorOn); }
+		if (cmd == "goal" && args.size() >= 1 && args[0] == "traction") { return cmdGoalTraction(fmt, colorOn); }
+		if (cmd == "autonomy" && args.size() >= 1 && args[0] == "health") { return cmdAutonomyHealth(fmt, colorOn); }
+		if (cmd == "risk" && args.size() >= 1 && args[0] == "profile") { return cmdRiskProfile(fmt, colorOn); }
 	// --- F66 bridge command --------------------------------------------------------------
 	if (cmd == "bridge" && args.size() >= 1) {
 		if (args[0] == "status") { return cmdBridgeStatus(fmt); }
