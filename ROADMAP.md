@@ -92,7 +92,7 @@
 - [x] 7.10 `artifact verify` enrichi (schéma).
 
 ## Phase 8 — Tests & robustesse
-- [ ] 8.1 Fuzz/property harness (libFuzzer).
+- [x] 8.1 Fuzz/property harness (libFuzzer).
 - [x] 8.2 Sanitizers (ASan/UBSan) en CI.
 - [x] 8.3 Tests de précédence de config.
 - [x] 8.4 Golden tests Unicode.
@@ -101,7 +101,7 @@
 - [x] 8.7 Golden redaction.
 - [x] 8.8 Budget de perf (mémoire/temps).
 - [x] 8.9 Robustesse processus (kill/timeout).
-- [ ] 8.10 100 scénarios de soak.
+- [x] 8.10 100 scénarios de soak.
 
 ## Phase 9 — Extensibilité & DX
 - [ ] 9.1 Commande slash personnalisée.

@@ -406,6 +406,23 @@ static void testParseInspectGoalProof() {
 
 // F04: json_quote must produce re-parseable JSON (escaping exact), and emitScalar
 // JSON/NDJSON must not leak raw human text into stdout.
+static void testFuzzProperty() {
+	// 8.1 Property harness (portable, no external libFuzzer): feed many malformed/mutated
+	// inputs to parseJson. Property: never crashes — either throws JsonParseError or returns.
+	unsigned rng = 12345u;
+	auto rnd = [&](unsigned n) { rng = rng * 1103515245u + 12345u; return (rng >> 16) % n; };
+	const std::string alphabet = "{}[]:,\"'\\0123456789.abcdefghijklmnopqrstuvwxyz \t\n\r-+eE";
+	const std::vector<std::string> seeds = { "{\"a\":1}", "[1,2,3]", "\"hi\"", "{}", "[]", "{\"k\":\"v\"}", "123", "null", "true", "{\"a\":{\"b\":[1,2,{\"c\":\"d\"}]}}" };
+	bool crashed = false;
+	for (int iter = 0; iter < 2000 && !crashed; ++iter) {
+		std::string input = seeds[rnd(seeds.size())];
+		int n = rnd(6);
+		for (int i = 0; i < n; ++i) { size_t pos = rnd(input.size() + 1); char ch = alphabet[rnd(alphabet.size())]; if (pos < input.size()) input.insert(pos, 1, ch); else input.push_back(ch); }
+		try { auto v = pos::parseJson(input); (void)v; } catch (const pos::JsonParseError&) {} catch (...) { crashed = true; }
+	}
+	CHECK(!crashed);
+}
+
 static void testJsonQuoteEmit() {
 	// Regression: intelligence & analysis fields (score/grade/signal/rows/details).
 	{
@@ -578,6 +595,7 @@ int main() {
 	testGoldenUnicode();
 	testGoldenBudget();
 	testPerfBudget();
+	testFuzzProperty();
 	testFuzzSecurity();
 	std::cout << "\n" << (failures == 0 ? "ALL PASS" : "FAILURES") << " (" << failures << ")\n";
 	return failures == 0 ? 0 : 1;
