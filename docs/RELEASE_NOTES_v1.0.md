@@ -8,7 +8,11 @@ Le CLI C++ pilote Project OS en **déléguant** toute la logique au bridge (prot
 
 ## Fonctionnalités (extrait)
 - **UX** : aide catégorisée, cartes `──…──`, barre de score, grade coloré, `--theme`, `--mono`, `--no-emoji`,
-  `--quiet|--verbose`, `--format=json|ndjson|tsv`, `--json/--ndjson/--tsv`, `--silent/--check`, `--time`, `--width`, `--trace`.
+  `--quiet|--verbose`, `--format=json|ndjson|tsv`, `--json/--ndjson/--tsv`, `--silent/--check`, `--time`, `--width`, `--trace`,
+  `--profile=dev|ci|minimal`, `-q/-qq/-v/-vv`, `--limit=<n>`, `tree`.
+- **Machine-output uniforme** : `--format=human|json|ndjson|tsv|csv|md|html` sur listes, analyses, détail,
+  `model smoke`, `benchmark compare`, `snapshot list`, `gpu status`, `config`. Doc `docs/OUTPUT_FORMATS.md`.
+- **Création projet + timer** : `create` chronomètre scaffold/goal/addons/git/todo (multi-étape `elapsedMs`).
 - **Intelligence & analyse** : `health score|trend|compare`, `budget forecast`, `insights tokens`, `diagnose`,
   `drift alert|compare`, `goal traction|cost`, `autonomy health`, `risk profile`.
 - **Modèles** : routeur adaptatif (`--alt`), `model qualify|compare|flash|policy|quota|profiles|offload|cache`.
