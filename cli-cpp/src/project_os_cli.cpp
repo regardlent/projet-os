@@ -71,6 +71,8 @@ inline std::atomic<bool> g_timing(false);
 // Phase 1.38/1.39: --yes/--no (skips confirmation) + --force (overwrite).
 inline std::atomic<bool> g_yes(false);
 inline std::atomic<bool> g_force(false);
+// Phase 1.22: --limit=<n> cap list outputs (pagination-lite).
+inline std::atomic<int> g_limit(0);
 
 // --- Helpers -------------------------------------------------------------
 // Phase 1.32: unhandled exception => clean message + exit 70 (never a silent crash / 0).
@@ -138,7 +140,9 @@ static int cmdProjectList(pos::OutputFormat fmt) {
 	} else {
 		if (r.projects.empty()) { std::cout << "  (no projects)\n"; return 0; }
 		std::vector<std::vector<std::string>> rows;
-		for (const auto& p : r.projects) rows.push_back({ p.slug, p.projectType, p.status, "goal=" + p.goalStatus + " (" + std::to_string(p.goalProgress) + "%)" });
+		const int lim = g_limit.load();
+		const size_t n = (lim > 0 && (size_t)lim < r.projects.size()) ? (size_t)lim : r.projects.size();
+		for (size_t i = 0; i < n; ++i) { const auto& p = r.projects[i]; rows.push_back({ p.slug, p.projectType, p.status, "goal=" + p.goalStatus + " (" + std::to_string(p.goalProgress) + "%)" }); }
 		std::cout << pos::renderTable(rows);
 	}
 	// F03 exit contract: a FAIL status must never exit 0.
@@ -1873,6 +1877,7 @@ int wmain(int argc, wchar_t** wargv) {
 			if (a == "--no") { g_yes.store(false); return true; }
 			if (a == "--force") { g_force.store(true); return true; }
 			if (a.rfind("--width=", 0) == 0) { g_width.store(std::atoi(a.substr(8).c_str())); return true; }
+			if (a.rfind("--limit=", 0) == 0) { g_limit.store(std::atoi(a.substr(8).c_str())); return true; }
 			if (a.rfind("--color=", 0) == 0) { wrapColor = pos::parseColor(a.substr(8)); return true; }
 			if (a.rfind("--theme=", 0) == 0) { const std::string t = a.substr(8); if (t == "light") g_theme.store(0); else if (t == "dark") g_theme.store(1); return true; }
 			if (a.rfind("--timeout=", 0) == 0) { g_timeoutMs.store(std::atoll(a.substr(10).c_str())); if (g_timeoutMs.load() <= 0) g_timeoutMs.store(60000); return true; }
