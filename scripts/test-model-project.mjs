@@ -3,7 +3,7 @@
 // project from an --impl header, compiles it, and runs it — WITHOUT LocalAI.
 // Asserts the bridge returns PROJECT_COMPILED. Exits 0 on PASS, 1 on FAIL.
 import { spawnSync } from "node:child_process";
-import { writeFileSync, existsSync } from "node:fs";
+import { writeFileSync, existsSync, rmSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -16,6 +16,9 @@ if (!existsSync(path.join(ws, ".project-os"))) {
 	console.log("SKIP: textkit workspace not present (run: create textkit --type=cpp)");
 	process.exit(0);
 }
+
+// Clear any stale generated project so the proof is reproducible on re-run.
+rmSync(path.join(ws, "work", "fixture"), { recursive: true, force: true });
 
 // Fixture header with a run() that returns a nonzero status.
 const fixture = `#pragma once\n#include <cstdio>\ninline int run(){ std::printf("run() executed\\n"); return 37; }\n`;
