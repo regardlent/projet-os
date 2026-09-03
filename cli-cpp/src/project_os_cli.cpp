@@ -883,6 +883,29 @@ static int cmdTodoBoard(pos::OutputFormat fmt) {
 
 
 // --- F23 artifact list --------------------------------------------------------
+// --- F24 artifact list ---------------------------------------------------------
+// Render columns in human (aligned) / csv / markdown / html from headers + rows.
+static void renderColumns(const std::vector<std::string>& headers, const std::vector<std::vector<std::string>>& rows, pos::OutputFormat fmt) {
+	if (fmt == pos::OutputFormat::Csv) {
+		for (size_t i = 0; i < headers.size(); ++i) { if (i) std::cout << ","; std::cout << headers[i]; } std::cout << "\n";
+		for (const auto& r : rows) { for (size_t i = 0; i < r.size(); ++i) { if (i) std::cout << ","; std::cout << r[i]; } std::cout << "\n"; }
+		return;
+	}
+	if (fmt == pos::OutputFormat::Markdown) {
+		std::cout << "| "; for (const auto& h : headers) std::cout << h << " | "; std::cout << "\n|";
+		for (const auto& h : headers) std::cout << "---|"; std::cout << "\n";
+		for (const auto& r : rows) { std::cout << "| "; for (const auto& c : r) std::cout << c << " | "; std::cout << "\n"; }
+		return;
+	}
+	if (fmt == pos::OutputFormat::Html) {
+		std::cout << "<table><tr>"; for (const auto& h : headers) std::cout << "<th>" << h << "</th>"; std::cout << "</tr>\n";
+		for (const auto& r : rows) { std::cout << "<tr>"; for (const auto& c : r) std::cout << "<td>" << c << "</td>"; std::cout << "</tr>\n"; }
+		std::cout << "</table>\n";
+		return;
+	}
+	std::cout << pos::renderTable(rows);
+}
+
 static int cmdArtifactList(pos::OutputFormat fmt) {
 	pos::CmdResult r = pos::dispatch(pos::bridgePath(), "artifact list", g_timeoutMs, &g_cancel);
 	if (!r.ok) { std::cout << "  FAIL artifact list: " << r.status << " — " << r.message << "\n"; return 1; }
@@ -896,7 +919,9 @@ static int cmdArtifactList(pos::OutputFormat fmt) {
 		for (const auto& a : r.artifactList) pos::emitScalar(pos::OutputFormat::TsV, a.id, a.type + "\t" + std::to_string(a.size) + "\t" + a.status);
 	} else {
 		if (r.artifactList.empty()) { std::cout << "  (no artifacts)\n"; return 0; }
-		for (const auto& a : r.artifactList) std::cout << "  " << a.id << "  [" << a.type << "]  " << a.size << " B  " << (a.status.empty() ? "" : (a.status)) << (a.source.empty() ? "" : ("  (src=" + a.source + ")")) << "\n";
+		std::vector<std::vector<std::string>> rows;
+		for (const auto& a : r.artifactList) rows.push_back({ a.id, a.type, std::to_string(a.size), a.status, a.source });
+		renderColumns({ "id", "type", "size", "status", "source" }, rows, fmt);
 	}
 	return 0;
 }
@@ -1129,9 +1154,10 @@ static int cmdModels(pos::OutputFormat fmt) {
 			} else if (fmt == pos::OutputFormat::TsV) {
 		for (const auto& m : r.modelList) pos::emitScalar(pos::OutputFormat::TsV, m.id, m.type);
 			} else {
-			card("models");
-			std::cout << "  models: " << r.modelList.size() << "\n";
-		for (const auto& m : r.modelList) std::cout << "  " << m.id << "  [" << m.type << "]\n";
+			if (r.modelList.empty()) { std::cout << "  (no models)\n"; return 0; }
+			std::vector<std::vector<std::string>> rows;
+			for (const auto& m : r.modelList) rows.push_back({ m.id, m.type });
+			renderColumns({ "id", "status" }, rows, fmt);
 	}
 	return 0;
 }
