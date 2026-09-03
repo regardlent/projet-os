@@ -37,3 +37,13 @@ F41-F48 quality/release · F49-F50 UX.
 ## Final
 `PROJECT_OS_CLI_V3_READY = PASS` for the CLI component (50/50 features, all gates green).
 The Project OS endurance ladder (rungs 30/60) remains a separate GPU-external gate.
+
+## v1.0 — post-V3 cycles (2026-09)
+Régression **verte** : typecheck 0 · cpp `ctest` 100% · `pos_json_test` ALL PASS · node 18/18 ciblés ·
+**soak 100/100** · `create` multi-étape (scaffold/goal/addons/git/todo) chronométré (elapsedMs).
+- **Machine-output unifiée** : `--format=human|json|ndjson|tsv|csv|md|html` sur listes, analyses, détail,
+  `model smoke`, `benchmark compare`, `snapshot list --age`, `gpu status`, `config --as=env|ini|json`.
+- **UX/DX** : `--profile=dev|ci|minimal`, `-q/-qq/-v/-vv`, `--limit`, `--time`, `--trace`, `--silent/--check`,
+  `--width`, `tree`, cockpit `[Addons]` + `[Perf] 4 sources`, `git log --graph`.
+- **Invariant conservé** : no fake PASS · no exit 0 on error · `--dry-run` no mutation · secrets redigés
+  (`redactSecret`) · sanitizers ASan/UBSan (`-DPOS_SANITIZE=ON`).
