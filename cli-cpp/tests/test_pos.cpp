@@ -515,6 +515,30 @@ static void testPerfBudget() {
 	std::cout << "  perf  : 50k-array parse in " << (long long)ms << " ms\n";
 }
 
+static void testCmdResultExtended() {
+	// Phase 43 regression: create multi-step chronogram + timing, snapshot diff rows.
+	{
+		std::string j = R"({"protocol":2,"ok":true,"status":"CREATE_READY","result":{"command":"create","status":"READY","project":"demo","steps":[{"label":"scaffold","ms":3},{"label":"addons","ms":7},{"label":"git","ms":82},{"label":"todo","ms":1}],"artifacts":["/demo"]},"timingMs":95,"errors":[]})";
+		auto r = pos::parseCmdResult(j);
+		CHECK(r.status == "READY" && r.timingMs == 95);
+		CHECK(r.createSteps.size() == 4);
+		CHECK(r.createSteps[0].first == "scaffold" && r.createSteps[0].second == 3);
+		CHECK(r.createSteps[2].first == "git" && r.createSteps[2].second == 82);
+	}
+	{
+		std::string j = R"({"protocol":2,"ok":true,"status":"SNAPSHOT_DIFF","result":{"command":"snapshot","rows":[{"k":"goal","v":"same"},{"k":"todo","v":"6/6 -> 6/6"},{"k":"progress","v":"0% -> 0%"}]},"errors":[]})";
+		auto r = pos::parseCmdResult(j);
+		CHECK(r.analysisKv.size() == 3);
+		CHECK(r.analysisKv[0].first == "goal" && r.analysisKv[0].second == "same");
+	}
+	// requestId trace (10.8) flows through the envelope.
+	{
+		std::string j = R"({"protocol":2,"ok":true,"status":"OK","requestId":"req-123","result":{},"errors":[]})";
+		auto r = pos::parseCmdResult(j);
+		CHECK(r.requestId == "req-123");
+	}
+}
+
 static void testFormatting() {
 	// 2.8 duration
 	CHECK(pos::fmtDuration(500) == "500ms");
@@ -631,6 +655,7 @@ int main() {
 	testPerfBudget();
 	testFormatting();
 	testTable();
+	testCmdResultExtended();
 	testFuzzProperty();
 	testFuzzSecurity();
 	std::cout << "\n" << (failures == 0 ? "ALL PASS" : "FAILURES") << " (" << failures << ")\n";
