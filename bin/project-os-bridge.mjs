@@ -1260,6 +1260,83 @@ try {
 		process.exit(0);
 	}
 
+	// F90 model codegen <relpath> <objective...>: FULLY AUTONOMOUS code generation.
+	// The CLI (bridge) chooses the coding model (adaptive), generates, compiles, and repairs
+	// in a gen->compile->fix loop until the artifact compiles (or MAX_TRIES). No human choice.
+	if (line.startsWith("model codegen ")) {
+		const rest = line.slice("model codegen ".length).trim();
+		const sp = rest.indexOf(" ");
+		const rel = (sp >= 0 ? rest.slice(0, sp) : rest).trim();
+		const objective = (sp >= 0 ? rest.slice(sp + 1) : "").trim();
+		const maxTries = 4;
+		const a = resolveActiveProject();
+		if (!a) { emit({ command: "models", ok: false, status: "NO_ACTIVE_PROJECT", score: 0, grade: "", signal: "NO_PROJECT", rows: [], details: ["no active project"], message: "model codegen: no active project", warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
+		if (!rel || !objective) { emit({ command: "models", ok: false, status: "OBJECTIVE_REQUIRED", score: 0, grade: "", signal: "FAIL", rows: [], details: ["usage: model codegen <relpath> <objective>"], message: "model codegen: relpath + objective required", warnings: [], actions: [], artifacts: [] }, 2); process.exit(0); }
+		const ws = a.workspaceRoot;
+		const target = path.resolve(ws, rel);
+		const rl = path.relative(ws, target);
+		if (rl.startsWith("..") || path.isAbsolute(rl) || rel.includes("..")) { emit({ command: "models", ok: false, status: "PATH_TRAVERSAL", score: 0, grade: "", signal: "FAIL", rows: [], details: [rel], message: "model codegen: path escapes workspace", warnings: [], actions: [], artifacts: [] }, 6); process.exit(0); }
+		const ext = path.extname(rel).slice(1) || "txt";
+		// Autonomous model choice: list LocalAI models and RANK them (prefer larger, instruct,
+		// coding-capable; avoid tiny/flash/reranker/smollm). This is the CLI's own adaptive pick.
+		let codingModel = modelId;
+		try {
+			const mr = await fetch(baseUrl + "/models"); const mb = await mr.json();
+			const ids = (mb.data ?? []).map((m) => m.id);
+			const score = (id) => {
+				let s = 0;
+				if (/instruct|qwen|granite|llama|mistral|deepseek|codestral|code-/i.test(id)) s += 40;
+				if (/instruct/i.test(id)) s += 20;
+				if (/1[0-9]b|7b|8b|3b|1\.7b|4b/i.test(id)) s += 15;   // bigger-ish
+				if (/flash|smollm|reranker|0\.5b|1b|2\.5b|mini|nano|tiny|3b/i.test(id)) s -= 25;
+				const sz = id.match(/([0-9]+(?:\.[0-9]+)?)b/i); if (sz) s += parseFloat(sz[1]) * 4;
+				return s;
+			};
+			codingModel = ids.reduce((best, id) => (score(id) > score(best) ? id : best), ids[0] || codingModel);
+			if (!codingModel) codingModel = modelId;
+		} catch {}
+		// Syntax check via g++ when available (headers: -fsyntax-only; standalone cpp: link a temp exe).
+		const compileCheck = (content) => {
+			try {
+				const tmp = path.join(ws, ".project-os", ".gen_" + Date.now() + "." + ext);
+				fs.mkdirSync(path.dirname(tmp), { recursive: true });
+				fs.writeFileSync(tmp, content, "utf8");
+				let args;
+				if (ext === "hpp" || ext === "h" || ext === "hh") args = [tmp, "-std=c++17", "-fsyntax-only", "-x", "c++"];
+				else args = [tmp, "-std=c++17", "-o", tmp + ".exe"];
+				const r = spawnSync("g++", args, { encoding: "utf8", timeout: 20000 });
+				if (r.status === 0) return { ok: true };
+				return { ok: false, err: ((r.stderr || "") + (r.stdout || "")).trim().slice(0, 600) };
+			} catch (e) { return { ok: false, err: String(e.message) }; }
+		};
+		let finalContent = "", lastErr = "", attempt = 0, tokens = 0;
+		for (attempt = 1; attempt <= maxTries; ++attempt) {
+			try {
+				const fixHint = (attempt > 1 && lastErr) ? ` The previous compile failed with: ${lastErr}. Fix that error and output the corrected full file only.` : "";
+				const prompt = `Write the complete content of the file \`${rel}\` (${ext}). Output ONLY the raw file content in a single \`${ext}\` code block. No explanation.${fixHint}\n\nTask: ${objective}`;
+				const r = await fetch(baseUrl + "/chat/completions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: codingModel, messages: [{ role: "user", content: prompt }], max_tokens: 1600, temperature: 0, stream: false }) });
+				const body = await r.json();
+				let content = (body.choices?.[0]?.message?.content ?? "").trim();
+				tokens = body.usage?.total_tokens ?? 0;
+				if (!content) continue; // empty -> next attempt
+				const wrap = content.match(/^```[a-zA-Z0-9]*\s*\n([\s\S]*?)```\s*$/);
+				if (wrap && wrap[1]) content = wrap[1].trim();
+				const chk = compileCheck(content);
+				if (chk.ok) { finalContent = content; break; }
+				lastErr = chk.err || "compile failed";
+			} catch (e) { lastErr = String(e.message); }
+		}
+		if (!finalContent) {
+			emit({ command: "models", ok: false, status: "CODEGEN_FAILED", model: codingModel, score: 0, grade: "", signal: "FAIL", rows: [{ k: "path", v: rel }, { k: "model", v: codingModel }, { k: "tries", v: String(attempt - 1) }], details: [lastErr.slice(0, 300)], message: `model codegen: ${rel} FAILED after ${attempt - 1} tries (${lastErr.slice(0, 80)})`, warnings: [], actions: [], artifacts: [] }, 1);
+			process.exit(0);
+		}
+		fs.mkdirSync(path.dirname(target), { recursive: true });
+		fs.writeFileSync(target, finalContent, "utf8");
+		const bytes = Buffer.byteLength(finalContent, "utf8");
+		emit({ command: "models", ok: true, status: "CODEGEN_COMPILED", model: codingModel, score: 0, grade: "", signal: "PASS", rows: [{ k: "path", v: rel }, { k: "model", v: codingModel }, { k: "bytes", v: String(bytes) }, { k: "tries", v: String(attempt) }, { k: "tokens", v: String(tokens) }], details: [finalContent.slice(0, 120).replace(/\n/g, " ")], message: `model codegen: ${rel} ${bytes} bytes model=${codingModel} after ${attempt} try(s)` , warnings: [], actions: ["git status"], artifacts: [rel] }, 0);
+		process.exit(0);
+	}
+
 	// F37 model benchmark <id>: 1 warmup + 3 measured real inferences -> TTFT/tokens-per-sec.
 	if (line.startsWith("model benchmark ")) {
 		const id = line.slice("model benchmark ".length).trim();

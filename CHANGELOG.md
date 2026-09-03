@@ -20,6 +20,7 @@ Le format s'appuie sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) 
   `drift alert|compare`, `goal traction|cost`, `autonomy health`, `risk profile` (+ `--source`, politique PAYG).
 - **Modèles** : routeur adaptatif (`--alt`), `model qualify|compare|flash|policy|quota|profiles|offload|cache`.
 - **`model write`** (nouveau) : génère du contenu via **localAI** et l'écrit dans le workspace du projet actif (garde anti-traversal, `PATH_TRAVERSAL` → exit non nul).
+- **`model codegen`** (nouveau, **autonome**) : le CLI **choisit lui-même le modèle** (classement adaptatif parmi les modèles localAI), génère, **compile** (`g++`), et **se répare** en boucle (générer→compiler→corriger) jusqu'à produire un artefact compilable.
 - **Git** : `git status|log|commit|diff|branch|worktree|stash|ignore|checkpoint|hook|drift|pr`.
 - **Artefacts & MCP** : `artifact publish|versions|review|provenance|share|verify` (+ schéma), MCP tools
   `artifact_verify|artifact_search`, `/bridge config|audit`, `--tools` tunnel (12 outils MCP).

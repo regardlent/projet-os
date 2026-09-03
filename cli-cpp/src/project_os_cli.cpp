@@ -215,7 +215,7 @@ static int cmdHelp(bool colorOn) {
 	sec(pick("Modèle & GPU", "Model & GPU"));
 	std::cout << "  preflight              aggregate bridge/LocalAI/GPU check\n";
 	std::cout << "  models                 LocalAI model inventory\n";
-	std::cout << "  model show|smoke|benchmark|qualify|compare|flash|policy|quota|profiles|offload|cache|write <id>\n";
+	std::cout << "  model show|smoke|benchmark|qualify|compare|flash|policy|quota|profiles|offload|cache|write|codegen <id>\n";
 	std::cout << "  route <task-class> [--alt]  adaptive model selection (ranked alternatives)\n";
 	std::cout << "  gpu|gpu watch|gpu proof  real nvidia-smi\n";
 	std::cout << "  benchmark              model performance testing\n";
@@ -1682,6 +1682,8 @@ static int cmdModelOffload(pos::OutputFormat fmt, const std::vector<std::string>
 static int cmdModelCache(pos::OutputFormat fmt, const std::vector<std::string>& args, bool colorOn) { std::string line = "model cache"; for (auto& a : args) line += " " + a; pos::CmdResult r = pos::dispatch(pos::bridgePath(), line, g_timeoutMs, &g_cancel); printAnalysis("model cache", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
 // F89 model write <relpath> <objective...>: generate content via LocalAI and write it into the active project workspace.
 static int cmdModelWrite(pos::OutputFormat fmt, const std::vector<std::string>& args, bool colorOn) { std::string line = "model write"; for (auto& a : args) line += " " + a; pos::CmdResult r = pos::dispatch(pos::bridgePath(), line, g_timeoutMs, &g_cancel); printAnalysis("model write", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
+// F90 model codegen <relpath> <objective...>: fully autonomous codegen (CLI picks model + compile-repair loop).
+static int cmdModelCodegen(pos::OutputFormat fmt, const std::vector<std::string>& args, bool colorOn) { std::string line = "model codegen"; for (auto& a : args) line += " " + a; pos::CmdResult r = pos::dispatch(pos::bridgePath(), line, g_timeoutMs, &g_cancel); printAnalysis("model codegen", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
 // F77-79 git status/log/commit (Phase 6).
 static int cmdGitStatus(pos::OutputFormat fmt, bool colorOn) { pos::CmdResult r = pos::dispatch(pos::bridgePath(), "git status", g_timeoutMs, &g_cancel); printAnalysis("git status", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
 static int cmdGitLog(pos::OutputFormat fmt, const std::vector<std::string>& args, bool colorOn) { std::string line = "git log"; for (auto& a : args) line += " " + a; pos::CmdResult r = pos::dispatch(pos::bridgePath(), line, g_timeoutMs, &g_cancel); printAnalysis("git log", fmt, r, colorOn); return pos::exitFor(r.ok, r.status); }
@@ -2215,6 +2217,7 @@ int wmain(int argc, wchar_t** wargv) {
 		if (cmd == "model" && args.size() >= 2 && args[0] == "offload") { return cmdModelOffload(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }
 		if (cmd == "model" && args.size() >= 2 && args[0] == "cache") { return cmdModelCache(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }
 		if (cmd == "model" && args.size() >= 2 && args[0] == "write") { return cmdModelWrite(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }
+		if (cmd == "model" && args.size() >= 2 && args[0] == "codegen") { return cmdModelCodegen(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }
 		if (cmd == "git" && args.size() >= 1 && args[0] == "status") { return cmdGitStatus(fmt, colorOn); }
 		if (cmd == "git" && args.size() >= 1 && args[0] == "log") { return cmdGitLog(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }
 		if (cmd == "git" && args.size() >= 1 && args[0] == "commit") { return cmdGitCommit(fmt, std::vector<std::string>(args.begin() + 1, args.end()), colorOn); }
