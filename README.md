@@ -6,6 +6,7 @@
   <img alt="platform" src="https://img.shields.io/badge/platform-Windows-blue.svg">
   <img alt="vscode" src="https://img.shields.io/badge/vscode-%E2%89%A51.90-blue.svg">
   <img alt="ci" src="https://img.shields.io/github/actions/workflow/status/regardlent/projet-os/ci.yml?branch=main&style=flat">
+  <img alt="release-wf" src="https://img.shields.io/github/actions/workflow/status/regardlent/projet-os/release.yml?branch=main&style=flat">
   <img alt="release" src="https://img.shields.io/github/v/release/regardlent/projet-os?style=flat">
   <img alt="stars" src="https://img.shields.io/github/stars/regardlent/projet-os?style=flat">
   <img alt="forks" src="https://img.shields.io/github/forks/regardlent/projet-os?style=flat">

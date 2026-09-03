@@ -39,10 +39,10 @@ Les glyphes box-drawing (`──`, `⚠`) apparaissent en mojibake dans les capt
 - **Publication** : ⚠️ nécessite un token GitHub (ni `gh` ni `GITHUB_TOKEN` disponibles dans cet environnement).
 
 ### Commandes de publication (à exécuter par le propriétaire)
-```powershell
-# Option A — via gh CLI (si `gh auth login` fait)
-gh release create v1.0 --repo regardlent/projet-os --title "Project OS CLI v1.0" --notes-file docs/RELEASE_NOTES_v1.0.md cli-cpp/project-os-cli-0.1.0-v3.zip
+Le dépôt embarque désormais un **workflow GitHub Actions `release.yml`** qui publie automatiquement la release sur tout tag `v*` (GITHUB_TOKEN intégré). Pour déclencher la publication de `v1.0` :
 
-# Option B — via script avec un PAT (repo scope)
-$env:GITHUB_TOKEN="ghp_xxx" ; node scripts\release-gh.mjs v1.0
-```
+1. **Auto sur tag** : poussez un tag `v*` (ex. `git tag v1.0.1 && git push origin v1.0.1`) → build CPack + release auto.
+2. **Manuel** : Actions → **Release** → *Run workflow* → saisir le tag `v1.0` → Run (utilise le token intégré, aucun secret requis).
+
+> Sinon, en local : `gh release create v1.0 --repo regardlent/projet-os --title "Project OS CLI v1.0" --notes-file docs/RELEASE_NOTES_v1.0.md cli-cpp/project-os-cli-0.1.0-v3.zip` (si `gh auth login` fait).
+
