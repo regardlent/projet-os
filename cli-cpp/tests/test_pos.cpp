@@ -567,6 +567,17 @@ static void testCmdResultExtended() {
 	}
 }
 
+static void testI18n() {
+	// Phase 49: bilingual catalog — fr default, en switch, and unknown-word fallback.
+	CHECK(std::string(pos::i18n(pos::Lang::Fr, pos::Lw::ERR)) == "Erreur");
+	CHECK(std::string(pos::i18n(pos::Lang::En, pos::Lw::ERR)) == "Error");
+	CHECK(std::string(pos::i18n(pos::Lang::Fr, pos::Lw::OK)) == "OK");
+	CHECK(std::string(pos::i18n(pos::Lang::En, pos::Lw::OK)) == "OK");
+	// Trace/time labels are identical across languages (diagnostics keys).
+	CHECK(std::string(pos::i18n(pos::Lang::Fr, pos::Lw::TRACE)) == std::string(pos::i18n(pos::Lang::En, pos::Lw::TRACE)));
+	CHECK(std::string(pos::i18n(pos::Lang::En, pos::Lw::RUNTIME)) == std::string(pos::i18n(pos::Lang::Fr, pos::Lw::RUNTIME)));
+}
+
 static void testFormatting() {
 	// 2.8 duration
 	CHECK(pos::fmtDuration(500) == "500ms");
@@ -684,6 +695,7 @@ int main() {
 	testFormatting();
 	testTable();
 	testCmdResultExtended();
+	testI18n();
 	testFuzzProperty();
 	testFuzzSecurity();
 	std::cout << "\n" << (failures == 0 ? "ALL PASS" : "FAILURES") << " (" << failures << ")\n";

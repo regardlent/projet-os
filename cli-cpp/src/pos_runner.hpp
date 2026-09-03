@@ -11,6 +11,34 @@
 
 namespace pos {
 
+// Phase 49 — Internationalisation: a minimal, testable bilingual catalog (fr/en).
+// The CLI surface is French-first; --lang=en switches the user-facing labels.
+enum class Lang { Fr, En };
+inline Lang g_lang = Lang::Fr; // global selected language (default fr)
+
+// Bilingual label set used by errMsg/okMsg and card headers. Pure + unit-testable.
+enum class Lw { ERR, OK, TRACE, TIME, RUNTIME, USAGE };
+inline const char* i18n(Lang l, Lw w) {
+	switch (l) {
+		case Lang::En:
+			switch (w) {
+				case Lw::ERR: return "Error";   case Lw::OK: return "OK";
+				case Lw::TRACE: return "trace";   case Lw::TIME: return "time";
+				case Lw::RUNTIME: return "runtime"; case Lw::USAGE: return "usage";
+			}
+			break;
+		case Lang::Fr:
+		default:
+			switch (w) {
+				case Lw::ERR: return "Erreur";  case Lw::OK: return "OK";
+				case Lw::TRACE: return "trace";   case Lw::TIME: return "time";
+				case Lw::RUNTIME: return "runtime"; case Lw::USAGE: return "usage";
+			}
+			break;
+	}
+	return ""; // unreachable
+}
+
 // F17 timeline event.
 struct TimelineEvent { long long at = 0; std::string type; std::string detail; };
 // F23 artifact info.

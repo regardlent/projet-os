@@ -79,8 +79,8 @@ inline std::atomic<int> g_limit(0);
 // Phase 1.32: unhandled exception => clean message + exit 70 (never a silent crash / 0).
 static void posTerminate() { std::cerr << "Erreur (non gérée): exception inattendue\n"; std::exit(70); }
 // Phase 1.14/1.15: normaliser les messages d'erreur / succès.
-inline void errMsg(const std::string& m) { std::cerr << "Erreur : " << m << "\n"; }
-inline void okMsg(const std::string& m) { std::cout << "OK : " << m << "\n"; }
+inline void errMsg(const std::string& m) { std::cerr << pos::i18n(pos::g_lang, pos::Lw::ERR) << " : " << m << "\n"; }
+inline void okMsg(const std::string& m) { std::cout << pos::i18n(pos::g_lang, pos::Lw::OK) << " : " << m << "\n"; }
 static int readChoice(int max) {
 	std::string line; std::getline(std::cin, line);
 	line = pos::trim(line);
@@ -228,7 +228,7 @@ static int cmdHelp(bool colorOn) {
 	std::cout << "  schema machine         machine-consumer contract\n";
 	sec("Bridge MCP");
 	std::cout << "  bridge status|start|stop|restart|health|tools|test|tunnel\n";
-	std::cout << "\n  Global flags: --format=json|ndjson|tsv  --json  --color=auto|always|never  --theme=light|dark  --mono  --timeout=<ms>  --no-emoji  --quiet|--verbose  --cockpit  --explain/--dry-run  --trace  --silent/--check  --time  --width=<n>  --yes/--force\n";
+	std::cout << "\n  Global flags: --format=json|ndjson|tsv  --json  --color=auto|always|never  --theme=light|dark  --mono  --lang=fr|en  --timeout=<ms>  --no-emoji  --quiet|--verbose  --cockpit  --explain/--dry-run  --trace  --silent/--check  --time  --width=<n>  --yes/--force\n";
 	return 0;
 }
 
@@ -2059,6 +2059,7 @@ int wmain(int argc, wchar_t** wargv) {
 			if (a == "--verbose") { g_verbose.store(true); return true; }
 			if (a == "-v") { g_verbose.store(true); return true; }
 			if (a == "-vv") { g_verbose.store(true); g_timing.store(true); return true; }
+			if (a.rfind("--lang=", 0) == 0) { const std::string l = a.substr(7); if (l == "en") pos::g_lang = pos::Lang::En; else pos::g_lang = pos::Lang::Fr; return true; }
 			if (a == "--mono") { wrapColor = pos::ColorPolicy::Never; return true; }
 			if (a == "--cockpit") { cockpitShortcut = true; return true; }
 			return false;
