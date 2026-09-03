@@ -1268,7 +1268,11 @@ try {
 		const sp = rest.indexOf(" ");
 		const rel = (sp >= 0 ? rest.slice(0, sp) : rest).trim();
 		const objective = (sp >= 0 ? rest.slice(sp + 1) : "").trim();
-		const maxTries = 4;
+		// Optional flags: --model=<id>  --tries=<n>  --gen-timeout=<s>
+		let forcedModel = null, maxTries = 4, genTimeoutSec = 90;
+		const flagRe = /--(model|tries|gen-timeout)=(\S+)/g; let fm;
+		let obj = objective;
+		while ((fm = flagRe.exec(objective))) { const k = fm[1], v = fm[2]; if (k === "model") forcedModel = v; else if (k === "tries") maxTries = Math.min(10, Math.max(1, parseInt(v, 10) || 4)); else if (k === "gen-timeout") genTimeoutSec = Math.min(600, Math.max(10, parseInt(v, 10) || 90)); obj = obj.replace(fm[0], " "); }
 		const a = resolveActiveProject();
 		if (!a) { emit({ command: "models", ok: false, status: "NO_ACTIVE_PROJECT", score: 0, grade: "", signal: "NO_PROJECT", rows: [], details: ["no active project"], message: "model codegen: no active project", warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
 		if (!rel || !objective) { emit({ command: "models", ok: false, status: "OBJECTIVE_REQUIRED", score: 0, grade: "", signal: "FAIL", rows: [], details: ["usage: model codegen <relpath> <objective>"], message: "model codegen: relpath + objective required", warnings: [], actions: [], artifacts: [] }, 2); process.exit(0); }
@@ -1279,7 +1283,8 @@ try {
 		const ext = path.extname(rel).slice(1) || "txt";
 		// Autonomous model choice: list LocalAI models and RANK them (prefer larger, instruct,
 		// coding-capable; avoid tiny/flash/reranker/smollm). This is the CLI's own adaptive pick.
-		let codingModel = modelId;
+		// --model=<id> (optional) overrides the autonomous choice.
+		let codingModel = forcedModel || modelId;
 		try {
 			const mr = await fetch(baseUrl + "/models"); const mb = await mr.json();
 			const ids = (mb.data ?? []).map((m) => m.id);
@@ -1292,9 +1297,9 @@ try {
 				const sz = id.match(/([0-9]+(?:\.[0-9]+)?)b/i); if (sz) s += parseFloat(sz[1]) * 4;
 				return s;
 			};
-			codingModel = ids.reduce((best, id) => (score(id) > score(best) ? id : best), ids[0] || codingModel);
-			if (!codingModel) codingModel = modelId;
+			if (!forcedModel) codingModel = ids.reduce((best, id) => (score(id) > score(best) ? id : best), ids[0] || codingModel);
 		} catch {}
+		if (!codingModel) codingModel = modelId;
 		// Syntax check via g++ when available (headers: -fsyntax-only; standalone cpp: link a temp exe).
 		const compileCheck = (content) => {
 			try {
@@ -1313,8 +1318,10 @@ try {
 		for (attempt = 1; attempt <= maxTries; ++attempt) {
 			try {
 				const fixHint = (attempt > 1 && lastErr) ? ` The previous compile failed with: ${lastErr}. Fix that error and output the corrected full file only.` : "";
-				const prompt = `Write the complete content of the file \`${rel}\` (${ext}). Output ONLY the raw file content in a single \`${ext}\` code block. No explanation.${fixHint}\n\nTask: ${objective}`;
-				const r = await fetch(baseUrl + "/chat/completions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: codingModel, messages: [{ role: "user", content: prompt }], max_tokens: 1600, temperature: 0, stream: false }) });
+				const prompt = `Write the complete content of the file \`${rel}\` (${ext}). Output ONLY the raw file content in a single \`${ext}\` code block. No explanation.${fixHint}\n\nTask: ${obj}`;
+				const ctrl = new AbortController(); const to = setTimeout(() => ctrl.abort(), genTimeoutSec * 1000);
+				const r = await fetch(baseUrl + "/chat/completions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: codingModel, messages: [{ role: "user", content: prompt }], max_tokens: 1600, temperature: 0, stream: false }), signal: ctrl.signal });
+				clearTimeout(to);
 				const body = await r.json();
 				let content = (body.choices?.[0]?.message?.content ?? "").trim();
 				tokens = body.usage?.total_tokens ?? 0;
