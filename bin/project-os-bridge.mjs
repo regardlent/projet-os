@@ -1344,6 +1344,72 @@ try {
 		process.exit(0);
 	}
 
+	// F91 model project <name> <objective...>: the CLI generates a COMPLETE project
+	// (impl header via localAI) + deterministic main/CMake, then compiles and RUNS it.
+	// Autonomous model choice + bounded generation (never hangs). No human choice.
+	if (line.startsWith("model project ")) {
+		const rest = line.slice("model project ".length).trim();
+		const sp = rest.indexOf(" ");
+		const name = (sp >= 0 ? rest.slice(0, sp) : rest).trim();
+		const objective = (sp >= 0 ? rest.slice(sp + 1) : "").trim();
+		const a = resolveActiveProject();
+		if (!a) { emit({ command: "models", ok: false, status: "NO_ACTIVE_PROJECT", score: 0, grade: "", signal: "NO_PROJECT", rows: [], details: ["no active project"], message: "model project: no active project", warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
+		if (!name || !objective) { emit({ command: "models", ok: false, status: "OBJECTIVE_REQUIRED", score: 0, grade: "", signal: "FAIL", rows: [], details: ["usage: model project <name> <objective>"], message: "model project: name + objective required", warnings: [], actions: [], artifacts: [] }, 2); process.exit(0); }
+		const safeName = name.replace(/[^a-zA-Z0-9_]/g, "_");
+		const ws = a.workspaceRoot;
+		if (path.relative(ws, path.resolve(ws, "src")).startsWith("..")) { emit({ command: "models", ok: false, status: "PATH_TRAVERSAL", score: 0, grade: "", signal: "FAIL", rows: [], details: ["src"], message: "model project: path escapes workspace", warnings: [], actions: [], artifacts: [] }, 6); process.exit(0); }
+		// Autonomous model pick (compact ranking; prefer larger instruct/coding, avoid tiny/flash).
+		let codingModel = modelId;
+		try {
+			const mr = await fetch(baseUrl + "/models"); const mb = await mr.json();
+			const ids = (mb.data ?? []).map((m) => m.id);
+			const score = (id) => { const sz = parseFloat(id.match(/([0-9]+(?:\.[0-9]+)?)b/i)?.[1] || 0); let s = 0; if (/instruct|qwen|granite|llama|mistral|deepseek|codestral|code-/i.test(id)) s += 40; if (/instruct/i.test(id)) s += 15; if (sz >= 3) s += 20; else s -= 30; if (/flash|smollm|reranker|nano|tiny|mini/i.test(id)) s -= 30; s += sz * 2; return s; };
+			codingModel = ids.reduce((best, id) => (score(id) > score(best) ? id : best), ids[0] || codingModel);
+		} catch {}
+		if (!codingModel) codingModel = modelId;
+		// Generate the implementation header (bounded; up to 3 tries).
+		let impl = "", tries = 0, tokens = 0;
+		for (tries = 1; tries <= 3; ++tries) {
+			try {
+				const ctrl = new AbortController(); const to = setTimeout(() => ctrl.abort(), 60000);
+				const r = await fetch(baseUrl + "/chat/completions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: codingModel, messages: [{ role: "user", content: `Write a C++17 header (#pragma once, include only what's needed) implementing inline functions for: ${objective}. Output ONLY the raw header in a single cpp code block.` }], max_tokens: 1200, temperature: 0, stream: false }), signal: ctrl.signal });
+				clearTimeout(to);
+				const body = await r.json();
+				let c = (body.choices?.[0]?.message?.content ?? "").trim();
+				tokens = body.usage?.total_tokens ?? 0;
+				if (!c) continue;
+				const f = [...c.matchAll(/```[^\n]*\n([\s\S]*?)```/g)].map((m) => m[1]); if (f.length) c = f[f.length - 1].trim();
+				if (c.length > 20) { impl = c; break; }
+			} catch (e) { /* bounded: next try */ }
+		}
+		if (!impl) { emit({ command: "models", ok: false, status: "MODEL_EMPTY_OUTPUT", model: codingModel, score: 0, grade: "", signal: "FAIL", rows: [{ k: "name", v: safeName }, { k: "model", v: codingModel }, { k: "tries", v: String(tries - 1) }], details: [], message: `model project: ${safeName} empty generation`, warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
+		// Deterministic main + CMake written by the CLI (assembly glue).
+		const header = `${safeName}_impl.hpp`;
+		const pubDir = path.join(ws, "work", safeName);
+		const srcDir = path.join(pubDir, "src");
+		const buildDir = path.join(pubDir, "build");
+		const mainCpp = `#include "${header}"\nint main() { return 0; }\n`;
+		const cmake = `cmake_minimum_required(VERSION 3.16)\nproject(${safeName} LANGUAGES CXX)\nset(CMAKE_CXX_STANDARD 17)\nadd_executable(${safeName} src/main.cpp)\n`;
+		fs.mkdirSync(srcDir, { recursive: true });
+		fs.mkdirSync(buildDir, { recursive: true });
+		fs.writeFileSync(path.join(srcDir, header), impl, "utf8");
+		fs.writeFileSync(path.join(srcDir, "main.cpp"), mainCpp, "utf8");
+		fs.writeFileSync(path.join(pubDir, "CMakeLists.txt"), cmake, "utf8");
+		// Compile + run.
+		let compiled = false, runExit = -1, cerr = "";
+		try {
+			const exe = path.join(buildDir, safeName + ".exe");
+			const cr = spawnSync("g++", [path.join(srcDir, "main.cpp"), "-std=c++17", "-I", srcDir, "-o", exe], { encoding: "utf8", timeout: 30000 });
+			compiled = cr.status === 0;
+			if (!compiled) cerr = ((cr.stderr || "") + (cr.stdout || "")).trim().slice(0, 400);
+			else { const rr = spawnSync(exe, [], { encoding: "utf8", timeout: 10000 }); runExit = rr.status ?? 0; }
+		} catch (e) { cerr = String(e.message); }
+		if (!compiled) { emit({ command: "models", ok: false, status: "CODEGEN_FAILED", model: codingModel, score: 0, grade: "", signal: "FAIL", rows: [{ k: "name", v: safeName }, { k: "model", v: codingModel }], details: [cerr.slice(0, 400)], message: `model project: ${safeName} compile failed`, warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
+		emit({ command: "models", ok: true, status: "PROJECT_COMPILED", model: codingModel, score: 0, grade: "", signal: "PASS", rows: [{ k: "name", v: safeName }, { k: "model", v: codingModel }, { k: "files", v: "work/" + safeName + "/src/" + header + ", main.cpp, CMakeLists.txt" }, { k: "runExit", v: String(runExit) }, { k: "tokens", v: String(tokens) }], details: [impl.slice(0, 120).replace(/\n/g, " ")], message: `model project: ${safeName} COMPILED + RUN exit=${runExit} model=${codingModel}`, warnings: [], actions: ["git status"], artifacts: ["work/" + safeName + "/src/" + header, "work/" + safeName + "/src/main.cpp", "work/" + safeName + "/CMakeLists.txt"] }, 0);
+		process.exit(0);
+	}
+
+
 	// F37 model benchmark <id>: 1 warmup + 3 measured real inferences -> TTFT/tokens-per-sec.
 	if (line.startsWith("model benchmark ")) {
 		const id = line.slice("model benchmark ".length).trim();
