@@ -250,7 +250,7 @@ static int cmdCompletion(const std::string& shell, bool withProjects) {
 			<< "Register-ArgumentCompleter -Native -CommandName project-os-cli -ScriptBlock {\n"
 			<< "  param($wordToComplete, $commandAst, $cursorPosition)\n"
 			<< "  $commands = @(\"" << join(slugs, withProjects) << "\" -split ' ')\n"
-			<< "  $sub = @(\"project list\",\"project inspect\",\"project use\",\"health score\",\"health trend\",\"health compare\",\"artifact list\",\"artifact search\",\"artifact verify\",\"git status\",\"git log\",\"usage list\",\"usage summary\",\"model show\",\"model smoke\",\"model benchmark\",\"gpu status\",\"gpu watch\",\"bridge status\",\"bridge tools\",\"bridge config\")\n"
+			<< "  $sub = @(\"project list\",\"project inspect\",\"project use\",\"health score\",\"health trend\",\"health compare\",\"artifact list\",\"artifact search\",\"artifact verify\",\"git status\",\"git log\",\"git log --graph\",\"usage list\",\"usage summary\",\"usage export\",\"model show\",\"model smoke\",\"model benchmark\",\"model qualify\",\"model compare\",\"gpu status\",\"gpu watch\",\"bridge status\",\"bridge tools\",\"bridge config\",\"snapshot create\",\"snapshot list\",\"snapshot diff\",\"benchmark compare\",\"config --as=env\",\"tree\",\"create --type=\")\n"
 			<< "  foreach ($c in $commands) { if ($c -like \"$wordToComplete*\") { [System.Management.Automation.CompletionResult]::new($c, $c, [System.Management.Automation.CompletionResultType]::ParameterValue, $c) } }\n"
 			<< "  foreach ($c in $sub) { if ($c -like \"$wordToComplete*\") { [System.Management.Automation.CompletionResult]::new($c, $c, [System.Management.Automation.CompletionResultType]::ParameterValue, $c) } }\n"
 			<< "}\n";
@@ -259,7 +259,7 @@ static int cmdCompletion(const std::string& shell, bool withProjects) {
 			<< "_project_os_cli() {\n"
 			<< "  local cur=\"${COMP_WORDS[COMP_CWORD]}\"\n"
 			<< "  local commands=\"" << join(slugs, withProjects) << "\"\n"
-			<< "  local sub=\"project list project inspect project use health score health trend health compare artifact list artifact search artifact verify git status git log usage list usage summary model show model smoke model benchmark gpu status gpu watch bridge status bridge tools bridge config\"\n"
+			<< "  local sub=\"project list project inspect project use health score health trend health compare artifact list artifact search artifact verify git status git log git log --graph usage list usage summary usage export model show model smoke model benchmark model qualify model compare gpu status gpu watch bridge status bridge tools bridge config snapshot create snapshot list snapshot diff benchmark compare config --as=env tree create --type=\"\n"
 			<< "  COMPREPLY=( $(compgen -W \"$commands $sub\" -- \"$cur\") )\n"
 			<< "}\n"
 			<< "complete -F _project_os_cli project-os-cli\n";
@@ -268,7 +268,7 @@ static int cmdCompletion(const std::string& shell, bool withProjects) {
 			<< "_project_os_cli() {\n"
 			<< "  local -a commands sub\n"
 			<< "  commands=(" << join(slugs, withProjects) << ")\n"
-			<< "  sub=(project:list project:inspect project:use health:score health:trend artifact:list artifact:verify git:status usage:list model:show gpu:status bridge:status)\n"
+			<< "  sub=(project:list project:inspect project:use health:score health:trend artifact:list artifact:verify git:status git:log usage:list model:show model:qualify gpu:status bridge:status snapshot:list snapshot:diff config:as tree:create)\n"
 			<< "  _describe 'command' commands sub\n"
 			<< "}\n"
 			<< "compdef _project_os_cli project-os-cli\n";
