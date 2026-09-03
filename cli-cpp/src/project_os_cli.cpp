@@ -1644,6 +1644,8 @@ static int cmdModelSmoke(const std::string& id, const std::string& reasoningMode
 	bool summaryReasoning = (reasoningMode == "summary");
 	if (fmt == pos::OutputFormat::Json) {
 		std::cout << "{\"http\":" << r.smokeHttp << ",\"latencyMs\":" << r.smokeLatencyMs << ",\"tokens\":" << r.smokeTokens << ",\"content\":" << pos::json_quote(r.smokeContent) << (showReasoning ? ",\"reasoning\":" + pos::json_quote(reasoning) : "") << "}\n";
+	} else if (fmt == pos::OutputFormat::Csv || fmt == pos::OutputFormat::Markdown || fmt == pos::OutputFormat::Html) {
+		renderColumns({ "metric", "value" }, { { "http", std::to_string(r.smokeHttp) }, { "latencyMs", std::to_string(r.smokeLatencyMs) }, { "tokens", std::to_string(r.smokeTokens) }, { "content", r.smokeContent.empty() ? "(reasoning mode)" : r.smokeContent } }, fmt);
 	} else {
 		std::cout << "  HTTP    : " << r.smokeHttp << "\n";
 		std::cout << "  latency : " << r.smokeLatencyMs << " ms\n";
