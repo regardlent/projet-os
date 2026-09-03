@@ -2719,6 +2719,6 @@ ré-implémentation. Légende : `[x]` fini · `[ ]` à faire.
 - [x] 51.7 Garde `PATH_TRAVERSAL` → exit 6 + test unitaire.
 - [x] 51.8 Test d'intégration `npm run test:codegen` (preuve reproductible).
 - [x] 51.9 Feature matrix 66 capacités + docs.
-- [ ] 51.10 Génération multi-fichiers (N unités + `main` qui les utilise).
+- [x] 51.10 Génération multi-fichiers (`--impl=a,b` : N unités + `main` qui les inclut et appelle `run()`), preuve `test:codegen`.
 
 ---

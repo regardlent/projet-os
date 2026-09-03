@@ -1348,11 +1348,13 @@ try {
 		const objective = (sp >= 0 ? rest.slice(sp + 1) : "").trim();
 		// Optional deterministic override: --impl=<relpath> reads the header from the workspace
 		// (skips LocalAI generation). Usable to test assemble+compile+run reproducibly.
-		let implPath = null; let obj = objective;
-		const im = objective.match(/--impl=(\S+)/); if (im) { implPath = im[1]; obj = objective.replace(im[0], " ").trim(); }
+		// Optional deterministic override: --impl=<relpath1,relpath2,...> reads one or more headers
+		// from the workspace (skips LocalAI). Usable to test multi-file assemble+compile+run.
+		let implPaths = []; let obj = objective;
+		const im = objective.match(/--impl=(\S+)/); if (im) { implPaths = im[1].split(",").map((s) => s.trim()).filter(Boolean); obj = objective.replace(im[0], " ").trim(); }
 		const a = resolveActiveProject();
 		if (!a) { emit({ command: "models", ok: false, status: "NO_ACTIVE_PROJECT", score: 0, grade: "", signal: "NO_PROJECT", rows: [], details: ["no active project"], message: "model project: no active project", warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
-		if (!name || (!obj && !implPath)) { emit({ command: "models", ok: false, status: "OBJECTIVE_REQUIRED", score: 0, grade: "", signal: "FAIL", rows: [], details: ["usage: model project <name> <objective [--impl=<relpath>]>"], message: "model project: name + objective required", warnings: [], actions: [], artifacts: [] }, 2); process.exit(0); }
+		if (!name || (!obj && !implPaths.length)) { emit({ command: "models", ok: false, status: "OBJECTIVE_REQUIRED", score: 0, grade: "", signal: "FAIL", rows: [], details: ["usage: model project <name> <objective [--impl=<relpath>[,<relpath>...]>]>"], message: "model project: name + objective required", warnings: [], actions: [], artifacts: [] }, 2); process.exit(0); }
 		const safeName = name.replace(/[^a-zA-Z0-9_]/g, "_");
 		const ws = a.workspaceRoot;
 		if (path.relative(ws, path.resolve(ws, "src")).startsWith("..")) { emit({ command: "models", ok: false, status: "PATH_TRAVERSAL", score: 0, grade: "", signal: "FAIL", rows: [], details: ["src"], message: "model project: path escapes workspace", warnings: [], actions: [], artifacts: [] }, 6); process.exit(0); }
@@ -1368,12 +1370,16 @@ try {
 			codingModel = ranked.length ? ranked[0].id : codingModel;
 		} catch {}
 		if (!codingModel) codingModel = modelId;
-		// Generate the implementation header (bounded; up to 3 tries). --impl=<relpath> overrides (deterministic).
-		let impl = "", tries = 0, tokens = 0;
-		if (implPath) {
-			const src = path.resolve(ws, implPath); const rr = path.relative(ws, src);
-			if (rr.startsWith("..") || path.isAbsolute(rr)) { emit({ command: "models", ok: false, status: "PATH_TRAVERSAL", score: 0, grade: "", signal: "FAIL", rows: [], details: [implPath], message: "model project: impl path escapes workspace", warnings: [], actions: [], artifacts: [] }, 6); process.exit(0); }
-			try { impl = fs.readFileSync(src, "utf8"); tries = 1; tokens = 0; } catch (e) { emit({ command: "models", ok: false, status: "IMPL_NOT_FOUND", score: 0, grade: "", signal: "FAIL", rows: [], details: [implPath], message: `model project: impl file not found: ${e.message}`, warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
+		// Generate the implementation header(s). --impl=p1,p2,... reads files (deterministic multi-file);
+		// otherwise generate one header via LocalAI (bounded).
+		const impls = []; let tries = 0, tokens = 0;
+		if (implPaths.length) {
+			for (const p of implPaths) {
+				const src = path.resolve(ws, p); const rr = path.relative(ws, src);
+				if (rr.startsWith("..") || path.isAbsolute(rr)) { emit({ command: "models", ok: false, status: "PATH_TRAVERSAL", score: 0, grade: "", signal: "FAIL", rows: [], details: [p], message: "model project: impl path escapes workspace", warnings: [], actions: [], artifacts: [] }, 6); process.exit(0); }
+				try { const c = fs.readFileSync(src, "utf8"); impls.push({ name: path.basename(p).replace(/[^a-zA-Z0-9_.]/g, "_"), content: c }); } catch (e) { emit({ command: "models", ok: false, status: "IMPL_NOT_FOUND", score: 0, grade: "", signal: "FAIL", rows: [], details: [p], message: `model project: impl file not found: ${e.message}`, warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
+			}
+			tries = 1; tokens = 0;
 		} else {
 		for (tries = 1; tries <= 3; ++tries) {
 			try {
@@ -1385,21 +1391,22 @@ try {
 				tokens = body.usage?.total_tokens ?? 0;
 				if (!c) continue;
 				const f = [...c.matchAll(/```[^\n]*\n([\s\S]*?)```/g)].map((m) => m[1]); if (f.length) c = f[f.length - 1].trim();
-				if (c.length > 20) { impl = c; break; }
+				if (c.length > 20) { impls.push({ name: `${safeName}_impl.hpp`, content: c }); break; }
 			} catch (e) { /* bounded: next try */ }
 		}
 		}
-		if (!impl) { emit({ command: "models", ok: false, status: "MODEL_EMPTY_OUTPUT", model: codingModel, score: 0, grade: "", signal: "FAIL", rows: [{ k: "name", v: safeName }, { k: "model", v: codingModel }, { k: "tries", v: String(tries - 1) }], details: [], message: `model project: ${safeName} empty generation`, warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
-		// Deterministic main + CMake written by the CLI (assembly glue).
-		const header = `${safeName}_impl.hpp`;
+		if (!impls.length) { emit({ command: "models", ok: false, status: "MODEL_EMPTY_OUTPUT", model: codingModel, score: 0, grade: "", signal: "FAIL", rows: [{ k: "name", v: safeName }, { k: "model", v: codingModel }, { k: "tries", v: String(tries - 1) }], details: [], message: `model project: ${safeName} empty generation`, warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
+		// Deterministic main + CMake written by the CLI (assembly glue). main includes EVERY unit.
+		const hasRun = impls.some((u) => /int\s+run\s*\(\s*\)/.test(u.content));
+		const includes = impls.map((u) => `#include "${u.name}"`).join("\n");
+		const mainCpp = `${includes}\nint main() { return ${hasRun ? "run()" : "0"}; }\n`;
+		const cmake = `cmake_minimum_required(VERSION 3.16)\nproject(${safeName} LANGUAGES CXX)\nset(CMAKE_CXX_STANDARD 17)\nadd_executable(${safeName} src/main.cpp)\n`;
 		const pubDir = path.join(ws, "work", safeName);
 		const srcDir = path.join(pubDir, "src");
 		const buildDir = path.join(pubDir, "build");
-		const mainCpp = /int\s+run\s*\(\s*\)/.test(impl) ? `#include "${header}"\nint main() { return run(); }\n` : `#include "${header}"\nint main() { return 0; }\n`;
-		const cmake = `cmake_minimum_required(VERSION 3.16)\nproject(${safeName} LANGUAGES CXX)\nset(CMAKE_CXX_STANDARD 17)\nadd_executable(${safeName} src/main.cpp)\n`;
 		fs.mkdirSync(srcDir, { recursive: true });
 		fs.mkdirSync(buildDir, { recursive: true });
-		fs.writeFileSync(path.join(srcDir, header), impl, "utf8");
+		for (const u of impls) fs.writeFileSync(path.join(srcDir, u.name), u.content, "utf8");
 		fs.writeFileSync(path.join(srcDir, "main.cpp"), mainCpp, "utf8");
 		fs.writeFileSync(path.join(pubDir, "CMakeLists.txt"), cmake, "utf8");
 		// Compile + run.
@@ -1412,7 +1419,9 @@ try {
 			else { const rr = spawnSync(exe, [], { encoding: "utf8", timeout: 10000 }); runExit = rr.status ?? 0; }
 		} catch (e) { cerr = String(e.message); }
 		if (!compiled) { emit({ command: "models", ok: false, status: "CODEGEN_FAILED", model: codingModel, score: 0, grade: "", signal: "FAIL", rows: [{ k: "name", v: safeName }, { k: "model", v: codingModel }], details: [cerr.slice(0, 400)], message: `model project: ${safeName} compile failed`, warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
-		emit({ command: "models", ok: true, status: "PROJECT_COMPILED", model: codingModel, score: 0, grade: "", signal: "PASS", rows: [{ k: "name", v: safeName }, { k: "model", v: codingModel }, { k: "files", v: "work/" + safeName + "/src/" + header + ", main.cpp, CMakeLists.txt" }, { k: "runExit", v: String(runExit) }, { k: "tokens", v: String(tokens) }], details: [impl.slice(0, 120).replace(/\n/g, " ")], message: `model project: ${safeName} COMPILED + RUN exit=${runExit} model=${codingModel}`, warnings: [], actions: ["git status"], artifacts: ["work/" + safeName + "/src/" + header, "work/" + safeName + "/src/main.cpp", "work/" + safeName + "/CMakeLists.txt"] }, 0);
+		const fileList = impls.map((u) => "src/" + u.name).join(", ");
+		const artifacts = impls.map((u) => "work/" + safeName + "/src/" + u.name).concat(["work/" + safeName + "/src/main.cpp", "work/" + safeName + "/CMakeLists.txt"]);
+		emit({ command: "models", ok: true, status: "PROJECT_COMPILED", model: codingModel, score: 0, grade: "", signal: "PASS", rows: [{ k: "name", v: safeName }, { k: "model", v: codingModel }, { k: "files", v: "work/" + safeName + "/" + fileList + ", main.cpp, CMakeLists.txt" }, { k: "runExit", v: String(runExit) }, { k: "tokens", v: String(tokens) }], details: [impls[0].content.slice(0, 120).replace(/\n/g, " ")], message: `model project: ${safeName} COMPILED + RUN exit=${runExit} model=${codingModel}`, warnings: [], actions: ["git status"], artifacts }, 0);
 		process.exit(0);
 	}
 
