@@ -900,6 +900,21 @@
       "evidence": "PASS",
       "status": "PASS",
       "note": "model codegen: autonomous model pick (ranking), gen->compile(g++)->self-repair; --model/--tries/--gen-timeout; CODEGEN_COMPILED/FAILED"
+    },
+    "F91_model_project": {
+      "phase": 91,
+      "implemented": "PASS",
+      "unit": "n/a",
+      "negative": "PASS",
+      "integration": "PASS",
+      "live": "PASS",
+      "security": "PASS",
+      "performance": "PASS",
+      "doc": "PASS",
+      "regression": "PASS",
+      "evidence": "PASS",
+      "status": "PASS",
+      "note": "model project <name> <obj>: CLI writes full project (impl+main+CMake) under work/<name>/, compiles g++, runs; autonomous model pick (>=3B); PATH_TRAVERSAL exit 6"
     }
   },
   "post_v3": {
