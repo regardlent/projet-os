@@ -125,6 +125,16 @@ static int cmdProjectList(pos::OutputFormat fmt) {
 		}
 	} else if (fmt == pos::OutputFormat::TsV) {
 		for (const auto& p : r.projects) pos::emitScalar(pos::OutputFormat::TsV, p.slug, p.status + "\t" + p.projectType);
+	} else if (fmt == pos::OutputFormat::Csv) {
+		std::cout << "slug,type,status,goal\n";
+		for (const auto& p : r.projects) std::cout << p.slug << "," << p.projectType << "," << p.status << "," << p.goalStatus << "\n";
+	} else if (fmt == pos::OutputFormat::Markdown) {
+		std::cout << "| slug | type | status | goal |\n|---|---|---|---|\n";
+		for (const auto& p : r.projects) std::cout << "| " << p.slug << " | " << p.projectType << " | " << p.status << " | " << p.goalStatus << " |\n";
+	} else if (fmt == pos::OutputFormat::Html) {
+		std::cout << "<table><tr><th>slug</th><th>type</th><th>status</th><th>goal</th></tr>\n";
+		for (const auto& p : r.projects) std::cout << "<tr><td>" << p.slug << "</td><td>" << p.projectType << "</td><td>" << p.status << "</td><td>" << p.goalStatus << "</td></tr>\n";
+		std::cout << "</table>\n";
 	} else {
 		if (r.projects.empty()) { std::cout << "  (no projects)\n"; return 0; }
 		std::vector<std::vector<std::string>> rows;

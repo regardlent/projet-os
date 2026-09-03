@@ -8,7 +8,7 @@
 
 namespace pos {
 
-enum class OutputFormat { Human, Json, Ndjson, TsV };
+enum class OutputFormat { Human, Json, Ndjson, TsV, Csv, Markdown, Html };
 
 inline std::string json_quote(const std::string& s) {
 	std::string o = "\"";
@@ -24,6 +24,9 @@ inline OutputFormat parseFormat(const std::string& v) {
 	if (v == "json") return OutputFormat::Json;
 	if (v == "ndjson") return OutputFormat::Ndjson;
 	if (v == "tsv") return OutputFormat::TsV;
+	if (v == "csv") return OutputFormat::Csv;
+	if (v == "md" || v == "markdown") return OutputFormat::Markdown;
+	if (v == "html") return OutputFormat::Html;
 	return OutputFormat::Human;
 }
 
@@ -34,6 +37,9 @@ inline void emitScalar(OutputFormat fmt, const std::string& label, const std::st
 		case OutputFormat::Json: std::printf("{%s:%s}\n", json_quote(label).c_str(), json_quote(value).c_str()); break;
 		case OutputFormat::Ndjson: std::printf("{\"label\":%s,\"value\":%s}\n", json_quote(label).c_str(), json_quote(value).c_str()); break;
 		case OutputFormat::TsV: std::printf("%s\t%s\n", label.c_str(), value.c_str()); break;
+		case OutputFormat::Csv: std::printf("%s,%s\n", label.c_str(), value.c_str()); break;
+		case OutputFormat::Markdown: std::printf("| %s | %s |\n", label.c_str(), value.c_str()); break;
+		case OutputFormat::Html: std::printf("<tr><td>%s</td><td>%s</td></tr>\n", label.c_str(), value.c_str()); break;
 	}
 }
 
