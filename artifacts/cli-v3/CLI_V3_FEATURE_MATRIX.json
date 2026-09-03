@@ -870,6 +870,36 @@
       "status": "PASS",
       "phase": 27,
       "evidence": "risk profile: risques classes high/med/low + mitigations -> HIGH/MEDIUM/LOW + score; live MEDIUM score=80 (autonomy_expired, git_dirty, no_snapshot)"
+    },
+    "F89_model_write": {
+      "phase": 89,
+      "implemented": "PASS",
+      "unit": "n/a",
+      "negative": "PASS",
+      "integration": "PASS",
+      "live": "PASS",
+      "security": "PASS",
+      "performance": "PASS",
+      "doc": "PASS",
+      "regression": "PASS",
+      "evidence": "PASS",
+      "status": "PASS",
+      "note": "model write <relpath> <obj>: gen localAI -> guarded workspace write; PATH_TRAVERSAL exit 6; only real content (no reasoning prose)"
+    },
+    "F90_model_codegen": {
+      "phase": 90,
+      "implemented": "PASS",
+      "unit": "n/a",
+      "negative": "PASS",
+      "integration": "PASS",
+      "live": "PASS",
+      "security": "PASS",
+      "performance": "PASS",
+      "doc": "PASS",
+      "regression": "PASS",
+      "evidence": "PASS",
+      "status": "PASS",
+      "note": "model codegen: autonomous model pick (ranking), gen->compile(g++)->self-repair; --model/--tries/--gen-timeout; CODEGEN_COMPILED/FAILED"
     }
   },
   "post_v3": {

@@ -39,7 +39,7 @@ F48 sarif export · F49 shell completion · F50 cockpit.
 `help`, `version`, `capabilities`, `status`, `project list|use|inspect|watch`, `drift`, `timeline`,
 `snapshot create|list|show`, `diff`, `goal proof`, `todo board`, `artifact list|show|search|verify`,
 `addon verify`, `config`, `doctor`, `diagnostics`, `preflight`, `health [--watch]`, `models`,
-`model show|smoke|benchmark`, `route <class>`, `gpu|watch|proof`, `test list|matrix`,
+`model show|smoke|benchmark|write|codegen`, `route <class>`, `gpu|watch|proof`, `test list|matrix`,
 `benchmark compare <a> <b>`, `endurance status|run <rung>`, `report`, `release gate`, `export sarif`,
 `completion powershell|bash|zsh`, `cockpit`,
 `bridge status|start|stop|restart|health|tools|test|tunnel`.
