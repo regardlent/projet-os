@@ -1281,23 +1281,17 @@ try {
 		const rl = path.relative(ws, target);
 		if (rl.startsWith("..") || path.isAbsolute(rl) || rel.includes("..")) { emit({ command: "models", ok: false, status: "PATH_TRAVERSAL", score: 0, grade: "", signal: "FAIL", rows: [], details: [rel], message: "model codegen: path escapes workspace", warnings: [], actions: [], artifacts: [] }, 6); process.exit(0); }
 		const ext = path.extname(rel).slice(1) || "txt";
-		// Autonomous model choice: list LocalAI models and RANK them (prefer larger, instruct,
-		// coding-capable; avoid tiny/flash/reranker/smollm). This is the CLI's own adaptive pick.
+		// Autonomous model choice via the CLI's own adaptive router (same scoring as `route CODING`).
 		// --model=<id> (optional) overrides the autonomous choice.
 		let codingModel = forcedModel || modelId;
 		try {
 			const mr = await fetch(baseUrl + "/models"); const mb = await mr.json();
 			const ids = (mb.data ?? []).map((m) => m.id);
-			const score = (id) => {
-				let s = 0;
-				if (/instruct|qwen|granite|llama|mistral|deepseek|codestral|code-/i.test(id)) s += 40;
-				if (/instruct/i.test(id)) s += 20;
-				if (/1[0-9]b|7b|8b|3b|1\.7b|4b/i.test(id)) s += 15;   // bigger-ish
-				if (/flash|smollm|reranker|0\.5b|1b|2\.5b|mini|nano|tiny|3b/i.test(id)) s -= 25;
-				const sz = id.match(/([0-9]+(?:\.[0-9]+)?)b/i); if (sz) s += parseFloat(sz[1]) * 4;
-				return s;
-			};
-			if (!forcedModel) codingModel = ids.reduce((best, id) => (score(id) > score(best) ? id : best), ids[0] || codingModel);
+			const prefer = ["granite", "qwen", "ministral", "phi", "deepseek", "smollm", "gpt", "llama", "mistral"];
+			const score = (id) => { const l = id.toLowerCase(); let s = 0; if (id === modelId) s += 3; for (const p of prefer) { if (l.includes(p)) { s += (p === "granite" ? 2 : 1); break; } } if (l.includes("flash") || l.includes("small") || l.includes("function")) s += 1; return s; };
+			const b = { long: 2, flash: 1 }; // CODING bias
+			const ranked = ids.map((id) => ({ id, sc: score(id) + (id.toLowerCase().includes("flash") ? b.flash : 0) + (!id.toLowerCase().includes("flash") ? b.long : 0) })).sort((x, y) => y.sc - x.sc);
+			if (!forcedModel) codingModel = ranked.length ? ranked[0].id : codingModel;
 		} catch {}
 		if (!codingModel) codingModel = modelId;
 		// Syntax check via g++ when available (headers: -fsyntax-only; standalone cpp: link a temp exe).
@@ -1362,13 +1356,16 @@ try {
 		const safeName = name.replace(/[^a-zA-Z0-9_]/g, "_");
 		const ws = a.workspaceRoot;
 		if (path.relative(ws, path.resolve(ws, "src")).startsWith("..")) { emit({ command: "models", ok: false, status: "PATH_TRAVERSAL", score: 0, grade: "", signal: "FAIL", rows: [], details: ["src"], message: "model project: path escapes workspace", warnings: [], actions: [], artifacts: [] }, 6); process.exit(0); }
-		// Autonomous model pick (compact ranking; prefer larger instruct/coding, avoid tiny/flash).
+		// Autonomous model choice via the CLI's own adaptive router (same scoring as `route CODING`).
 		let codingModel = modelId;
 		try {
 			const mr = await fetch(baseUrl + "/models"); const mb = await mr.json();
 			const ids = (mb.data ?? []).map((m) => m.id);
-			const score = (id) => { const sz = parseFloat(id.match(/([0-9]+(?:\.[0-9]+)?)b/i)?.[1] || 0); let s = 0; if (/instruct|qwen|granite|llama|mistral|deepseek|codestral|code-/i.test(id)) s += 40; if (/instruct/i.test(id)) s += 15; if (sz >= 3) s += 20; else s -= 30; if (/flash|smollm|reranker|nano|tiny|mini/i.test(id)) s -= 30; s += sz * 2; return s; };
-			codingModel = ids.reduce((best, id) => (score(id) > score(best) ? id : best), ids[0] || codingModel);
+			const prefer = ["granite", "qwen", "ministral", "phi", "deepseek", "smollm", "gpt", "llama", "mistral"];
+			const score = (id) => { const l = id.toLowerCase(); let s = 0; if (id === modelId) s += 3; for (const p of prefer) { if (l.includes(p)) { s += (p === "granite" ? 2 : 1); break; } } if (l.includes("flash") || l.includes("small") || l.includes("function")) s += 1; return s; };
+			const b = { long: 2, flash: 1 }; // CODING bias
+			const ranked = ids.map((id) => ({ id, sc: score(id) + (id.toLowerCase().includes("flash") ? b.flash : 0) + (!id.toLowerCase().includes("flash") ? b.long : 0) })).sort((x, y) => y.sc - x.sc);
+			codingModel = ranked.length ? ranked[0].id : codingModel;
 		} catch {}
 		if (!codingModel) codingModel = modelId;
 		// Generate the implementation header (bounded; up to 3 tries). --impl=<relpath> overrides (deterministic).
