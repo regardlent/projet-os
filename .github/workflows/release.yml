@@ -41,8 +41,10 @@ jobs:
         run: |
           $tag = "${{ github.ref_name }}"
           if ("${{ github.event_name }}" -eq "workflow_dispatch") { $tag = "${{ inputs.tag }}" }
+          $notes = "docs/RELEASE_NOTES_$tag.md"
+          if (-not (Test-Path $notes)) { $notes = "docs/RELEASE_NOTES_v1.0.md" }
           if (Test-Path ./project-os-cli.zip) {
-            gh release create $tag --repo "regardlent/projet-os" --title "Project OS CLI $tag" --notes-file docs/RELEASE_NOTES_v1.0.md ./project-os-cli.zip
+            gh release create $tag --repo "regardlent/projet-os" --title "Project OS CLI $tag" --notes-file $notes ./project-os-cli.zip
           } else {
             gh release create $tag --repo "regardlent/projet-os" --title "Project OS CLI $tag" --notes-file docs/RELEASE_NOTES_v1.0.md --generate-notes
           }

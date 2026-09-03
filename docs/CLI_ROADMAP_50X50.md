@@ -2706,3 +2706,19 @@ ré-implémentation. Légende : `[x]` fini · `[ ]` à faire.
 
 ---
 
+
+---
+
+## Phase 51 — Génération de code par IA (codegen, livré)
+- [x] 51.1 `model write` : génère via localAI + écrit dans le workspace gardé (anti-traversal).
+- [x] 51.2 `model write` honnête : n'écrit que le vrai contenu (pas de prose de raisonnement).
+- [x] 51.3 `model codegen` autonome : choix de modèle (routeur) + compile + auto-réparation.
+- [x] 51.4 Robustesse : `--model/--tries/--gen-timeout` + AbortController (anti-blocage).
+- [x] 51.5 `model project` : écrit un projet complet (impl+main+CMake), compile + lance `run()`.
+- [x] 51.6 Override déterministe `--impl=<relpath>` (assemble+compile+run sans localAI).
+- [x] 51.7 Garde `PATH_TRAVERSAL` → exit 6 + test unitaire.
+- [x] 51.8 Test d'intégration `npm run test:codegen` (preuve reproductible).
+- [x] 51.9 Feature matrix 66 capacités + docs.
+- [ ] 51.10 Génération multi-fichiers (N unités + `main` qui les utilise).
+
+---
