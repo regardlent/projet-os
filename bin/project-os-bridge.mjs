@@ -301,14 +301,16 @@ try {
 		process.exit(0);
 	}
 
-	// F78 git log [n]: recent commits (read-only).
+	// F78 git log [n] [--graph]: recent commits (read-only), optional ASCII graph.
 	if (line.startsWith("git log")) {
 		const a = resolveActiveProject();
 		if (!a) { emit({ command: "git", ok: false, status: "NO_ACTIVE_PROJECT", score: 0, grade: "", signal: "NO_PROJECT", rows: [], details: ["no active project"], message: "git log: no active project", warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
-		const n = parseInt(line.slice("git log".length).trim() || "5", 10) || 5;
+		const rest = line.slice("git log".length).trim();
+		const graph = rest.includes("--graph");
+		const n = parseInt(rest.replace(/--graph/g, "").trim() || "20", 10) || 20;
 		let commits = [];
-		try { const o = spawnSync("git", ["-C", a.workspaceRoot, "log", "--oneline", "-" + Math.min(30, n)], { encoding: "utf8", timeout: 8000 }); commits = (o.stdout || "").split("\n").filter(Boolean); } catch {}
-		emit({ command: "git", ok: true, status: "GIT_LOG", signal: commits.length ? "HAS_LOG" : "NO_LOG", score: 0, grade: "", rows: commits.map((c, i) => ({ k: "#" + (i + 1), v: c })), details: [], message: `git log: ${commits.length} commit(s)`, warnings: [], actions: [], artifacts: [] }, 0);
+		try { const args = graph ? ["-C", a.workspaceRoot, "log", "--oneline", "--graph", "-" + Math.min(50, n)] : ["-C", a.workspaceRoot, "log", "--oneline", "-" + Math.min(30, n)]; const o = spawnSync("git", args, { encoding: "utf8", timeout: 8000 }); commits = (o.stdout || "").split("\n").filter(Boolean); } catch {}
+		emit({ command: "git", ok: true, status: "GIT_LOG", signal: commits.length ? "HAS_LOG" : "NO_LOG", score: 0, grade: "", rows: commits.map((c, i) => ({ k: (graph ? "* " : "#") + (i + 1), v: c })), details: [], message: `git log${graph ? " --graph" : ""}: ${commits.length} commit(s)`, warnings: [], actions: [], artifacts: [] }, 0);
 		process.exit(0);
 	}
 
