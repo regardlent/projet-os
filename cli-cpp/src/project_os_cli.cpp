@@ -393,6 +393,7 @@ static int cmdCockpit(pos::OutputFormat fmt, const std::vector<std::string>& arg
 		pos::CmdResult st = pos::dispatch(pos::bridgePath(), "status", g_timeoutMs, &g_cancel);
 		pos::CmdResult hs = pos::dispatch(pos::bridgePath(), "health score", g_timeoutMs, &g_cancel);
 		pos::CmdResult us = pos::dispatch(pos::bridgePath(), "usage summary", g_timeoutMs, &g_cancel);
+		pos::CmdResult ad = pos::dispatch(pos::bridgePath(), "addon verify", g_timeoutMs, &g_cancel);
 		std::string gpuLine = readGpuLine();
 		const long long perfMs = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - perfT0).count();
 		auto kv = [](const std::vector<std::pair<std::string, std::string>>& v, const std::string& k) -> std::string { for (auto& p : v) if (p.first == k) return p.second; return ""; };
@@ -410,8 +411,9 @@ static int cmdCockpit(pos::OutputFormat fmt, const std::vector<std::string>& arg
 		std::cout << fitLine("  [Status]  active=" + (st.activeSlug.empty() ? "(none)" : st.activeSlug) + "  goal=" + st.goalStatus + " (" + std::to_string(st.goalProgress) + "%)  todo=" + std::to_string(st.todoDone) + "/" + std::to_string(st.todoCount)) << "\n";
 		std::cout << fitLine("  [Health]  " + std::to_string(hs.score) + "/100 " + (hs.grade.empty() ? "" : "[" + hs.grade + "] ") + "(" + hs.signal + ")  " + hs.message) << "\n";
 		std::cout << fitLine("  [Usage]   " + (usTotal.empty() ? "(no usage)" : usTotal)) << "\n";
+		std::cout << fitLine("  [Addons]  " + (ad.ok ? (std::to_string(ad.addonEnabledCount) + " enabled") : "(n/a)")) << "\n";
 		std::cout << fitLine("  [GPU]     " + (gpuLine.empty() ? "(nvidia-smi unavailable)" : gpuLine)) << "\n";
-		std::cout << fitLine("  [Perf]    compose " + pos::fmtDuration(perfMs) + " (3 sources)") << "\n";
+		std::cout << fitLine("  [Perf]    compose " + pos::fmtDuration(perfMs) + " (4 sources)") << "\n";
 		// F68 footer log line (bottom of dashboard).
 		std::cout << fitLine("  \xE2\x94\x80 log: " + std::to_string((long long)now) + "  [" + hs.signal + "]") << "\n";
 		if (live) {
