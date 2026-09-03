@@ -1677,6 +1677,9 @@ static int cmdGpuStatus(pos::OutputFormat fmt) {
 	if (fmt == pos::OutputFormat::Json) {
 		// Emit the raw nvidia-smi line as a JSON string (already comma-separated CSV).
 		std::cout << "{\"gpu\":" << pos::json_quote(line) << "}\n";
+	} else if (fmt == pos::OutputFormat::Csv) {
+		std::cout << "name,driver_version,memory.total,memory.used,memory.free,utilization.gpu\n";
+		std::cout << line << "\n";
 	} else {
 		std::cout << "  gpu: " << line << "\n";
 	}
