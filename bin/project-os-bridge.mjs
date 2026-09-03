@@ -1372,7 +1372,7 @@ try {
 		for (tries = 1; tries <= 3; ++tries) {
 			try {
 				const ctrl = new AbortController(); const to = setTimeout(() => ctrl.abort(), 60000);
-				const r = await fetch(baseUrl + "/chat/completions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: codingModel, messages: [{ role: "user", content: `Write a C++17 header (#pragma once, include only what's needed) implementing inline functions for: ${objective}. Output ONLY the raw header in a single cpp code block.` }], max_tokens: 1200, temperature: 0, stream: false }), signal: ctrl.signal });
+				const r = await fetch(baseUrl + "/chat/completions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: codingModel, messages: [{ role: "user", content: `Write a C++17 header (#pragma once, include only what's needed). It MUST define an inline int run() that performs the task and returns an int status. Implement: ${objective}. Output ONLY the raw header in a single cpp code block.` }], max_tokens: 1200, temperature: 0, stream: false }), signal: ctrl.signal });
 				clearTimeout(to);
 				const body = await r.json();
 				let c = (body.choices?.[0]?.message?.content ?? "").trim();
@@ -1388,7 +1388,7 @@ try {
 		const pubDir = path.join(ws, "work", safeName);
 		const srcDir = path.join(pubDir, "src");
 		const buildDir = path.join(pubDir, "build");
-		const mainCpp = `#include "${header}"\nint main() { return 0; }\n`;
+		const mainCpp = /int\s+run\s*\(\s*\)/.test(impl) ? `#include "${header}"\nint main() { return run(); }\n` : `#include "${header}"\nint main() { return 0; }\n`;
 		const cmake = `cmake_minimum_required(VERSION 3.16)\nproject(${safeName} LANGUAGES CXX)\nset(CMAKE_CXX_STANDARD 17)\nadd_executable(${safeName} src/main.cpp)\n`;
 		fs.mkdirSync(srcDir, { recursive: true });
 		fs.mkdirSync(buildDir, { recursive: true });
