@@ -1352,9 +1352,13 @@ try {
 		const sp = rest.indexOf(" ");
 		const name = (sp >= 0 ? rest.slice(0, sp) : rest).trim();
 		const objective = (sp >= 0 ? rest.slice(sp + 1) : "").trim();
+		// Optional deterministic override: --impl=<relpath> reads the header from the workspace
+		// (skips LocalAI generation). Usable to test assemble+compile+run reproducibly.
+		let implPath = null; let obj = objective;
+		const im = objective.match(/--impl=(\S+)/); if (im) { implPath = im[1]; obj = objective.replace(im[0], " ").trim(); }
 		const a = resolveActiveProject();
 		if (!a) { emit({ command: "models", ok: false, status: "NO_ACTIVE_PROJECT", score: 0, grade: "", signal: "NO_PROJECT", rows: [], details: ["no active project"], message: "model project: no active project", warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
-		if (!name || !objective) { emit({ command: "models", ok: false, status: "OBJECTIVE_REQUIRED", score: 0, grade: "", signal: "FAIL", rows: [], details: ["usage: model project <name> <objective>"], message: "model project: name + objective required", warnings: [], actions: [], artifacts: [] }, 2); process.exit(0); }
+		if (!name || (!obj && !implPath)) { emit({ command: "models", ok: false, status: "OBJECTIVE_REQUIRED", score: 0, grade: "", signal: "FAIL", rows: [], details: ["usage: model project <name> <objective [--impl=<relpath>]>"], message: "model project: name + objective required", warnings: [], actions: [], artifacts: [] }, 2); process.exit(0); }
 		const safeName = name.replace(/[^a-zA-Z0-9_]/g, "_");
 		const ws = a.workspaceRoot;
 		if (path.relative(ws, path.resolve(ws, "src")).startsWith("..")) { emit({ command: "models", ok: false, status: "PATH_TRAVERSAL", score: 0, grade: "", signal: "FAIL", rows: [], details: ["src"], message: "model project: path escapes workspace", warnings: [], actions: [], artifacts: [] }, 6); process.exit(0); }
@@ -1367,12 +1371,17 @@ try {
 			codingModel = ids.reduce((best, id) => (score(id) > score(best) ? id : best), ids[0] || codingModel);
 		} catch {}
 		if (!codingModel) codingModel = modelId;
-		// Generate the implementation header (bounded; up to 3 tries).
+		// Generate the implementation header (bounded; up to 3 tries). --impl=<relpath> overrides (deterministic).
 		let impl = "", tries = 0, tokens = 0;
+		if (implPath) {
+			const src = path.resolve(ws, implPath); const rr = path.relative(ws, src);
+			if (rr.startsWith("..") || path.isAbsolute(rr)) { emit({ command: "models", ok: false, status: "PATH_TRAVERSAL", score: 0, grade: "", signal: "FAIL", rows: [], details: [implPath], message: "model project: impl path escapes workspace", warnings: [], actions: [], artifacts: [] }, 6); process.exit(0); }
+			try { impl = fs.readFileSync(src, "utf8"); tries = 1; tokens = 0; } catch (e) { emit({ command: "models", ok: false, status: "IMPL_NOT_FOUND", score: 0, grade: "", signal: "FAIL", rows: [], details: [implPath], message: `model project: impl file not found: ${e.message}`, warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
+		} else {
 		for (tries = 1; tries <= 3; ++tries) {
 			try {
 				const ctrl = new AbortController(); const to = setTimeout(() => ctrl.abort(), 60000);
-				const r = await fetch(baseUrl + "/chat/completions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: codingModel, messages: [{ role: "user", content: `Write a C++17 header (#pragma once, include only what's needed). It MUST define an inline int run() that performs the task and returns an int status. Implement: ${objective}. Output ONLY the raw header in a single cpp code block.` }], max_tokens: 1200, temperature: 0, stream: false }), signal: ctrl.signal });
+				const r = await fetch(baseUrl + "/chat/completions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: codingModel, messages: [{ role: "user", content: `Write a C++17 header (#pragma once, include only what's needed). It MUST define an inline int run() that performs the task and returns an int status. Implement: ${obj}. Output ONLY the raw header in a single cpp code block.` }], max_tokens: 1200, temperature: 0, stream: false }), signal: ctrl.signal });
 				clearTimeout(to);
 				const body = await r.json();
 				let c = (body.choices?.[0]?.message?.content ?? "").trim();
@@ -1381,6 +1390,7 @@ try {
 				const f = [...c.matchAll(/```[^\n]*\n([\s\S]*?)```/g)].map((m) => m[1]); if (f.length) c = f[f.length - 1].trim();
 				if (c.length > 20) { impl = c; break; }
 			} catch (e) { /* bounded: next try */ }
+		}
 		}
 		if (!impl) { emit({ command: "models", ok: false, status: "MODEL_EMPTY_OUTPUT", model: codingModel, score: 0, grade: "", signal: "FAIL", rows: [{ k: "name", v: safeName }, { k: "model", v: codingModel }, { k: "tries", v: String(tries - 1) }], details: [], message: `model project: ${safeName} empty generation`, warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
 		// Deterministic main + CMake written by the CLI (assembly glue).
