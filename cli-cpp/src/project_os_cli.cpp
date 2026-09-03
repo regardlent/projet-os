@@ -6,6 +6,7 @@
 #include <iostream>
 #include <chrono>
 #include <exception>
+#include <filesystem>
 #include <thread>
 #include <limits>
 #include <filesystem>
@@ -800,6 +801,37 @@ static int cmdExplain(const std::string& cmd, const std::vector<std::string>& ar
 	else std::cout << "  effect        : dispatched to bridge (read-only view)\n";
 	std::cout << "  approval      : required (explicit) before mutation\n";
 	std::cout << "  NO MUTATION   : this invocation intentionally did nothing\n";
+	return 0;
+}
+
+// --- F100 tree: bounded workspace tree of the active project (Phase 2.13) ---------
+static void treeWalk(const std::filesystem::path& dir, std::string prefix, int depth, int max) {
+	if (depth > max) return;
+	std::vector<std::filesystem::directory_entry> entries;
+	try {
+		for (auto& e : std::filesystem::directory_iterator(dir)) {
+			static const char* skip[] = { ".git", "node_modules", "dist", "build", ".project-os", "cmake-build", "_CPack_Packages" };
+			bool ign = false; for (auto s : skip) if (e.path().filename() == s) { ign = true; break; }
+			if (!ign) entries.push_back(e);
+		}
+	} catch (...) { return; }
+	std::sort(entries.begin(), entries.end(), [](auto& a, auto& b) { return a.path().filename() < b.path().filename(); });
+	for (size_t i = 0; i < entries.size(); ++i) {
+		bool last = i == entries.size() - 1;
+		std::cout << prefix << (last ? "\xE2\x94\x94\xE2\x94\x80 " : "\xE2\x94\x9C\xE2\x94\x80 ") << entries[i].path().filename().string() << (entries[i].is_directory() ? "/" : "") << "\n";
+		if (entries[i].is_directory()) treeWalk(entries[i].path(), prefix + (last ? "     " : "\xE2\x94\x82    "), depth + 1, max);
+	}
+}
+static int cmdTree() {
+	const std::string slug = pos::activeSlugEnv();
+	auto projects = pos::parseRegistry(pos::readFile(pos::registryFile()));
+	std::string ws;
+	for (auto& p : projects) if (p.slug == slug) ws = p.workspaceRoot;
+	if (ws.empty()) { std::cout << "  (no active project)\n"; return 1; }
+	int max = 3; // bounded depth
+	std::cout << "── tree " << slug << " ──\n";
+	std::cout << "  " << std::filesystem::path(ws).filename().string() << "/\n";
+	treeWalk(ws, "  ", 0, max);
 	return 0;
 }
 
@@ -1985,6 +2017,7 @@ int wmain(int argc, wchar_t** wargv) {
 		if (cmd == "cockpit") { return cmdCockpit(fmt, args, colorOn); }
 		if (cmd == "version") { cmdVersion(fmt); return 0; }
 		if (cmd == "create") { return cmdCreate(fmt, args, colorOn); }
+		if (cmd == "tree") { return cmdTree(); }
 		if (cmd == "capabilities") { cmdCapabilities(fmt); return 0; }
 		if (cmd == "status") { return cmdStatus(fmt); }
 		if (cmd == "diff" && args.size() >= 2) { return cmdDiff(args[0], args[1], fmt); }
