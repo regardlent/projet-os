@@ -27,7 +27,7 @@ jobs:
           export PATH="/c/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin:$PATH"
           cmake -S cli-cpp -B cli-cpp/cmake-build -G "MinGW Makefiles"
           cmake --build cli-cpp/cmake-build
-          (cd cli-cpp && cmake --build cmake-build --target package 2>/dev/null || true)
+          (cd cli-cpp && cpack -G ZIP --config cmake-build/CPackConfig.cmake)
 
       - name: Copy archive to workspace
         shell: bash
@@ -43,9 +43,11 @@ jobs:
           if ("${{ github.event_name }}" -eq "workflow_dispatch") { $tag = "${{ inputs.tag }}" }
           $notes = "docs/RELEASE_NOTES_$tag.md"
           if (-not (Test-Path $notes)) { $notes = "docs/RELEASE_NOTES_v1.0.md" }
+          gh release create $tag --repo "regardlent/projet-os" --title "Project OS CLI $tag" --notes-file $notes
           if (Test-Path ./project-os-cli.zip) {
-            gh release create $tag --repo "regardlent/projet-os" --title "Project OS CLI $tag" --notes-file $notes ./project-os-cli.zip
+            gh release upload $tag ./project-os-cli.zip --repo "regardlent/projet-os" --clobber
+            echo "asset uploaded for $tag"
           } else {
-            gh release create $tag --repo "regardlent/projet-os" --title "Project OS CLI $tag" --notes-file docs/RELEASE_NOTES_v1.0.md --generate-notes
+            echo "no asset to upload for $tag"
           }
           echo "release published for $tag"
