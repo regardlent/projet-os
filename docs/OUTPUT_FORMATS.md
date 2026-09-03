@@ -16,7 +16,8 @@ Le CLI supporte une **surface machine-output unifiée** : `--format=human|json|n
 | `model smoke <id>` | ✅ | ✅ | — | — | ✅ | ✅ | ✅ |
 | `benchmark compare <a> <b>` | ✅ | ✅ | — | — | ✅ | ✅ | ✅ |
 | `gpu status` | ✅ | ✅ | — | — | ✅ | — | — | ✅svg |
-| `snapshot list` | ✅ | ✅ | — | — | ✅ | ✅ | ✅ |
+| `snapshot list` | ✅ | ✅ | — | — | ✅ | ✅ | ✅ | — |
+| `snapshot diff <a> <b>` | ✅ | — | — | — | ✅ | ✅ | ✅ | — |
 | `tree` | ✅ | — | — | — | — | — | — |
 | `config` | ✅ | ✅ | — | ✅ | — | — | — |
 

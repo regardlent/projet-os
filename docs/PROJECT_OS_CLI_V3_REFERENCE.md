@@ -17,8 +17,11 @@ Handoff document for ChatGPT web to plan the next 50 development phases of the C
 - Layered: UI/extension → application/domain → services → providers/adapters (LocalAI/fs/bridge/GPU).
 
 ## 3. Baseline (real, measured)
-- C++ build PASS · CTest **1/1 PASS** · typecheck **0 errors** · CLI soak **13/13** scenarios PASS.
+- C++ build PASS · CTest **1/1 PASS** · typecheck **0 errors** · CLI soak **100/100** scenarios PASS.
 - Feature matrix: **50/50 PASS**.
+- Post-V3 : machine-output `--format=human|json|ndjson|tsv|csv|md|html|svg` (cf. `docs/OUTPUT_FORMATS.md`),
+  `snapshot diff`, `snapshot list --age`, `git log --graph`, `tree`, `create --timer` (multi-étape),
+  `--profile=dev|ci|minimal`, `--help` coloré, cockpit `[Addons]`/`[Perf]`.
 
 ## 4. The 50 features (all implemented + PASS)
 F01 version · F02 capabilities · F03 exit codes · F04 multi-format (human/json/ndjson/tsv) ·
