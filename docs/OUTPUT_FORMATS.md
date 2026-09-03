@@ -1,6 +1,6 @@
 # Formats de sortie machine — CLI C++
 
-Le CLI supporte une **surface machine-output unifiée** : `--format=human|json|ndjson|tsv|csv|md|html`.
+Le CLI supporte une **surface machine-output unifiée** : `--format=human|json|ndjson|tsv|csv|md|html|svg`.
 
 ## Matrice (commande → formats)
 

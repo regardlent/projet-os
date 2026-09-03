@@ -1280,6 +1280,22 @@ static int cmdBenchmarkCompare(const std::string& a, const std::string& b, pos::
 	} else if (fmt == pos::OutputFormat::Csv || fmt == pos::OutputFormat::Markdown || fmt == pos::OutputFormat::Html) {
 		renderColumns({ "side", "model", "tps", "ttftMs" }, { { "a", r.bmA.model, std::to_string(r.bmA.tokensPerSec), std::to_string(r.bmA.ttftMs) }, { "b", r.bmB.model, std::to_string(r.bmB.tokensPerSec), std::to_string(r.bmB.ttftMs) } }, fmt);
 		std::cout << "verdict: " << r.bmVerdict << "\n";
+	} else if (fmt == pos::OutputFormat::Svg) {
+		int w = 320, barH = 40, gap = 24, pad = 24;
+		int maxTps = std::max(1, std::max(r.bmA.tokensPerSec, r.bmB.tokensPerSec));
+		int chartW = w - 2 * pad;
+		auto barW = (chartW - gap) / 2;
+		auto h1 = (int)((long long)r.bmA.tokensPerSec * barH / maxTps);
+		auto h2 = (int)((long long)r.bmB.tokensPerSec * barH / maxTps);
+		std::cout << "<svg xmlns='http://www.w3.org/2000/svg' width='" << w << "' height='" << (2 * barH + 3 * gap + 30) << "' viewBox='0 0 " << w << " " << (2 * barH + 3 * gap + 30) << "'>\n";
+		std::cout << "<rect width='100%' height='100%' fill='#1c1c1e'/>\n";
+		std::cout << "<text x='" << pad << "' y='16' fill='#fff' font-family='monospace' font-size='12'>tokens/s — " << r.bmA.model << " vs " << r.bmB.model << "</text>\n";
+		std::cout << "<rect x='" << pad << "' y='26' width='" << barW << "' height='" << h1 << "' fill='#4caf50'/>\n";
+		std::cout << "<text x='" << pad << "' y='" << (26 + h1 + 14) << "' fill='#fff' font-size='10'>" << r.bmA.tokensPerSec << "</text>\n";
+		std::cout << "<rect x='" << (pad + barW + gap) << "' y='26' width='" << barW << "' height='" << h2 << "' fill='#2196f3'/>\n";
+		std::cout << "<text x='" << (pad + barW + gap) << "' y='" << (26 + h2 + 14) << "' fill='#fff' font-size='10'>" << r.bmB.tokensPerSec << "</text>\n";
+		std::cout << "<text x='" << pad << "' y='" << (2 * barH + 3 * gap + 8) << "' fill='#ccc' font-size='10'>" << (r.bmA.tokensPerSec >= r.bmB.tokensPerSec ? "a faster/equal" : "b faster") << " · verdict " << r.bmVerdict << "</text>\n";
+		std::cout << "</svg>\n";
 	} else {
 		std::cout << "  benchmark compare:\n";
 		std::cout << "    a (" << r.bmA.model << ")  tps=" << r.bmA.tokensPerSec << "  ttft=" << r.bmA.ttftMs << "ms\n";
