@@ -1933,6 +1933,7 @@ static void loadProjectOsConfig() {
 		if (auto* t = v.get("theme"); t && t->kind == pos::JKind::String) { if (t->str == "light") g_theme.store(0); else if (t->str == "dark") g_theme.store(1); }
 		if (auto* e = v.get("emoji"); e && e->kind == pos::JKind::Bool) g_emoji.store(e->boolean);
 		if (auto* to = v.get("timeoutMs"); to && to->kind == pos::JKind::Number && to->number > 0) g_timeoutMs.store((int)to->number);
+		if (auto* l = v.get("lang"); l && l->kind == pos::JKind::String) { if (l->str == "en") pos::g_lang = pos::Lang::En; else pos::g_lang = pos::Lang::Fr; }
 	} catch (...) {}
 }
 
@@ -2243,23 +2244,25 @@ int wmain(int argc, wchar_t** wargv) {
 	std::cout << "  Active    : " << (pos::activeSlugEnv().empty() ? "(none)" : pos::activeSlugEnv()) << "\n\n";
 
 	auto projects = pos::parseRegistry(pos::readFile(pos::registryFile()));
-	if (projects.empty()) std::cout << "  No managed projects yet. Use [2] to create one.\n\n";
+	const char* noProj = (pos::g_lang == pos::Lang::En) ? "  No managed projects yet. Use [2] to create one.\n\n" : "  No managed projects yet. Use [2] to create one.\n\n";
+	if (projects.empty()) std::cout << noProj;
+	auto pickMenu = [&](const char* fr, const char* en) { return pos::g_lang == pos::Lang::En ? en : fr; };
 
 	while (true) {
 		std::cout << "  \xE2\x94\x80\xE2\x94\x80 MENU \xE2\x94\x80\xE2\x94\x80 \n";
-		std::cout << "  [Projet]\n";
-		std::cout << "    1. List projects\n";
-		std::cout << "    2. Create project\n";
-		std::cout << "  [Pilotage]\n";
-		std::cout << "    3. Goal        (active)\n";
-		std::cout << "    4. Todo        (active)\n";
-		std::cout << "    5. Autonomy    (active)\n";
-		std::cout << "  [Aides]\n";
-		std::cout << "    6. Docs online (active)\n";
-		std::cout << "    7. Addons      (active)\n";
-		std::cout << "    8. Raw slash command\n";
-		std::cout << "    0. Quit\n";
-		std::cout << "  Choice> ";
+		std::cout << "  " << pickMenu("[Projet]", "[Project]") << "\n";
+		std::cout << "    1. " << pickMenu("List projects", "List projects") << "\n";
+		std::cout << "    2. " << pickMenu("Create project", "Create project") << "\n";
+		std::cout << "  " << pickMenu("[Pilotage]", "[Control]") << "\n";
+		std::cout << "    3. " << pickMenu("Goal", "Goal") << "        (active)\n";
+		std::cout << "    4. " << pickMenu("Todo", "Todo") << "        (active)\n";
+		std::cout << "    5. " << pickMenu("Autonomy", "Autonomy") << "    (active)\n";
+		std::cout << "  " << pickMenu("[Aides]", "[Helpers]") << "\n";
+		std::cout << "    6. " << pickMenu("Docs online", "Docs online") << " (active)\n";
+		std::cout << "    7. " << pickMenu("Addons", "Addons") << "      (active)\n";
+		std::cout << "    8. " << pickMenu("Raw slash command", "Raw slash command") << "\n";
+		std::cout << "    0. " << pickMenu("Quit", "Quit") << "\n";
+		std::cout << "  " << pickMenu("Choice> ", "Choice> ");
 		int c = readChoice(8);
 		if (c == 0) break;
 
