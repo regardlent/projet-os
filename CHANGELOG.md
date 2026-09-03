@@ -36,6 +36,10 @@ Le format s'appuie sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) 
 ## [Unreleased]
 
 ### Ajouté
+- **Surface machine-output unifiée** : `--format=csv|md|html` sur les listes (`project list`, `models`, `artifact list`), analyses (Intelligence), détail (`project inspect`, `model smoke`, `benchmark compare`), `snapshot list`, `gpu status`, `config` ; helper `renderColumns`/`renderTable`/`padRight`. Doc `docs/OUTPUT_FORMATS.md`.
+- **Presets** : `--profile=dev|ci|minimal` · **verbosité** `-q/-qq/-v/-vv` · **`--limit=<n>`** (cap listes) · **`--json/--ndjson/--tsv`** · **`--time`** · **`--trace`** · **`--silent/--check`** · **`--width`**.
+- **Création projet avec timer** : `create` chronomètre **scaffold/goal/addons/git/todo** (multi-étape `elapsedMs` + rendu CLI `timer` + `step …`) ; fix menu `--type=`.
+- **Cockpit** : tuile `[Addons]` + `[Perf] 4 sources` · **`snapshot list --age`** (fmtDuration) · **`git log --graph`** · **`tree`** (arbre borné du workspace) · **`config --as=env|ini|json`**.
 - **Feuille de route CLI 50×50 (2500 étapes)** : `docs/CLI_ROADMAP_50X50.md` (+ générateur `scripts/gen-roadmap50.mjs`).
 
 - **`--help` catégorisé** : regroupement par thème (Général / Projet / Intelligence & analyse /
