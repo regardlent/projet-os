@@ -384,6 +384,8 @@ static std::string readGpuLine(); // F38 helper (defined below)
 static std::string fitLine(const std::string& s);
 // Forward decl (defined later): card header.
 static void card(const std::string& t);
+// Forward decl (defined later): render columns (human/csv/md/html).
+static void renderColumns(const std::vector<std::string>& headers, const std::vector<std::vector<std::string>>& rows, pos::OutputFormat fmt);
 // Forward decl (defined later): intelligence/analysis result printer.
 static int printAnalysis(const std::string& title, pos::OutputFormat fmt, pos::CmdResult& r, bool colorOn);
 // --- F50 cockpit: inline VT dashboard (no external dep). Read-only, live refresh. ----
@@ -737,13 +739,24 @@ static int cmdSnapshot(const std::string& sub, pos::OutputFormat fmt) {
 		std::vector<std::string> files;
 		if (fs::exists(dir)) for (auto& e : fs::directory_iterator(dir)) if (e.is_regular_file() && e.path().extension() == ".json") files.push_back(e.path().filename().string());
 		std::sort(files.begin(), files.end());
+		auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+		auto ageOf = [&](const std::string& f) -> std::string {
+			auto p = f.rfind("snap-"); if (p == std::string::npos) return "";
+			long long ep = std::atoll(f.substr(p + 5).c_str());
+			if (ep <= 0) return "";
+			return pos::fmtDuration((long long)(now - ep) * 1000);
+		};
 		if (fmt == pos::OutputFormat::Json) {
 			std::cout << "{\"snapshots\":[";
 			for (size_t i = 0; i < files.size(); ++i) { if (i) std::cout << ","; std::cout << pos::json_quote(files[i]); }
 			std::cout << "]}\n";
+		} else if (fmt == pos::OutputFormat::Csv || fmt == pos::OutputFormat::Markdown || fmt == pos::OutputFormat::Html) {
+			std::vector<std::vector<std::string>> rows;
+			for (auto& f : files) rows.push_back({ f, ageOf(f) });
+			renderColumns({ "snapshot", "age" }, rows, fmt);
 		} else {
 			if (files.empty()) { std::cout << "  (no snapshots)\n"; return 0; }
-			for (auto& f : files) std::cout << "  " << f << "\n";
+			for (auto& f : files) std::cout << "  " << f << (ageOf(f).empty() ? "" : ("  (" + ageOf(f) + ")")) << "\n";
 		}
 		return 0;
 	} else if (sub == "show") {
