@@ -1709,6 +1709,20 @@ static int cmdGpuStatus(pos::OutputFormat fmt) {
 	} else if (fmt == pos::OutputFormat::Csv) {
 		std::cout << "name,driver_version,memory.total,memory.used,memory.free,utilization.gpu\n";
 		std::cout << line << "\n";
+	} else if (fmt == pos::OutputFormat::Svg) {
+		auto num = [](const std::string& s) { std::string d; for (char c : s) if (c >= '0' && c <= '9') d += c; return d.empty() ? 0LL : atoll(d.c_str()); };
+		std::vector<std::string> parts; std::string cur; for (char c : line) { if (c == ',') { parts.push_back(cur); cur.clear(); } else cur += c; } parts.push_back(cur);
+		long long total = parts.size() > 2 ? num(parts[2]) : 0, used = parts.size() > 3 ? num(parts[3]) : 0;
+		int w = 360, pad = 24, barW = w - 2 * pad, barH = 26;
+		double ratio = total > 0 ? (double)used / (double)total : 0.0;
+		int bw = (int)(barW * (ratio > 1 ? 1 : ratio));
+		std::cout << "<svg xmlns='http://www.w3.org/2000/svg' width='" << w << "' height='110' viewBox='0 0 " << w << " 110'>\n";
+		std::cout << "<rect width='100%' height='100%' fill='#1c1c1e'/>\n";
+		std::cout << "<text x='" << pad << "' y='18' fill='#fff' font-family='monospace' font-size='12'>GPU memory (used/total)</text>\n";
+		std::cout << "<rect x='" << pad << "' y='28' width='" << barW << "' height='" << barH << "' fill='#333'/>\n";
+		std::cout << "<rect x='" << pad << "' y='28' width='" << bw << "' height='" << barH << "' fill='#ff9800'/>\n";
+		std::cout << "<text x='" << pad << "' y='" << (28 + barH + 16) << "' fill='#ccc' font-size='10'>used=" << used << " MiB / total=" << total << " MiB</text>\n";
+		std::cout << "</svg>\n";
 	} else {
 		std::cout << "  gpu: " << line << "\n";
 	}
