@@ -7,6 +7,7 @@ Hub de navigation vers toutes les docs du projet.
 |---|---|
 | [Getting Started (README)](../README.md#getting-started-cli-c) | Build, install, env, exemples |
 | [Référence CLI v3](PROJECT_OS_CLI_V3_REFERENCE.md) | Architecture, 50 features (F01-F50) + IA01-IA10, packages |
+| [Formats de sortie machine](OUTPUT_FORMATS.md) | Matrice `--format=human\|json\|ndjson\|tsv\|csv\|md\|html` |
 | [README cli-cpp](../cli-cpp/README.md) | Build CMake, menu, codes de sortie (F03) |
 | [Feuille de route 50×50](CLI_ROADMAP_50X50.md) | 2500 étapes de la prochaine génération |
 
