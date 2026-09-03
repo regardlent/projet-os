@@ -1274,6 +1274,9 @@ static int cmdBenchmarkCompare(const std::string& a, const std::string& b, pos::
 	if (!r.ok) { std::cout << "  FAIL benchmark: " << r.status << " — " << r.message << "\n"; return 1; }
 	if (fmt == pos::OutputFormat::Json) {
 		std::cout << "{\"a\":{\"model\":" << pos::json_quote(r.bmA.model) << ",\"tps\":" << r.bmA.tokensPerSec << ",\"ttftMs\":" << r.bmA.ttftMs << "},\"b\":{\"model\":" << pos::json_quote(r.bmB.model) << ",\"tps\":" << r.bmB.tokensPerSec << ",\"ttftMs\":" << r.bmB.ttftMs << "},\"verdict\":" << pos::json_quote(r.bmVerdict) << "}\n";
+	} else if (fmt == pos::OutputFormat::Csv || fmt == pos::OutputFormat::Markdown || fmt == pos::OutputFormat::Html) {
+		renderColumns({ "side", "model", "tps", "ttftMs" }, { { "a", r.bmA.model, std::to_string(r.bmA.tokensPerSec), std::to_string(r.bmA.ttftMs) }, { "b", r.bmB.model, std::to_string(r.bmB.tokensPerSec), std::to_string(r.bmB.ttftMs) } }, fmt);
+		std::cout << "verdict: " << r.bmVerdict << "\n";
 	} else {
 		std::cout << "  benchmark compare:\n";
 		std::cout << "    a (" << r.bmA.model << ")  tps=" << r.bmA.tokensPerSec << "  ttft=" << r.bmA.ttftMs << "ms\n";
