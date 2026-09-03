@@ -510,4 +510,30 @@ inline std::string sparkline(const std::vector<int>& values) {
         return out;
 }
 
+// Phase 2 [2.7]: pad a field to a width (no truncation, safe for monospace tables).
+inline std::string padRight(const std::string& s, size_t w) {
+        if (s.size() >= w) return s;
+        return s + std::string(w - s.size(), ' ');
+}
+
+// Phase 2 [2.7]: render an aligned table with per-column width (truncated with '…'). Pure + testable.
+inline std::string renderTable(const std::vector<std::vector<std::string>>& rows, size_t maxColWidth = 40) {
+        if (rows.empty()) return "";
+        std::vector<size_t> w;
+        for (const auto& r : rows) { if (w.size() < r.size()) w.resize(r.size(), 0); for (size_t i = 0; i < r.size(); ++i) w[i] = std::max(w[i], std::min(maxColWidth, r[i].size())); }
+        std::string out;
+        for (const auto& r : rows) {
+                std::string line;
+                for (size_t i = 0; i < w.size(); ++i) {
+                        std::string c = (i < r.size() ? r[i] : "");
+                        if (c.size() > w[i]) c = c.substr(0, w[i]) + "\xE2\x80\xA6";
+                        else c += std::string(w[i] - c.size(), ' ');
+                        if (i) line += "  ";
+                        line += c;
+                }
+                out += line + "\n";
+        }
+        return out;
+}
+
 } // namespace pos

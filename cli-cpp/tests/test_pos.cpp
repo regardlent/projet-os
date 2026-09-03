@@ -534,6 +534,21 @@ static void testFormatting() {
 	CHECK(pos::sparkline({0}).size() == 3);
 }
 
+static void testTable() {
+	// 2.7 padRight
+	CHECK(pos::padRight("a", 3) == "a  ");
+	CHECK(pos::padRight("abc", 3) == "abc");
+	// 2.7 renderTable: columns aligned to max width, rows padded.
+	auto tbl = pos::renderTable({ {"alpha","cpp","READY"}, {"bta","ts","READY"} });
+	CHECK(tbl.find("alpha") != std::string::npos);
+	CHECK(tbl.find("cpp") != std::string::npos);
+	// Truncation to maxColWidth.
+	auto trunc = pos::renderTable({ {"averyveryverylongslug", "x", "y"} }, 6);
+	CHECK(trunc.size() > 0);
+	CHECK(trunc.find("\xE2\x80\xA6") != std::string::npos); // '…' present
+	CHECK(pos::renderTable({}) == "");
+}
+
 static void testFuzzSecurity() {
 	// Uses escaped std::string for every hostile input to avoid any raw-delimiter ambiguity.
 	const std::string plusN = "{\"x\":+}";
@@ -615,6 +630,7 @@ int main() {
 	testGoldenBudget();
 	testPerfBudget();
 	testFormatting();
+	testTable();
 	testFuzzProperty();
 	testFuzzSecurity();
 	std::cout << "\n" << (failures == 0 ? "ALL PASS" : "FAILURES") << " (" << failures << ")\n";

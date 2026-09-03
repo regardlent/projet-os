@@ -127,10 +127,9 @@ static int cmdProjectList(pos::OutputFormat fmt) {
 		for (const auto& p : r.projects) pos::emitScalar(pos::OutputFormat::TsV, p.slug, p.status + "\t" + p.projectType);
 	} else {
 		if (r.projects.empty()) { std::cout << "  (no projects)\n"; return 0; }
-		for (const auto& p : r.projects) {
-			std::cout << "  " << p.slug << "  [" << p.projectType << "]  " << p.status
-				<< "  goal=" << p.goalStatus << " (" << p.goalProgress << "%)\n";
-		}
+		std::vector<std::vector<std::string>> rows;
+		for (const auto& p : r.projects) rows.push_back({ p.slug, p.projectType, p.status, "goal=" + p.goalStatus + " (" + std::to_string(p.goalProgress) + "%)" });
+		std::cout << pos::renderTable(rows);
 	}
 	// F03 exit contract: a FAIL status must never exit 0.
 	return pos::exitFor(r.ok, r.status);
