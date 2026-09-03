@@ -1870,7 +1870,11 @@ int wmain(int argc, wchar_t** wargv) {
 			if (a == "--no-emoji") { g_emoji.store(false); return true; }
 			if (a == "--emoji") { g_emoji.store(true); return true; }
 			if (a == "--quiet") { g_quiet.store(true); return true; }
+			if (a == "-q") { g_quiet.store(true); return true; }
+			if (a == "-qq") { g_quiet.store(true); g_silent.store(true); return true; }
 			if (a == "--verbose") { g_verbose.store(true); return true; }
+			if (a == "-v") { g_verbose.store(true); return true; }
+			if (a == "-vv") { g_verbose.store(true); g_timing.store(true); return true; }
 			if (a == "--mono") { wrapColor = pos::ColorPolicy::Never; return true; }
 			if (a == "--cockpit") { cockpitShortcut = true; return true; }
 			return false;
