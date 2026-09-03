@@ -1782,6 +1782,11 @@ static int printAnalysis(const std::string& title, pos::OutputFormat fmt, pos::C
 		for (auto& d : r.details) pos::emitScalar(pos::OutputFormat::Ndjson, "detail", d);
 	} else if (fmt == pos::OutputFormat::TsV) {
 		for (auto& kv : r.analysisKv) pos::emitScalar(pos::OutputFormat::TsV, kv.first, kv.second);
+	} else if (fmt == pos::OutputFormat::Csv || fmt == pos::OutputFormat::Markdown || fmt == pos::OutputFormat::Html) {
+		std::vector<std::vector<std::string>> rows;
+		for (auto& kv : r.analysisKv) rows.push_back({ kv.first, kv.second });
+		if (!r.details.empty()) for (auto& d : r.details) rows.push_back({ "detail", d });
+		renderColumns({ "key", "value" }, rows, fmt);
 	} else {
 		if (!g_quiet.load()) {
 			const char* e = emojiFor(sig);
