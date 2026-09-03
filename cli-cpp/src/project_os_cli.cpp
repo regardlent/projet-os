@@ -165,10 +165,13 @@ static void printJsonKV(const std::string& k, const std::string& v, bool first) 
 }
 
 // --- F37 cmdHelp: local, no bridge. Lists commands + usage. ------------------------
-static int cmdHelp() {
+static int cmdHelp(bool colorOn) {
 	const std::string H = "\xE2\x94\x80\xE2\x94\x80";
-	auto sec = [&](const std::string& s) { std::cout << "\n  " << H << " " << s << " " << H << "\n"; };
-	std::cout << "Project OS CLI v3 — usage (categorized)\n";
+	const char* cyan  = colorOn ? (g_theme.load() == 0 ? "\x1b[36m" : "\x1b[96m") : "";
+	const char* green = colorOn ? (g_theme.load() == 0 ? "\x1b[32m" : "\x1b[92m") : "";
+	const char* reset = colorOn ? "\x1b[0m" : "";
+	auto sec = [&](const std::string& s) { std::cout << "\n  " << cyan << H << " " << s << " " << H << reset << "\n"; };
+	std::cout << green << "Project OS CLI v3 — usage (categorized)" << reset << "\n";
 	sec("Général");
 	std::cout << "  version                build fingerprint (--format=json)\n";
 	std::cout << "  capabilities           negotiation with the bridge\n";
@@ -2037,7 +2040,7 @@ int wmain(int argc, wchar_t** wargv) {
 		}
 		// F20: --explain / --dry-run => show plan, never mutate.
 		if (explain) { return cmdExplain(cmd, args); }
-		if (cmd == "help" || cmd == "--help" || cmd == "-h") { return cmdHelp(); }
+		if (cmd == "help" || cmd == "--help" || cmd == "-h") { return cmdHelp(colorOn); }
 		if (cmd == "welcome") { return cmdWelcome(); }
 		if (cmd == "config" && args.size() >= 1 && args[0] == "path") { std::cout << "── config path ──\n  path : " << projectOsConfigPath() << "\n"; return 0; }
 		if (cmd == "config" && args.size() >= 1 && args[0] == "env") { return cmdConfigEnv(); }
