@@ -1249,9 +1249,10 @@ try {
 			tokens = body.usage?.total_tokens ?? 0;
 		} catch (e) { emit({ command: "models", ok: false, status: "MODEL_ERROR", score: 0, grade: "", signal: "FAIL", rows: [], details: [e.message], message: `model write error: ${e.message}`, warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
 		if (!content) { emit({ command: "models", ok: false, status: "MODEL_EMPTY_OUTPUT", score: 0, grade: "", signal: "FAIL", rows: [], details: [], message: "model write: empty generation", warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
-		// Strip a wrapping markdown code fence (take the LAST fenced block — the model's final answer).
-		const fences = [...content.matchAll(/```[a-zA-Z0-9]*\n([\s\S]*?)\n```/g)].map((m) => m[1]);
-		if (fences.length) content = fences[fences.length - 1].trim();
+		// Strip a single wrapping markdown code fence anchored to the whole content.
+		// (Robust against the model adding a trailing newline or a language tag.)
+		const wrap = content.match(/^```[a-zA-Z0-9]*\s*\n([\s\S]*?)```\s*$/);
+		if (wrap && wrap[1]) content = wrap[1].trim();
 		fs.mkdirSync(path.dirname(target), { recursive: true });
 		fs.writeFileSync(target, content, "utf8");
 		const bytes = Buffer.byteLength(content, "utf8");
