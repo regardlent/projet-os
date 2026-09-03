@@ -1972,6 +1972,13 @@ int wmain(int argc, wchar_t** wargv) {
 			if (a == "--force") { g_force.store(true); return true; }
 			if (a.rfind("--width=", 0) == 0) { g_width.store(std::atoi(a.substr(8).c_str())); return true; }
 			if (a.rfind("--limit=", 0) == 0) { g_limit.store(std::atoi(a.substr(8).c_str())); return true; }
+			if (a.rfind("--profile=", 0) == 0) {
+				const std::string p = a.substr(10);
+				if (p == "ci") { wrapColor = pos::ColorPolicy::Never; g_emoji.store(false); g_quiet.store(true); }
+				else if (p == "dev") { wrapColor = pos::ColorPolicy::Always; g_theme.store(1); g_emoji.store(true); }
+				else if (p == "minimal") { wrapColor = pos::ColorPolicy::Never; g_emoji.store(false); }
+				return true;
+			}
 			if (a.rfind("--color=", 0) == 0) { wrapColor = pos::parseColor(a.substr(8)); return true; }
 			if (a.rfind("--theme=", 0) == 0) { const std::string t = a.substr(8); if (t == "light") g_theme.store(0); else if (t == "dark") g_theme.store(1); return true; }
 			if (a.rfind("--timeout=", 0) == 0) { g_timeoutMs.store(std::atoll(a.substr(10).c_str())); if (g_timeoutMs.load() <= 0) g_timeoutMs.store(60000); return true; }
