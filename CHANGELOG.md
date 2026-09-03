@@ -19,6 +19,7 @@ Le format s'appuie sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) 
 - **Intelligence & analyse** : `health score|trend|compare`, `budget forecast`, `insights tokens`, `diagnose`,
   `drift alert|compare`, `goal traction|cost`, `autonomy health`, `risk profile` (+ `--source`, politique PAYG).
 - **Modèles** : routeur adaptatif (`--alt`), `model qualify|compare|flash|policy|quota|profiles|offload|cache`.
+- **`model write`** (nouveau) : génère du contenu via **localAI** et l'écrit dans le workspace du projet actif (garde anti-traversal, `PATH_TRAVERSAL` → exit non nul).
 - **Git** : `git status|log|commit|diff|branch|worktree|stash|ignore|checkpoint|hook|drift|pr`.
 - **Artefacts & MCP** : `artifact publish|versions|review|provenance|share|verify` (+ schéma), MCP tools
   `artifact_verify|artifact_search`, `/bridge config|audit`, `--tools` tunnel (12 outils MCP).

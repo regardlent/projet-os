@@ -1221,6 +1221,43 @@ try {
 		process.exit(0);
 	}
 
+	// F89 model write <relpath> <objective...>: generate content via LocalAI and write it
+	// into the active project workspace (guarded against path traversal). No shell.
+	if (line.startsWith("model write ")) {
+		const rest = line.slice("model write ".length).trim();
+		const sp = rest.indexOf(" ");
+		const rel = (sp >= 0 ? rest.slice(0, sp) : rest).trim();
+		const objective = (sp >= 0 ? rest.slice(sp + 1) : "").trim();
+		const a = resolveActiveProject();
+		if (!a) { emit({ command: "models", ok: false, status: "NO_ACTIVE_PROJECT", score: 0, grade: "", signal: "NO_PROJECT", rows: [], details: ["no active project"], message: "model write: no active project", warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
+		if (!rel || !objective) { emit({ command: "models", ok: false, status: "OBJECTIVE_REQUIRED", score: 0, grade: "", signal: "FAIL", rows: [], details: ["usage: model write <relpath> <objective>"], message: "model write: relpath + objective required", warnings: [], actions: [], artifacts: [] }, 2); process.exit(0); }
+		// Guard the target strictly inside the active workspace (path traversal defense).
+		const ws = a.workspaceRoot;
+		const target = path.resolve(ws, rel);
+		const rl = path.relative(ws, target);
+		if (rl.startsWith("..") || path.isAbsolute(rl) || rel.includes("..")) { emit({ command: "models", ok: false, status: "PATH_TRAVERSAL", score: 0, grade: "", signal: "FAIL", rows: [], details: [rel], message: "model write: path escapes workspace", warnings: [], actions: [], artifacts: [] }, 6); process.exit(0); }
+		const ext = path.extname(rel).slice(1) || "txt";
+		let content = ""; let tokens = 0;
+		try {
+			const prompt = `Write the complete content of the file \`${rel}\` (${ext} language). Output ONLY the raw file content in a single \`${ext}\` code block. No explanation, no surrounding prose.\n\nTask: ${objective}`;
+			const r = await fetch(baseUrl + "/chat/completions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: modelId, messages: [{ role: "user", content: prompt }], max_tokens: 1600, temperature: 0, stream: false }) });
+			const body = await r.json();
+			// granite-flash (and other reasoning models) may put the answer in `reasoning`, not `content`.
+			content = (body.choices?.[0]?.message?.content ?? "").trim();
+			if (!content) content = (body.choices?.[0]?.message?.reasoning ?? "").trim();
+			tokens = body.usage?.total_tokens ?? 0;
+		} catch (e) { emit({ command: "models", ok: false, status: "MODEL_ERROR", score: 0, grade: "", signal: "FAIL", rows: [], details: [e.message], message: `model write error: ${e.message}`, warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
+		if (!content) { emit({ command: "models", ok: false, status: "MODEL_EMPTY_OUTPUT", score: 0, grade: "", signal: "FAIL", rows: [], details: [], message: "model write: empty generation", warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
+		// Strip a wrapping markdown code fence if present.
+		const fence = content.match(/```[a-zA-Z0-9]*\n([\s\S]*?)\n```/);
+		if (fence && fence[1]) content = fence[1].trim();
+		fs.mkdirSync(path.dirname(target), { recursive: true });
+		fs.writeFileSync(target, content, "utf8");
+		const bytes = Buffer.byteLength(content, "utf8");
+		emit({ command: "models", ok: true, status: "WRITTEN", model: modelId, score: 0, grade: "", signal: "PASS", rows: [{ k: "path", v: rel }, { k: "bytes", v: String(bytes) }, { k: "tokens", v: String(tokens) }], details: [content.slice(0, 120).replace(/\n/g, " ")], message: `model write: ${rel} ${bytes} bytes tokens=${tokens}`, warnings: [], actions: ["git status"], artifacts: [rel] }, 0);
+		process.exit(0);
+	}
+
 	// F37 model benchmark <id>: 1 warmup + 3 measured real inferences -> TTFT/tokens-per-sec.
 	if (line.startsWith("model benchmark ")) {
 		const id = line.slice("model benchmark ".length).trim();
