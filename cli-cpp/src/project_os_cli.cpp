@@ -2247,6 +2247,7 @@ int wmain(int argc, wchar_t** wargv) {
 	const char* noProj = (pos::g_lang == pos::Lang::En) ? "  No managed projects yet. Use [2] to create one.\n\n" : "  No managed projects yet. Use [2] to create one.\n\n";
 	if (projects.empty()) std::cout << noProj;
 	auto pickMenu = [&](const char* fr, const char* en) { return pos::g_lang == pos::Lang::En ? en : fr; };
+	auto Pm = [&](const char* fr, const char* en) { return pos::g_lang == pos::Lang::En ? en : fr; };
 
 	while (true) {
 		std::cout << "  \xE2\x94\x80\xE2\x94\x80 MENU \xE2\x94\x80\xE2\x94\x80 \n";
@@ -2291,19 +2292,19 @@ int wmain(int argc, wchar_t** wargv) {
 				projects = pos::parseRegistry(pos::readFile(pos::registryFile()));
 			}
 		} else if (c == 3 || c == 4 || c == 5 || c == 6 || c == 7) {
-			if (pos::activeSlugEnv().empty()) { std::cout << "  No active project.\n"; continue; }
+			if (pos::activeSlugEnv().empty()) { std::cout << "  " << Pm("Aucun projet actif.", "No active project.") << "\n"; continue; }
 			std::string cmd;
-			if (c == 3) { std::cout << "  Objective> "; std::string o; std::getline(std::cin, o); cmd = "/goal " + pos::trim(o); }
-			else if (c == 4) { std::cout << "  [list|add <label>|done <key>]> "; std::string o; std::getline(std::cin, o); cmd = "/todo " + pos::trim(o); }
-			else if (c == 5) { std::cout << "  [plan --minutes=<n>|run|summary|--write]> "; std::string o; std::getline(std::cin, o); cmd = "/autonomy " + pos::trim(o); }
-			else if (c == 6) { std::cout << "  Domain e.g. swiss football league> "; std::string o; std::getline(std::cin, o); cmd = "/docs " + pos::trim(o); }
-			else { std::cout << "  [list|add <id>|recommended|remove <id>]> "; std::string o; std::getline(std::cin, o); cmd = "/addon " + pos::trim(o); }
+			if (c == 3) { std::cout << "  " << Pm("Objectif> ", "Objective> "); std::string o; std::getline(std::cin, o); cmd = "/goal " + pos::trim(o); }
+			else if (c == 4) { std::cout << "  " << Pm("[list|add <label>|done <key>]> ", "[list|add <label>|done <key>]> "); std::string o; std::getline(std::cin, o); cmd = "/todo " + pos::trim(o); }
+			else if (c == 5) { std::cout << "  " << Pm("[plan --minutes=<n>|run|summary|--write]> ", "[plan --minutes=<n>|run|summary|--write]> "); std::string o; std::getline(std::cin, o); cmd = "/autonomy " + pos::trim(o); }
+			else if (c == 6) { std::cout << "  " << Pm("Domaine (ex. ligue de football)> ", "Domain (ex. football league)> "); std::string o; std::getline(std::cin, o); cmd = "/docs " + pos::trim(o); }
+			else { std::cout << "  " << Pm("[list|add <id>|recommended|remove <id>]> ", "[list|add <id>|recommended|remove <id>]> "); std::string o; std::getline(std::cin, o); cmd = "/addon " + pos::trim(o); }
 			auto r = pos::dispatch(pos::bridgePath(), cmd, g_timeoutMs, &g_cancel);
 			std::cout << "  " << (r.ok ? "OK" : "FAIL") << " " << r.status << ": " << r.message << "\n";
 			if (!r.next.empty()) std::cout << "  next: " << r.next << "\n";
 			if (!r.raw.empty()) std::cout << "  raw: " << r.raw << "\n";
 		} else if (c == 8) {
-			std::cout << "  Slash cmd> "; std::string s; std::getline(std::cin, s);
+			std::cout << "  " << Pm("Commande slash> ", "Slash cmd> "); std::string s; std::getline(std::cin, s);
 			if (pos::trim(s).empty()) continue;
 			auto r = pos::dispatch(pos::bridgePath(), pos::trim(s), g_timeoutMs, &g_cancel);
 			std::cout << "  " << (r.ok ? "OK" : "FAIL") << " " << r.command << " " << r.status << "\n" << r.message << "\n";
