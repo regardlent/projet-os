@@ -24,10 +24,10 @@ Le CLI ne disposait d'**aucune commande** « générer + écrire un fichier » (
 Résultats **réels et honnêtes** :
 | Cible | résultat localAI | verdict |
 |---|---|---|
-| `src/dummy.hpp` (petit, précis) | `#pragma once inline int add(int,int){...}` (64 o) | ✅ **code valide** |
-| `src/textkit.cpp` (fichier complet, design-lourd) | plan de raisonnement (5 499 o), pas du code | ❌ **plan, non compilable** |
+| `src/dummy.hpp` / `src/code1.hpp` (petit, précis) | `#pragma once inline int add(int,int){...}` / `inline int triple(int){...}` | ✅ **code valide** |
+| `src/textkit.cpp` / `src/textkit_core.cpp` (module complet) | plan de raisonnement — **non écrit** désormais | ❌ **`MODEL_EMPTY_OUTPUT`** (échec honnête) |
 
-📌 **Conclusion** : le petit modèle local (**granite-4.2-3b-flash**) produit du code fiable pour un **artefact ciblé**, mais **pas pour un fichier complet de conception**. Il « raisonne » mais son contenu exécutable n'est pas fiable. C'est une limite produit, pas un échec de la commande.
+📌 **Conclusion** : le petit modèle local (**granite-4.2-3b-flash**) produit du code fiable pour un **artefact ciblé / fonction unique**, mais **pas pour un module multi-fonctions avec I/O**. Depuis l'amélioration de `model write`, il **refuse honnêtement** (`MODEL_EMPTY_OUTPUT`) plutôt que d'écrire du prose de raisonnement dans un `.cpp`.
 
 ## 5. Implémentation de référence (opérateur) → compile + tourne
 `src/main.cpp` **compilable** (opérateur) :

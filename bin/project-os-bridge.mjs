@@ -1242,15 +1242,16 @@ try {
 			const prompt = `Write the complete content of the file \`${rel}\` (${ext} language). Output ONLY the raw file content in a single \`${ext}\` code block. No explanation, no surrounding prose.\n\nTask: ${objective}`;
 			const r = await fetch(baseUrl + "/chat/completions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: modelId, messages: [{ role: "user", content: prompt }], max_tokens: 1600, temperature: 0, stream: false }) });
 			const body = await r.json();
-			// granite-flash (and other reasoning models) may put the answer in `reasoning`, not `content`.
+			// Only write the actual model content. Do NOT fall back to `reasoning`:
+			// a reasoning plan is not a valid source artifact and must not pollute a
+			// code file (honest MODEL_EMPTY_OUTPUT instead of writing prose).
 			content = (body.choices?.[0]?.message?.content ?? "").trim();
-			if (!content) content = (body.choices?.[0]?.message?.reasoning ?? "").trim();
 			tokens = body.usage?.total_tokens ?? 0;
 		} catch (e) { emit({ command: "models", ok: false, status: "MODEL_ERROR", score: 0, grade: "", signal: "FAIL", rows: [], details: [e.message], message: `model write error: ${e.message}`, warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
 		if (!content) { emit({ command: "models", ok: false, status: "MODEL_EMPTY_OUTPUT", score: 0, grade: "", signal: "FAIL", rows: [], details: [], message: "model write: empty generation", warnings: [], actions: [], artifacts: [] }, 1); process.exit(0); }
-		// Strip a wrapping markdown code fence if present.
-		const fence = content.match(/```[a-zA-Z0-9]*\n([\s\S]*?)\n```/);
-		if (fence && fence[1]) content = fence[1].trim();
+		// Strip a wrapping markdown code fence (take the LAST fenced block — the model's final answer).
+		const fences = [...content.matchAll(/```[a-zA-Z0-9]*\n([\s\S]*?)\n```/g)].map((m) => m[1]);
+		if (fences.length) content = fences[fences.length - 1].trim();
 		fs.mkdirSync(path.dirname(target), { recursive: true });
 		fs.writeFileSync(target, content, "utf8");
 		const bytes = Buffer.byteLength(content, "utf8");
