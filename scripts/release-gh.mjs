@@ -2,7 +2,7 @@
 // release-gh.mjs — publie la release GitHub v1.0 via l'API REST (nécessite GITHUB_TOKEN).
 // Usage: GITHUB_TOKEN=<token> node scripts/release-gh.mjs [tag]
 import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -29,7 +29,7 @@ console.log(`release created id=${relId}`);
 
 // 2. Upload l'asset (zip CPack) si présent.
 const zip = path.join(repo, "cli-cpp", `project-os-cli-0.1.0-v3.zip`);
-if (require("node:fs").existsSync(zip)) {
+if (existsSync(zip)) {
 	const up = spawnSync("curl", [
 		"-sS", "-X", "POST", `${api}/${relId}/assets?name=${path.basename(zip)}`,
 		"-H", `Authorization: Bearer ${token}`, "-H", "Content-Type: application/zip", "--data-binary", `@${zip}`,
