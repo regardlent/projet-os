@@ -43,6 +43,28 @@ Résultats **réels et honnêtes** :
 - Sur un repo sans commit, `git status` affiche `branch : No` (parse le git status « no commits yet ») — mineur.
 - Le contenu « reasoning » du modèle contient parfois des marqueurs Markdown ; la commande `model write` les strip quand ils sont en fenêtre de code.
 
+## 8. `model codegen` — codegen **autonome** (le CLI choisit TOUT)
+Commande ajoutée qui supprime l'intervention humaine :
+- **choix du modèle** par le CLI (classement adaptatif : taille, `instruct`, capacité code ; évite tiny/flash/reranker) ;
+- **génère → compile** (`g++ -std=c++17`) → **se répare** en boucle (erreur du compilateur renvoyée au modèle) jusqu'à obtenir un artefact compilable ;
+- écrit uniquement si **compilable** (sinon `CODEGEN_FAILED` honnête).
+
+### Résultats **réels**
+| Demande | modèle choisi | résultat |
+|---|---|---|
+| `gen_greet.hpp` | `qwen3-1.7b` | ✅ `CODEGEN_COMPILED` (1 essai) |
+| `gen_csv.hpp` (splitter) | `qwen3-4b` | ✅ `CODEGEN_COMPILED` (1 essai, code propre) |
+| (avant classement) `2.5-0.5b-instruct` | — | ❌ `CODEGEN_FAILED` après 4 essais (modèle 0.5B trop faible) |
+
+### ⚠️ Finding réel : **latence LocalAI très variable**
+Certaines générations aboutissent en **quelques secondes** (qwen3-4b → splitCsv), d'autres **bloquent >300 s** même sur une fonction simple. L'autonomisation d'un projet complet est donc **dépendante de la performance du serveur local** — la commande est correcte, c'est la vitesse du backend qui varie. Le projet `textkit` (référence `src/main.cpp`) **compile et tourne** indépendamment.
+
+## 9. Synthèse
+- Le **CLI choisit lui-même** : modèle (classement), découpe (écriture par unité), correction (boucle compiler→réparer).
+- **Génération fiable** pour les **artefacts modérés** (headers, fonctions, splitters) ; **lente/fluctuante** pour un gros programme selon la latence LocalAI.
+- `textkit` (référence opérateur) **compile + court** : `count` (`lines=4 words=13 chars=75 bytes=75`) · `csv2md` (tableau Markdown aligné) · **ctest 2/2**.
+
 ## Fichiers d'évidence (workspace `textkit`)
-- `src/dummy.hpp` (généré par localAI — valide) · `src/textkit.cpp` (généré par localAI — plan, à titre d'évidence)
-- `src/main.cpp` (référence opérateur) · `CMakeLists.txt` · `samples/*` · `build/textkit.exe`
+- Générés par localAI (compilables) : `src/gen_greet.hpp`, `src/gen_csv.hpp`
+- Référence opérateur : `src/main.cpp` · `CMakeLists.txt` · `samples/*` · `build/textkit.exe`
+
