@@ -722,6 +722,38 @@ static std::string currentWorkspace() {
 	if (slug.empty()) return "";
 	return pos::projectsRoot() + "\\" + slug;
 }
+// Phase 30: snapshot diff <a> <b> — compare goal/todo/progress between two snapshots.
+static int cmdSnapshotDiff(const std::string& a, const std::string& b, pos::OutputFormat fmt) {
+	const std::string ws = currentWorkspace();
+	if (ws.empty()) { std::cout << "  FAIL snapshot diff: no active project\n"; return 1; }
+	const std::string dir = ws + "\\.project-os\\snapshots";
+	namespace fs = std::filesystem;
+	auto find = [&](const std::string& needle) -> std::string {
+		if (!fs::exists(dir)) return "";
+		for (auto& e : fs::directory_iterator(dir)) if (e.is_regular_file() && e.path().extension() == ".json" && e.path().filename().string().find(needle) != std::string::npos) return e.path().string();
+		return "";
+	};
+	std::string fa = find(a), fb = find(b);
+	if (fa.empty() || fb.empty()) { std::cout << "  FAIL snapshot diff: snapshot(s) not found\n"; return 1; }
+	auto readSnap = [&](const std::string& f) -> pos::JValue { try { return pos::parseJson(pos::readFile(f)); } catch (...) { return pos::JValue(); } };
+	pos::JValue ja = readSnap(fa), jb = readSnap(fb);
+	auto g = [](const pos::JValue& j, const char* k) -> std::string { auto* x = j.get(k); return x ? x->asString() : ""; };
+	auto n = [](const pos::JValue& j, const char* k) -> int { auto* x = j.get(k); return (x && x->kind == pos::JKind::Number) ? (int)x->number : 0; };
+	std::string ga = g(ja, "goal"), gb = g(jb, "goal");
+	int ta = n(ja, "todoDone"), tb = n(jb, "todoDone"), ca = n(ja, "todoCount"), cb = n(jb, "todoCount"), pa = n(ja, "goalProgress"), pb = n(jb, "goalProgress");
+	std::vector<std::vector<std::string>> rows = {
+		{ "goal", (ga == gb ? "same" : "changed"), ga == gb ? "" : (ga + " -> " + gb) },
+		{ "todo", std::to_string(ta) + "/" + std::to_string(ca), std::to_string(tb) + "/" + std::to_string(cb) },
+		{ "progress", std::to_string(pa) + "%", std::to_string(pb) + "%" },
+	};
+	if (fmt == pos::OutputFormat::Csv || fmt == pos::OutputFormat::Markdown || fmt == pos::OutputFormat::Html) {
+		renderColumns({ "metric", "snap-a", "snap-b" }, rows, fmt);
+	} else {
+		std::cout << "── snapshot diff ──\n";
+		for (auto& r : rows) std::cout << fitLine("  " + r[0] + " : " + r[1] + (r[2].empty() ? "" : ("  ->  " + r[2]))) << "\n";
+	}
+	return 0;
+}
 static int cmdSnapshot(const std::string& sub, pos::OutputFormat fmt) {
 	const std::string ws = currentWorkspace();
 	if (ws.empty()) { std::cout << "  FAIL snapshot: no active project\n"; return 1; }
@@ -730,13 +762,15 @@ static int cmdSnapshot(const std::string& sub, pos::OutputFormat fmt) {
 	if (sub == "create") {
 		fs::create_directories(dir);
 		auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-		// Filename with timestamp.
 		std::string ts = std::to_string((long long)now);
-		std::string goal = pos::readFile(ws + "\\.project-os\\goal.json");
-		std::string todo = pos::readFile(ws + "\\.project-os\\todo.json");
-		std::string proj = ws + "\\.project-os\\project.json";
-		// Capture a compact snapshot.
-		std::string snap = "{\"snapshot\":\"" + ts + "\",\"active\":\"" + pos::activeSlugEnv() + "\",\"project\":\"\"}\n";
+		// Enrich: capture goal objective + todo progress via status.
+		pos::CmdResult st = pos::dispatch(pos::bridgePath(), "status", g_timeoutMs, &g_cancel);
+		std::string goalObj = st.goalObjective, goalSt = st.goalStatus;
+		int gp = st.goalProgress, td = st.todoDone, tc = st.todoCount;
+		// Compact snapshot (with goal/todo for diff).
+		std::string snap = "{\"snapshot\":\"" + ts + "\",\"active\":\"" + pos::activeSlugEnv()
+			+ "\",\"goal\":\"" + goalObj + "\",\"goalStatus\":\"" + goalSt + "\",\"goalProgress\":" + std::to_string(gp)
+			+ ",\"todoDone\":" + std::to_string(td) + ",\"todoCount\":" + std::to_string(tc) + "}\n";
 		std::string file = dir + "\\snap-" + ts + ".json";
 		// Write via C++ ofstream through pos_model? Not exposed; use std::ofstream.
 		std::ofstream of(file); of << snap; of.close();
@@ -2098,6 +2132,7 @@ int wmain(int argc, wchar_t** wargv) {
 		if (cmd == "project" && args.size() >= 1 && args[0] == "watch") { return cmdProjectWatch(fmt, 0); }
 		if (cmd == "drift" && args.empty()) { return cmdDrift(fmt); }
 		if (cmd == "timeline") { return cmdTimeline(fmt); }
+		if (cmd == "snapshot" && args.size() >= 3 && args[0] == "diff") { return cmdSnapshotDiff(args[1], args[2], fmt); }
 		if (cmd == "snapshot" && args.size() >= 2 && args[0] == "semantic-diff") { return cmdSemanticDiff(args[1], args[2], fmt); }
 		if (cmd == "snapshot" && args.size() >= 1) { return cmdSnapshot(args[0], fmt); }
 		if (cmd == "goal" && args.size() >= 1 && args[0] == "proof") { return cmdGoalProof(fmt); }
