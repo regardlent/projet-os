@@ -126,20 +126,10 @@
       "note": "ProcessRunner CreateProcessW + parallel pipe readers (fix: large output deadlock); verified on artifact list (118 items)"
     },
     "F08_timeout": {
-      "phase": 5,
-      "implemented": "PASS",
-      "unit": "PASS",
-      "negative": "PASS",
-      "integration": "PASS",
-      "live": "n/a",
-      "security": "PLANNED",
-      "performance": "PLANNED",
-      "doc": "PASS",
-      "regression": "PASS",
-      "evidence": "PASS",
       "status": "PASS",
-      "note": "runProcess timeoutMs; waitProcess polls, sets timedOut (never hangs); default dispatch timeout 60s; TIMEOUT_OR_CANCELLED status",
-      "unitStamped": true
+      "phase": 5,
+      "improved_phase": 22,
+      "evidence": "--timeout=<ms> global (avant/apres la commande), 42 dispatch sites migres, fallback 60000 si <=0; live: --timeout=30000 gpu proof OK, capabilities OK exit 0, bogus exit 2"
     },
     "F09_ctrl_c": {
       "phase": 6,
@@ -645,35 +635,16 @@
       "note": "gpu: real nvidia-smi read-only via ProcessRunner (no kill); proven GPU 8151/7420/480/13%"
     },
     "F39_gpu_watch": {
-      "phase": 21,
-      "implemented": "PASS",
-      "unit": "PASS",
-      "negative": "PASS",
-      "integration": "PASS",
-      "live": "PASS",
-      "security": "PASS",
-      "performance": "PASS",
-      "doc": "PASS",
-      "regression": "PASS",
-      "evidence": "PASS",
       "status": "PASS",
-      "note": "gpu watch: live nvidia-smi refresh (human+json, tick), Ctrl+C/stop; reads real GPU, no ANSI in JSON. Proven 3 ticks GPU.",
-      "unitStamped": true
+      "phase": 21,
+      "evidence": "live 3 ticks nvidia-smi (json+human), intervalle parametrable, stop propre via Ctrl+C"
     },
     "F40_gpu_proof": {
-      "phase": 21,
-      "implemented": "PASS",
-      "unit": "PASS",
-      "negative": "PASS",
-      "integration": "PASS",
-      "live": "PASS",
-      "security": "PASS",
-      "performance": "PASS",
-      "doc": "PLANNED",
-      "regression": "PASS",
-      "evidence": "PASS",
       "status": "PASS",
-      "note": "gpu proof: full chain gpuBefore -> real smoke (HTTP 200/content) -> gpuAfter; return smoke status. Proven smokeHttp=200 content='7' delta VRAM. Node resolution fallback fixed (F07)."
+      "phase": 21,
+      "improved_phase": 22,
+      "evidence": "live: gpu proof [model-id] parametrable + human/json; json+model: HTTP 200 (1008ms, content=7) exit 0",
+      "fix": "L2: flags globaux (--format/--color/--explain) acceptes AVANT la commande"
     },
     "F41_test_runner": {
       "phase": 22,
@@ -825,21 +796,114 @@
       "status": "PASS",
       "note": "cockpit: inline VT dashboard (no external dep), read-only live refresh; proven endurance=[5,10,20] offload=PASS gpu=GPU 480 MiB"
     },
-    "F39_gpu_watch": { "status": "PASS", "phase": 21, "evidence": "live 3 ticks nvidia-smi (json+human), intervalle parametrable, stop propre via Ctrl+C" },
-    "F40_gpu_proof": { "status": "PASS", "phase": 21, "improved_phase": 22, "evidence": "live: gpu proof [model-id] parametrable + human/json; json+model: HTTP 200 (1008ms, content=7) exit 0", "fix": "L2: flags globaux (--format/--color/--explain) acceptes AVANT la commande" },
-    "F04_formats": { "status": "PASS", "phase": 3, "improved_phase": 22, "evidence": "--format=json gpu proof <model> -> JSON, exit 0 (fix leading-flag strip)" },
-    "F08_timeout": { "status": "PASS", "phase": 5, "improved_phase": 22, "evidence": "--timeout=<ms> global (avant/apres la commande), 42 dispatch sites migres, fallback 60000 si <=0; live: --timeout=30000 gpu proof OK, capabilities OK exit 0, bogus exit 2" },
-    "F04_formats_full": { "status": "PASS", "phase": 22, "improves": ["models(F33)", "test list(F41)", "artifact list(F23)"], "evidence": "ndjson/tsv reels sur les 3 listings; tsv verifie par octets (HAS_TAB=true); ndjson 1-objet/ligne; human/json inchanges; ctest 1/1; Node 293/293" },
-    "F23_registry_backed": { "status": "PASS", "phase": 22, "improves": ["artifact list(F23)", "artifact verify(F26)"], "evidence": "source=registry via PROJECT_OS_ARTIFACT_DIR (id/type/status/version/sha256) sinon scan fallback (source=scan); verify compare SHA256 -> SHA_MISMATCH entraine VERIFY_FAIL exit 1; matching -> VERIFIED exit 0" },
-    "IA01_health_score": { "status": "PASS", "phase": 27, "evidence": "health score: composite score+grade+signal (goal/todo/git/addons/content/snapshots/tokens); live 62/C FAIR; json/ndjson/tsv" },
-    "IA02_health_trend": { "status": "PASS", "phase": 27, "evidence": "health trend: snapshot scores -> IMPROVING/DECLINING/FLAT/NOT_ENOUGH_DATA; live NOT_ENOUGH_DATA (0 snapshot)" },
-    "IA03_health_compare": { "status": "PASS", "phase": 27, "evidence": "health compare <a> [b]: A_BETTER/B_BETTER/EQUAL; exit 1 si b absent (NOT_FOUND); live A_BETTER 62 C" },
-    "IA04_budget_forecast": { "status": "PASS", "phase": 27, "evidence": "budget forecast: tokens x cost + PROJECT_OS_DAILY_BUDGET -> EXACT_ZERO/SPEND; live EXACT_ZERO (LocalAI) tokens=74732" },
-    "IA05_insights_tokens": { "status": "PASS", "phase": 27, "evidence": "insights tokens: total/in/out/ratio/model -> HAS_USAGE/NO_USAGE; live 74732 ratio 2.87" },
-    "IA06_diagnose": { "status": "PASS", "phase": 27, "evidence": "diagnose: checks classes (goal/todo/git/addons/snapshot/content) -> CLEAR/WARN/ALERT exit 1 si issues; live WARN (git dirty, snapshot none)" },
-    "IA07_drift_alert": { "status": "PASS", "phase": 27, "evidence": "drift alert: divergence vs snapshot baseline -> CLEAR/ALERT/NO_BASELINE exit 1 si ALERT; live NO_BASELINE (0 snapshot)" },
-    "IA08_goal_traction": { "status": "PASS", "phase": 27, "evidence": "goal traction: progress*0.4+todo*0.4+criteria -> STRONG/MODERATE/WEAK; live MODERATE 60 (todo 6/6, 3 criteres)" },
-    "IA09_autonomy_health": { "status": "PASS", "phase": 27, "evidence": "autonomy health: plan+handoff+deadline -> COMPLETED/ACTIVE/EXPIRED/MISSING; live COMPLETED 60min medium" },
-    "IA10_risk_profile": { "status": "PASS", "phase": 27, "evidence": "risk profile: risques classes high/med/low + mitigations -> HIGH/MEDIUM/LOW + score; live MEDIUM score=80 (autonomy_expired, git_dirty, no_snapshot)" }
+    "F04_formats": {
+      "status": "PASS",
+      "phase": 3,
+      "improved_phase": 22,
+      "evidence": "--format=json gpu proof <model> -> JSON, exit 0 (fix leading-flag strip)"
+    },
+    "F04_formats_full": {
+      "status": "PASS",
+      "phase": 22,
+      "improves": [
+        "models(F33)",
+        "test list(F41)",
+        "artifact list(F23)"
+      ],
+      "evidence": "ndjson/tsv reels sur les 3 listings; tsv verifie par octets (HAS_TAB=true); ndjson 1-objet/ligne; human/json inchanges; ctest 1/1; Node 293/293"
+    },
+    "F23_registry_backed": {
+      "status": "PASS",
+      "phase": 22,
+      "improves": [
+        "artifact list(F23)",
+        "artifact verify(F26)"
+      ],
+      "evidence": "source=registry via PROJECT_OS_ARTIFACT_DIR (id/type/status/version/sha256) sinon scan fallback (source=scan); verify compare SHA256 -> SHA_MISMATCH entraine VERIFY_FAIL exit 1; matching -> VERIFIED exit 0"
+    },
+    "IA01_health_score": {
+      "status": "PASS",
+      "phase": 27,
+      "evidence": "health score: composite score+grade+signal (goal/todo/git/addons/content/snapshots/tokens); live 62/C FAIR; json/ndjson/tsv"
+    },
+    "IA02_health_trend": {
+      "status": "PASS",
+      "phase": 27,
+      "evidence": "health trend: snapshot scores -> IMPROVING/DECLINING/FLAT/NOT_ENOUGH_DATA; live NOT_ENOUGH_DATA (0 snapshot)"
+    },
+    "IA03_health_compare": {
+      "status": "PASS",
+      "phase": 27,
+      "evidence": "health compare <a> [b]: A_BETTER/B_BETTER/EQUAL; exit 1 si b absent (NOT_FOUND); live A_BETTER 62 C"
+    },
+    "IA04_budget_forecast": {
+      "status": "PASS",
+      "phase": 27,
+      "evidence": "budget forecast: tokens x cost + PROJECT_OS_DAILY_BUDGET -> EXACT_ZERO/SPEND; live EXACT_ZERO (LocalAI) tokens=74732"
+    },
+    "IA05_insights_tokens": {
+      "status": "PASS",
+      "phase": 27,
+      "evidence": "insights tokens: total/in/out/ratio/model -> HAS_USAGE/NO_USAGE; live 74732 ratio 2.87"
+    },
+    "IA06_diagnose": {
+      "status": "PASS",
+      "phase": 27,
+      "evidence": "diagnose: checks classes (goal/todo/git/addons/snapshot/content) -> CLEAR/WARN/ALERT exit 1 si issues; live WARN (git dirty, snapshot none)"
+    },
+    "IA07_drift_alert": {
+      "status": "PASS",
+      "phase": 27,
+      "evidence": "drift alert: divergence vs snapshot baseline -> CLEAR/ALERT/NO_BASELINE exit 1 si ALERT; live NO_BASELINE (0 snapshot)"
+    },
+    "IA08_goal_traction": {
+      "status": "PASS",
+      "phase": 27,
+      "evidence": "goal traction: progress*0.4+todo*0.4+criteria -> STRONG/MODERATE/WEAK; live MODERATE 60 (todo 6/6, 3 criteres)"
+    },
+    "IA09_autonomy_health": {
+      "status": "PASS",
+      "phase": 27,
+      "evidence": "autonomy health: plan+handoff+deadline -> COMPLETED/ACTIVE/EXPIRED/MISSING; live COMPLETED 60min medium"
+    },
+    "IA10_risk_profile": {
+      "status": "PASS",
+      "phase": 27,
+      "evidence": "risk profile: risques classes high/med/low + mitigations -> HIGH/MEDIUM/LOW + score; live MEDIUM score=80 (autonomy_expired, git_dirty, no_snapshot)"
+    }
+  },
+  "post_v3": {
+    "machine_formats": {
+      "status": "PASS",
+      "evidence": "--format=human|json|ndjson|tsv|csv|md|html|svg sur listes/analyses/detail/model smoke/benchmark/snapshot/gpu/config"
+    },
+    "create_timer": {
+      "status": "PASS",
+      "evidence": "create chronometre scaffold/goal/addons/git/todo (elapsedMs + steps) + --goal"
+    },
+    "snapshot_diff": {
+      "status": "PASS",
+      "evidence": "snapshot create enrichi (goal/todo) + snapshot diff <a> <b> + list --age"
+    },
+    "git_ux": {
+      "status": "PASS",
+      "evidence": "git log --graph, git status/log/commit/diff/branch/worktree/stash/ignore/checkpoint/hook/drift/pr"
+    },
+    "tree": {
+      "status": "PASS",
+      "evidence": "tree (arbre borne du workspace)"
+    },
+    "profiles": {
+      "status": "PASS",
+      "evidence": "--profile=dev|ci|minimal + -q/-qq/-v/-vv + --limit + --time + --trace"
+    },
+    "help_color": {
+      "status": "PASS",
+      "evidence": "--help colorise par theme"
+    },
+    "cockpit_addons": {
+      "status": "PASS",
+      "evidence": "cockpit [Addons] tile + [Perf] 4 sources"
+    }
   }
 }
