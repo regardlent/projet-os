@@ -91,6 +91,7 @@ static void testExitCodes() {
 	CHECK(pos::exitFor(false, "BRIDGE_ERROR") == 3);
 	CHECK(pos::exitFor(false, "PROTOCOL_ERROR") == 7);
 	CHECK(pos::exitFor(false, "SECURITY_BLOCKED") == 6);
+	CHECK(pos::exitFor(false, "PATH_TRAVERSAL") == 6); // model write/codegen guard
 	CHECK(pos::exitFor(false, "NOT_FOUND") == 1);
 	CHECK(pos::exitFor(false, "ANYTHING_ELSE") == 1);
 	// F54 extended taxonomy.

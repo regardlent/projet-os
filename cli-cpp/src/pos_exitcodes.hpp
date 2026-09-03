@@ -41,7 +41,7 @@ inline int exitFor(bool ok, const std::string& status) {
                 return static_cast<int>(ExitCode::INVALID_USAGE);
         if (status == "BRIDGE_ERROR" || status == "BRIDGE_FAILURE") return static_cast<int>(ExitCode::BRIDGE_FAILURE);
         if (status == "PROTOCOL_ERROR") return static_cast<int>(ExitCode::PROTOCOL_ERROR);
-        if (status == "SECURITY_BLOCKED" || status == "ADDON_SECURITY_BLOCKED") return static_cast<int>(ExitCode::SECURITY_BLOCKED);
+        if (status == "SECURITY_BLOCKED" || status == "ADDON_SECURITY_BLOCKED" || status == "PATH_TRAVERSAL") return static_cast<int>(ExitCode::SECURITY_BLOCKED);
         if (status == "BLOCKED_GPU" || status == "GPU_BLOCKED") return static_cast<int>(ExitCode::GPU_BLOCKED);
         if (status == "LOCALAI_UNAVAILABLE" || status == "LOCALAI_UNREACHABLE") return static_cast<int>(ExitCode::LOCALAI_UNAVAILABLE);
         if (status == "TEST_FAILURE") return static_cast<int>(ExitCode::TEST_FAILURE);
