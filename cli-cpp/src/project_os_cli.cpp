@@ -1043,13 +1043,18 @@ static std::string fitLine(const std::string& s) {
 	return s.substr(0, (size_t)w) + "\xE2\x80\xA6";
 }
 
-static int cmdConfig(pos::OutputFormat fmt) {
+static int cmdConfig(pos::OutputFormat fmt, const std::string& asMode) {
 	pos::CmdResult r = pos::dispatch(pos::bridgePath(), "config list", g_timeoutMs, &g_cancel);
 	if (!r.ok) { std::cout << "  FAIL config: " << r.status << " — " << r.message << "\n"; return 1; }
-	if (fmt == pos::OutputFormat::Json) {
+	if (fmt == pos::OutputFormat::Json || asMode == "json") {
 		std::cout << "{";
 		for (size_t i = 0; i < r.configKv.size(); ++i) { if (i) std::cout << ","; std::cout << pos::json_quote(r.configKv[i].first) << ":" << pos::json_quote(r.configKv[i].second); }
 		std::cout << "}\n";
+	} else if (asMode == "env") {
+		for (auto& [k, v] : r.configKv) std::cout << k << "=" << v << "\n";
+	} else if (asMode == "ini") {
+		std::cout << "[project-os]\n";
+		for (auto& [k, v] : r.configKv) std::cout << k << "=" << v << "\n";
 	} else if (fmt == pos::OutputFormat::TsV) {
 		for (auto& [k, v] : r.configKv) pos::emitScalar(pos::OutputFormat::TsV, k, v);
 	} else {
@@ -2037,7 +2042,7 @@ int wmain(int argc, wchar_t** wargv) {
 		return 1;
 	}
 		if (cmd == "config" && args.size() >= 1 && args[0] == "provenance") { return cmdConfigProvenance(fmt); }
-		if (cmd == "config") { return cmdConfig(fmt); }
+		if (cmd == "config") { std::string as; for (const auto& a : args) if (a.rfind("--as=", 0) == 0) as = a.substr(5); return cmdConfig(fmt, as); }
 		if (cmd == "doctor") { return cmdDoctor(fmt); }
 		if (cmd == "diagnostics") { return cmdDiagnostics(fmt); }
 		if (cmd == "preflight") { return cmdPreflight(fmt); }
