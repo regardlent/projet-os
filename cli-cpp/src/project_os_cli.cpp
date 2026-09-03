@@ -633,6 +633,11 @@ static int cmdProjectInspect(const std::string& slug, pos::OutputFormat fmt) {
 			<< ",\"goalStatus\":" << pos::json_quote(r.goalStatus)
 			<< ",\"goalProgress\":" << r.goalProgress
 			<< ",\"todoDone\":" << r.todoDone << ",\"todoCount\":" << r.todoCount << "}\n";
+	} else if (fmt == pos::OutputFormat::Csv || fmt == pos::OutputFormat::Markdown || fmt == pos::OutputFormat::Html) {
+		renderColumns({ "key", "value" }, {
+			{ "slug", r.activeSlug }, { "type", r.projectType }, { "status", r.projectStatus },
+			{ "workspace", r.activeWorkspace }, { "goal", r.goalStatus + " (" + std::to_string(r.goalProgress) + "%)" },
+			{ "todo", std::to_string(r.todoDone) + "/" + std::to_string(r.todoCount) } }, fmt);
 	} else {
 		std::cout << "\xE2\x94\x80\xE2\x94\x80 project inspect " << slug << " \xE2\x94\x80\xE2\x94\x80 \n";
 		std::cout << "  slug      : " << r.activeSlug << "\n";
