@@ -513,6 +513,34 @@ static void testPerfBudget() {
 	CHECK(v.kind == JKind::Array && v.arr.size() == 50000);
 	CHECK(ms < 2000.0);                    // generous wall-budget (avoid CI flake)
 	std::cout << "  perf  : 50k-array parse in " << (long long)ms << " ms\n";
+
+	// Phase 45: perf budget on the new encode/decode paths (snapshot diff rows, create steps).
+	// Build a many-row snapshot-diff envelope and ensure parseCmdResult stays fast.
+	{
+		std::string rows = "";
+		for (int i = 0; i < 2000; ++i) { if (i) rows += ","; rows += "{\"k\":\"m" + std::to_string(i) + "\",\"v\":\"v" + std::to_string(i) + "\"}"; }
+		std::string j = "{\"protocol\":2,\"ok\":true,\"status\":\"SNAPSHOT_DIFF\",\"result\":{\"command\":\"snapshot\",\"rows\":[" + rows + "]},\"errors\":[]}";
+		const auto a = std::chrono::steady_clock::now();
+		auto r = pos::parseCmdResult(j);
+		const auto b = std::chrono::steady_clock::now();
+		double parseMs = std::chrono::duration<double, std::milli>(b - a).count();
+		CHECK(r.analysisKv.size() == 2000);
+		CHECK(parseMs < 2000.0);
+		std::cout << "  perf  : 2000-row snapshot diff parse in " << (long long)parseMs << " ms\n";
+	}
+	// renderTable of 2000 rows stays fast (human table path).
+	{
+		std::vector<std::vector<std::string>> rows;
+		rows.reserve(2000);
+		for (int i = 0; i < 2000; ++i) rows.push_back({ "key" + std::to_string(i), "value" + std::to_string(i) });
+		const auto a = std::chrono::steady_clock::now();
+		auto tbl = pos::renderTable(rows);
+		const auto b = std::chrono::steady_clock::now();
+		double tblMs = std::chrono::duration<double, std::milli>(b - a).count();
+		CHECK(!tbl.empty());
+		CHECK(tblMs < 2000.0);
+		std::cout << "  perf  : 2000-row renderTable in " << (long long)tblMs << " ms\n";
+	}
 }
 
 static void testCmdResultExtended() {
